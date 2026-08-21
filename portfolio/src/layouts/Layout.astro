@@ -1,0 +1,121 @@
+---
+import { SITE } from '../consts';
+import '../styles/global.css';
+
+/*
+ * Base layout. Ships zero JavaScript.
+ *
+ * Theming is native `prefers-color-scheme` (see global.css) — there is no
+ * toggle, so there is no blocking inline script and nothing to hydrate. The
+ * LCP element is whatever text the page renders first; nothing here competes
+ * with it for the critical path.
+ */
+
+interface Props {
+  /** Page title. Pass SITE.name on the index for the "Name — Role" form. */
+  title: string;
+  /** Meta description. Written per page — never auto-generated from prose. */
+  description?: string;
+  /**
+   * Absolute-from-root path to a social card image, e.g. `/og/schemashift.png`.
+   * Falls back to SITE.ogImage, which does not exist yet (PLACEHOLDERS.ogDefault).
+   */
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = SITE.description,
+  ogImage = SITE.ogImage,
+  ogImageAlt = `${SITE.name} — ${SITE.role}`,
+  ogType = 'website',
+  noindex = false,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = new URL(ogImage, Astro.site);
+
+const fullTitle =
+  title === SITE.name ? `${SITE.name} — ${SITE.role}` : `${title} — ${SITE.name}`;
+
+/*
+ * Structured data. Verified facts only (CONTEXT §6).
+ * `sameAs` deliberately lists GitHub alone — the LinkedIn profile does not
+ * exist yet and must not be invented.
+ */
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.name,
+  jobTitle: SITE.role,
+  email: `mailto:${SITE.email}`,
+  url: canonical.origin,
+  sameAs: [SITE.github],
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Colombo',
+    addressCountry: 'LK',
+  },
+  alumniOf: {
+    '@type': 'CollegeOrUniversity',
+    name: 'Sri Lanka Institute of Information Technology',
+  },
+};
+---
+
+<!doctype html>
+<html lang={SITE.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {/* Both grounds declared so the browser chrome matches the page in either scheme. */}
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fcfbf8" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#04101b" />
+
+    {/* Open Graph — the preview card sells the site before the site loads (BRIEF §2). */}
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta property="og:locale" content="en_GB" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+
+    <slot name="head" />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify(personSchema)}
+    />
+  </head>
+
+  <body class="min-h-dvh bg-ground text-figure antialiased">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <slot name="header" />
+    <main id="main">
+      <slot />
+    </main>
+    <slot name="footer" />
+  </body>
+</html>
