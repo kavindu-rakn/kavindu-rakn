@@ -1,15 +1,12 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
+import BlueprintHero from '../components/BlueprintHero.astro';
 import { SITE } from '../consts';
 
 /*
- * PHASE 1 SCAFFOLD ONLY.
- *
- * This page exists to prove the pipeline end to end: Tailwind 4 compiles, the
- * semantic tokens invert on prefers-color-scheme, the Layout emits correct SEO,
- * and the `work` collection loads and type-checks. Phase 3 replaces it with the
- * real grid, and Phase 2 mounts the 3D island above it.
+ * Phase 2: the hero is real. Everything below it is still scaffolding — Phase 3
+ * replaces the list with the brutalist project grid.
  */
 const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
   (a, b) => a.data.order - b.data.order,
@@ -17,23 +14,13 @@ const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
 ---
 
 <Layout title={SITE.name}>
-  <div class="blueprint-grid min-h-dvh">
-    <div class="mx-auto max-w-5xl px-6 py-24">
-      <p class="annotation">Phase 1 · scaffold verification</p>
+  <BlueprintHero />
 
-      <h1
-        class="mt-6 font-display text-5xl leading-[0.95] font-bold tracking-tight sm:text-7xl"
-      >
-        {SITE.name}
-      </h1>
-      <p class="mt-4 max-w-xl text-lg text-figure-muted">
-        {SITE.role} · {SITE.location}
-      </p>
+  <section class="border-t border-rule">
+    <div class="mx-auto max-w-6xl px-6 py-24">
+      <p class="annotation">Phase 3 · Project grid goes here</p>
 
-      <hr class="my-12 border-0 border-t border-rule" />
-
-      <p class="annotation">Work collection · {work.length} loaded</p>
-      <ul class="mt-6 space-y-6">
+      <ul class="mt-8 space-y-8">
         {
           work.map((entry) => (
             <li class="border-l-2 border-accent pl-4">
@@ -51,5 +38,5 @@ const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
         }
       </ul>
     </div>
-  </div>
+  </section>
 </Layout>
