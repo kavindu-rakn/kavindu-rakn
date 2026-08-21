@@ -51,10 +51,8 @@ jobs:
           SNAKE_GROWTH_INTERVAL: "18" # +1 segment per 18 contributions eaten
         run: |
           ls -la dist
-          node scripts/respin-snake.mjs dist/snake.svg \
-            --out=out/snake.svg --bar='#000000' --track='#ebedf0'
-          node scripts/respin-snake.mjs dist/snake-dark.svg \
-            --out=out/snake-dark.svg --bar='#ffffff' --track='#161b22'
+          node scripts/respin-snake.mjs dist/snake.svg      --out=out/snake.svg
+          node scripts/respin-snake.mjs dist/snake-dark.svg --out=out/snake-dark.svg
           ls -la out
 
       - name: Publish to output branch

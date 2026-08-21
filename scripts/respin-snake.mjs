@@ -4,7 +4,7 @@
  *
  * snk fetches the contribution calendar and lays out the grid, which it does
  * well, but its animation is fixed: constant 4-segment snake, fixed speed, and
- * a progress bar that fills left to right. It exposes no options for any of it.
+ * a progress bar. It exposes no options for any of it.
  *
  * So snk stays the data source. This script reads the grid and the per-cell
  * contribution levels straight back out of the SVG it produced, re-simulates
@@ -14,10 +14,9 @@
  *     so the head can never enter it
  *   - the snake grows one segment per GROWTH contributions eaten
  *   - speed is set by STEP (ms per cell)
- *   - the progress bar fills from the centre outwards
+ *   - snk's progress bar is dropped, and the viewBox tightened to match
  *
  * usage: node scripts/respin-snake.mjs <file.svg> [--out=<file.svg>]
- *                                      [--bar=#000000] [--track=#ebedf0]
  *                                      [--step=150] [--length=4] [--growth=18]
  *
  * --out defaults to overwriting the input. Prefer pointing it elsewhere: snk is
@@ -33,7 +32,7 @@ import { dirname } from "node:path";
 const args = process.argv.slice(2);
 const file = args.find((a) => !a.startsWith("--"));
 if (!file) {
-  console.error("usage: respin-snake.mjs <file.svg> [--bar=#000] [--step=85] ...");
+  console.error("usage: respin-snake.mjs <file.svg> [--out=...] [--step=150] ...");
   process.exit(1);
 }
 
@@ -47,11 +46,10 @@ const opt = (name, fallback) => {
 const STEP = Number(opt("step", process.env.SNAKE_STEP_MS ?? 150));
 const INITIAL = Number(opt("length", process.env.SNAKE_INITIAL_LENGTH ?? 4));
 const GROWTH = Number(opt("growth", process.env.SNAKE_GROWTH_INTERVAL ?? 18));
-const BAR = opt("bar", "#000000");
-const TRACK = opt("track", "#ebedf0");
 const OUT = opt("out", file);
 
-const PITCH = 16;
+const PITCH = 16; // cell-to-cell spacing
+const CELL = 12; // drawn size of a contribution square
 const key = (p) => `${p.c},${p.r}`;
 
 // ── read the grid back out of snk's output ──────────────────────────────────
@@ -85,9 +83,6 @@ for (const cell of cells) {
 }
 const cols = Math.max(...cells.map((c) => c.c)) + 1;
 const rows = Math.max(...cells.map((c) => c.r)) + 1;
-
-// keep snk's bar geometry so the layout does not shift
-const barY = Number(src.match(/class="u u\w+"[^>]*y="([\d.]+)"/)?.[1] ?? minY + rows * PITCH + 34);
 
 // ── simulate ────────────────────────────────────────────────────────────────
 
@@ -195,10 +190,19 @@ const steps = path.length - 1;
 const duration = Math.round(path.length * STEP);
 const pct = (t) => ((t / steps) * 100).toFixed(3).replace(/\.?0+$/, "");
 
-/** Where segment `i` sits at step `t`. Segments not yet grown into ride on the tail. */
+/**
+ * Top-left of segment `i` at step `t`, in user units.
+ *
+ * A segment is PITCH-sized with the drawn shape inset inside it, so its centre
+ * lands at translate + PITCH/2. A contribution square is CELL wide, so its
+ * centre lands at minX + c*PITCH + CELL/2. Shift by the difference or the snake
+ * rides 2px low and right of the grid.
+ */
+const OFFSET = CELL / 2 - PITCH / 2;
 const segmentAt = (i, t) => {
   const len = lengthAfter(eatenBy[t] ?? 0);
-  return path[Math.max(0, t - Math.min(i, len - 1))];
+  const p = path[Math.max(0, t - Math.min(i, len - 1))];
+  return { x: minX + p.c * PITCH + OFFSET, y: minY + p.r * PITCH + OFFSET };
 };
 
 /** Drop points that sit on a straight run — CSS interpolates those exactly. */
@@ -223,9 +227,9 @@ function condense(points) {
 
 const css = [];
 css.push(
-  `:root{${rootVars};--cbar:${BAR};--cbt:${TRACK}}`,
+  `:root{${rootVars}}`,
   `.c{shape-rendering:geometricPrecision;fill:var(--ce);stroke-width:1px;stroke:var(--cb);` +
-    `animation:none ${duration}ms linear infinite;width:12px;height:12px}`,
+    `animation:none ${duration}ms linear infinite;width:${CELL}px;height:${CELL}px}`,
 );
 
 // cells: hold their contribution colour, then snap to empty the moment they are eaten
@@ -257,10 +261,7 @@ css.push(
 );
 for (let i = 0; i < maxLen; i++) {
   const points = condense(
-    Array.from({ length: path.length }, (_, t) => {
-      const p = segmentAt(i, t);
-      return { t, x: minX + p.c * PITCH, y: minY + p.r * PITCH };
-    }),
+    Array.from({ length: path.length }, (_, t) => ({ t, ...segmentAt(i, t) })),
   );
   const frames = points
     .map((p) => `${pct(p.t)}%{transform:translate(${p.x}px,${p.y}px)}`)
@@ -268,33 +269,12 @@ for (let i = 0; i < maxLen; i++) {
   css.push(`@keyframes s${i}{${frames}}`, `.s.s${i}{animation-name:s${i}}`);
 }
 
-// progress bar, filling out from the centre
-const barX = minX;
-const barW = cols * PITCH - (PITCH - 12);
-const barCentre = barX + barW / 2;
-const fillFrames = [`0%{transform:scaleX(0)}`];
-for (const [step] of eatenAt) {
-  const done = eatenBy[step] / totalFood;
-  fillFrames.push(`${pct(step)}%{transform:scaleX(${done.toFixed(4)})}`);
-}
-fillFrames.push(`100%{transform:scaleX(1)}`);
-css.push(
-  `.ut{fill:var(--cbt)}`,
-  `.uf{fill:var(--cbar);transform-origin:${barCentre}px 0;transform:scaleX(0);` +
-    `animation:uf ${duration}ms linear infinite}`,
-  `@keyframes uf{${fillFrames.join("")}}`,
-);
-
 // elements
 const body = [];
 for (const cell of cells) {
   const cls = cellClass.get(key(cell));
   body.push(`<rect class="c${cls ? ` ${cls}` : ""}" x="${cell.x}" y="${cell.y}" rx="2" ry="2"/>`);
 }
-body.push(
-  `<rect class="ut" x="${barX}" y="${barY}" width="${barW}" height="12"/>`,
-  `<rect class="uf" x="${barX}" y="${barY}" width="${barW}" height="12"/>`,
-);
 for (let i = 0; i < maxLen; i++) {
   const size = maxLen > 1 ? 14.4 - (i / (maxLen - 1)) * 5.4 : 14.4;
   const inset = ((PITCH - size) / 2).toFixed(1);
@@ -305,8 +285,22 @@ for (let i = 0; i < maxLen; i++) {
   );
 }
 
+// snk sized the viewBox for a progress bar that is no longer drawn, and for a
+// snake that dropped in from above. This one enters from the left, so the grid
+// is all that needs to fit, padded evenly.
+const vb = svgTag.match(/viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"/);
+const PAD = 10; // breathing room above and below the grid
+const gridH = (rows - 1) * PITCH + CELL;
+const vbX = vb ? Number(vb[1]) : -PITCH;
+const vbW = vb ? Number(vb[3]) : cols * PITCH + PITCH;
+const vbH = gridH + PAD * 2;
+const vbY = minY - PAD;
+const openTag =
+  `<svg viewBox="${vbX} ${vbY} ${vbW} ${vbH}" width="${vbW}" height="${vbH}" ` +
+  `xmlns="http://www.w3.org/2000/svg">`;
+
 const out =
-  svgTag +
+  openTag +
   `<desc>Generated with https://github.com/Platane/snk, re-spun by scripts/respin-snake.mjs</desc>` +
   `<style>${css.join("")}</style>` +
   body.join("") +
@@ -322,5 +316,5 @@ console.log(
     `  snake          ${INITIAL} -> ${maxLen} segments (+1 per ${GROWTH} eaten)\n` +
     `  self-collisions ${collisions}\n` +
     `  unreached      ${unreached}\n` +
-    `  bar            ${BAR}, centre-out from ${barCentre}px`,
+    `  viewBox        ${vbX} ${vbY} ${vbW} ${vbH}  (was ${vb ? vb.slice(1, 5).join(" ") : "?"})`,
 );
