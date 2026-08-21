@@ -16,11 +16,19 @@
  *   - speed is set by STEP (ms per cell)
  *   - the progress bar fills from the centre outwards
  *
- * usage: node scripts/respin-snake.mjs <file.svg> [--bar=#000000] [--track=#ebedf0]
- *                                      [--step=85] [--length=4] [--growth=18]
+ * usage: node scripts/respin-snake.mjs <file.svg> [--out=<file.svg>]
+ *                                      [--bar=#000000] [--track=#ebedf0]
+ *                                      [--step=150] [--length=4] [--growth=18]
+ *
+ * --out defaults to overwriting the input. Prefer pointing it elsewhere: snk is
+ * a Docker action running as root, so the files it leaves in dist/ are
+ * root-owned and a normal runner step cannot write over them. Reading them is
+ * fine. Writing to a fresh directory also keeps this re-runnable, since a
+ * re-spun SVG no longer carries the cell classes this parses.
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 
 const args = process.argv.slice(2);
 const file = args.find((a) => !a.startsWith("--"));
@@ -41,6 +49,7 @@ const INITIAL = Number(opt("length", process.env.SNAKE_INITIAL_LENGTH ?? 4));
 const GROWTH = Number(opt("growth", process.env.SNAKE_GROWTH_INTERVAL ?? 18));
 const BAR = opt("bar", "#000000");
 const TRACK = opt("track", "#ebedf0");
+const OUT = opt("out", file);
 
 const PITCH = 16;
 const key = (p) => `${p.c},${p.r}`;
@@ -303,10 +312,11 @@ const out =
   body.join("") +
   `</svg>`;
 
-writeFileSync(file, out);
+mkdirSync(dirname(OUT), { recursive: true });
+writeFileSync(OUT, out);
 
 console.log(
-  `${file}\n` +
+  `${file} -> ${OUT}\n` +
     `  grid           ${cols}x${rows}, ${totalFood} contribution cells\n` +
     `  path           ${path.length} steps, ${duration}ms loop (${STEP}ms/cell)\n` +
     `  snake          ${INITIAL} -> ${maxLen} segments (+1 per ${GROWTH} eaten)\n` +
