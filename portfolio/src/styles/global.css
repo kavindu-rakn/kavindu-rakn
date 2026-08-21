@@ -1,0 +1,170 @@
+@import 'tailwindcss';
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * BLUEPRINT DESIGN TOKENS
+ *
+ * Two grounds: drafting paper (light) and cyanotype (dark).
+ *
+ * Theming is done entirely with `prefers-color-scheme` and zero JavaScript.
+ * There is no theme toggle, therefore no flash-of-wrong-theme, no inline
+ * blocking script, and nothing to hydrate. Tailwind 4's default `dark:`
+ * variant is already `@media (prefers-color-scheme: dark)`, so both the
+ * semantic tokens below and ordinary `dark:` utilities work.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+@theme {
+  /* Cyanotype blues — the blueprint itself */
+  --color-blueprint-950: #04101b;
+  --color-blueprint-900: #071a2b;
+  --color-blueprint-800: #0c2942;
+  --color-blueprint-700: #14405f;
+  --color-blueprint-600: #1d5c86;
+  --color-blueprint-500: #2b7fb0;
+  --color-blueprint-400: #4ba3d4;
+  --color-blueprint-300: #7cc6ec;
+  --color-blueprint-200: #b3ddf5;
+
+  /* Drafting paper + graphite */
+  --color-paper-50: #fcfbf8;
+  --color-paper-100: #f5f3ec;
+  --color-paper-200: #e8e4d9;
+  --color-paper-300: #d5cfc0;
+
+  --color-ink-900: #101109;
+  --color-ink-800: #1e2018;
+  --color-ink-700: #33362b;
+  --color-ink-500: #5d6152;
+  --color-ink-400: #7d8172;
+  --color-ink-300: #a4a899;
+
+  /*
+   * Signal red. Reserved exclusively for unresolved placeholders
+   * (BRIEF §5 — they must be impossible to ship unfilled).
+   * Do not use this colour decoratively; it would dilute the alarm.
+   */
+  --color-signal-500: #ff3b1f;
+  --color-signal-600: #d92507;
+
+  /*
+   * Semantic tokens. These are re-declared under the dark media query below,
+   * so `bg-ground` / `text-figure` adapt with no `dark:` class at the callsite.
+   */
+  --color-ground: #fcfbf8;
+  --color-ground-raised: #f5f3ec;
+  --color-figure: #101109;
+  --color-figure-muted: #5d6152;
+  --color-rule: #d5cfc0;
+  --color-accent: #1d5c86;
+
+  /*
+   * Typography. Phase 3 ("Brutalist Typography") replaces --font-display with a
+   * real face; everything downstream reads the token, so nothing else changes.
+   * System stacks until then, because the LCP element is text and a blocking
+   * webfont would be the single easiest way to miss the performance budget.
+   */
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas,
+    'Liberation Mono', monospace;
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display:
+    system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-ground: #04101b;
+    --color-ground-raised: #071a2b;
+    --color-figure: #b3ddf5;
+    --color-figure-muted: #4ba3d4;
+    --color-rule: #14405f;
+    --color-accent: #7cc6ec;
+  }
+}
+
+@layer base {
+  html {
+    /* Native form controls, scrollbars and UA surfaces follow the ground. */
+    color-scheme: light dark;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ground);
+    color: var(--color-figure);
+    font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Visible focus is non-negotiable; the blueprint accent is high-contrast on both grounds. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-ground);
+  }
+}
+
+@layer components {
+  /*
+   * The drafting grid. Pure CSS, no image request, no JavaScript.
+   * Used as the resting surface behind the hero and as the backdrop for the
+   * static-SVG fallback, so the low-power path looks designed rather than broken.
+   */
+  .blueprint-grid {
+    background-image:
+      linear-gradient(to right, var(--color-rule) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-rule) 1px, transparent 1px);
+    background-size: 2rem 2rem;
+    background-position: center center;
+  }
+
+  /* Monospace construction annotation, as used on the blueprint labels. */
+  .annotation {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-figure-muted);
+  }
+
+  /* Skip link — off-screen until focused. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+  }
+  .skip-link:focus {
+    left: 0.5rem;
+    top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--color-ground);
+    color: var(--color-figure);
+    outline: 2px solid var(--color-accent);
+  }
+}
+
+/*
+ * BRIEF §2: "Respect prefers-reduced-motion: reduce. Same static fallback, no
+ * exceptions, no 'reduced but still moving' compromise."
+ *
+ * This is the site-wide CSS guard. The 3D island enforces the same preference
+ * independently in JS (Phase 2) and never boots the render loop at all.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
