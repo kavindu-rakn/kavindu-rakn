@@ -21,7 +21,7 @@
 </picture>
 </div>
 
-<br><br>
+<br>
 
 <div align="center">
 <a href="mailto:kavindu.rakn@gmail.com"><img alt="Email kavindu.rakn@gmail.com" src="https://img.shields.io/badge/EMAIL-0D1117?style=for-the-badge&logo=gmail&logoColor=FFFFFF"></a>
@@ -29,4 +29,4 @@
 <a href="LINKEDIN_URL"><img alt="LinkedIn" src="https://img.shields.io/badge/LINKEDIN-0D1117?style=for-the-badge&logoColor=FFFFFF"></a>
 </div>
 
-<br><br>
+<br>
