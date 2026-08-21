@@ -42,19 +42,25 @@ jobs:
             dist/snake.svg?palette=github-light
             dist/snake-dark.svg?palette=github-dark
 
+      # snk runs as root in Docker, so everything in dist/ is root-owned and a
+      # normal step cannot write over it. Read from dist/, write to out/.
       - name: Re-spin the animation
         env:
           SNAKE_STEP_MS: "150" # ms per cell; snk's own pace is ~100
           SNAKE_INITIAL_LENGTH: "4"
           SNAKE_GROWTH_INTERVAL: "18" # +1 segment per 18 contributions eaten
         run: |
-          node scripts/respin-snake.mjs dist/snake.svg      --bar='#000000' --track='#ebedf0'
-          node scripts/respin-snake.mjs dist/snake-dark.svg --bar='#ffffff' --track='#161b22'
+          ls -la dist
+          node scripts/respin-snake.mjs dist/snake.svg \
+            --out=out/snake.svg --bar='#000000' --track='#ebedf0'
+          node scripts/respin-snake.mjs dist/snake-dark.svg \
+            --out=out/snake-dark.svg --bar='#ffffff' --track='#161b22'
+          ls -la out
 
       - name: Publish to output branch
         uses: crazy-max/ghaction-github-pages@v4
         with:
           target_branch: output
-          build_dir: dist
+          build_dir: out
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
