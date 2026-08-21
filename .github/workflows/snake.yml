@@ -1,6 +1,11 @@
-# Generates the contribution-grid snake animation referenced in section 04 of
-# README.md. Writes snake.svg (light) and snake-dark.svg (dark) to the `output`
-# branch, which the README loads via raw.githubusercontent.com.
+# Generates the contribution-grid snake animation in README.md.
+#
+# snk fetches the contribution calendar and draws the grid; respin-snake.mjs
+# then replaces its animation with a slower, self-avoiding, growing snake and a
+# centre-out progress bar (snk exposes no options for any of that).
+#
+# Writes snake.svg (light) and snake-dark.svg (dark) to the `output` branch,
+# which the README loads via raw.githubusercontent.com.
 #
 # Run it once by hand after pushing: Actions -> snake -> Run workflow.
 # Until it has run at least once the `output` branch does not exist and the
@@ -22,6 +27,12 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Generate snake from contribution grid
         uses: Platane/snk@v3
         id: snake
@@ -30,6 +41,15 @@ jobs:
           outputs: |
             dist/snake.svg?palette=github-light
             dist/snake-dark.svg?palette=github-dark
+
+      - name: Re-spin the animation
+        env:
+          SNAKE_STEP_MS: "150" # ms per cell; snk's own pace is ~100
+          SNAKE_INITIAL_LENGTH: "4"
+          SNAKE_GROWTH_INTERVAL: "18" # +1 segment per 18 contributions eaten
+        run: |
+          node scripts/respin-snake.mjs dist/snake.svg      --bar='#000000' --track='#ebedf0'
+          node scripts/respin-snake.mjs dist/snake-dark.svg --bar='#ffffff' --track='#161b22'
 
       - name: Publish to output branch
         uses: crazy-max/ghaction-github-pages@v4
