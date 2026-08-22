@@ -7,9 +7,11 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build",
+    "build": "astro check && astro build && node scripts/lint-content.mjs",
     "build:fast": "astro build",
     "check": "astro check",
+    "lint:content": "node scripts/lint-content.mjs",
+    "check:ship": "astro check && astro build && node scripts/lint-content.mjs --strict",
     "preview": "astro preview",
     "astro": "astro"
   },

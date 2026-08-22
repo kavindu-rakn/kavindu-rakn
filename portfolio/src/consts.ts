@@ -57,6 +57,13 @@ export const PLACEHOLDERS = {
     action: 'Paste the Vercel deployment URL. Repo is private — do not link github.com.',
     value: null,
   },
+  talenthubStack: {
+    token: 'TALENTHUB_STACK',
+    label: 'TalentHub technology stack',
+    action:
+      'CONTEXT §4 specifies a stack for every project except TalentHub. Confirm the real one — do not let it be guessed.',
+    value: null,
+  },
   linkedin: {
     token: 'LINKEDIN_URL',
     label: 'LinkedIn profile',

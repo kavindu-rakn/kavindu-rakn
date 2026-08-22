@@ -37,8 +37,12 @@ const linkable = JSON.stringify(studies.map((entry) => entry.id));
       <!-- Text first in DOM order. This is the LCP element. -->
       <header class="shrink-0">
         <p class="annotation">Sheet 01 · Schema tree · Exploded assembly</p>
+        {/*
+          Weight 800, not 700: only 400/600/800 are shipped, so `font-bold`
+          would make the browser synthesise a weight that does not exist.
+        */}
         <h1
-          class="mt-5 font-display text-[clamp(2.5rem,7vw,5.25rem)] leading-[0.92] font-bold tracking-tight"
+          class="mt-5 font-display text-[clamp(2.5rem,7vw,5.25rem)] leading-[0.92] font-extrabold tracking-[-0.025em]"
         >
           {SITE.name}
         </h1>

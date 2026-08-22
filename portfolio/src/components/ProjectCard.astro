@@ -1,0 +1,149 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import TechStack from './TechStack.astro';
+import Placeholder from './Placeholder.astro';
+
+/*
+ * One project, as a drawing sheet: index number and status in the header rule,
+ * the name set large and blunt, then the verified facts.
+ *
+ * Every string rendered here comes from the content file. Nothing is computed,
+ * summarised or embellished at render time — the guardrails live in the content
+ * schema and in `npm run lint:content`, and this component must not route
+ * around them.
+ */
+
+interface Props {
+  entry: CollectionEntry<'work'>;
+  index: number;
+  /** The technical centrepiece spans the grid and sets larger. */
+  feature?: boolean;
+}
+
+const { entry, index, feature = false } = Astro.props;
+const d = entry.data;
+
+const STATUS_LABEL = {
+  'in-production': 'In production',
+  'deployed-in-development': 'Deployed · in active development',
+  live: 'Live',
+} as const;
+
+/*
+ * The literal tokens the brief specified, mapped to the registry so the
+ * rendered placeholder carries both the token and the action needed to fill it.
+ */
+const LIVE_PLACEHOLDER_KEYS = {
+  LIVE_URL_SCHEMASHIFT: 'schemashiftLive',
+  LIVE_URL_TAMARIND: 'tamarindLive',
+} as const;
+type LiveToken = keyof typeof LIVE_PLACEHOLDER_KEYS;
+
+const liveKey =
+  d.liveUrlPlaceholder && d.liveUrlPlaceholder in LIVE_PLACEHOLDER_KEYS
+    ? LIVE_PLACEHOLDER_KEYS[d.liveUrlPlaceholder as LiveToken]
+    : null;
+---
+
+<article
+  class:list={[
+    'flex flex-col border-2 border-figure bg-ground p-6 sm:p-8',
+    feature && 'md:col-span-2',
+  ]}
+>
+  <header class="flex items-baseline justify-between gap-4 border-b border-rule pb-3">
+    <span class="annotation">{String(index).padStart(2, '0')}</span>
+    <span class="annotation">{STATUS_LABEL[d.status]}</span>
+  </header>
+
+  <h3
+    class:list={[
+      'mt-6 font-display font-extrabold uppercase leading-[0.88] tracking-[-0.025em]',
+      feature ? 'text-5xl sm:text-7xl' : 'text-3xl sm:text-4xl',
+    ]}
+  >
+    {d.title}
+  </h3>
+
+  {
+    d.tagline && (
+      <p class:list={['mt-4 text-figure-muted', feature ? 'text-lg' : 'text-base']}>
+        {d.tagline}
+      </p>
+    )
+  }
+
+  {
+    d.highlights && (
+      <ul class="mt-6 space-y-2.5">
+        {d.highlights.map((point) => (
+          <li class="flex gap-3 text-sm leading-relaxed">
+            <span class="mt-[0.6em] h-px w-3 shrink-0 bg-accent" aria-hidden="true" />
+            <span>{point}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {/* Pushes the stack and links to the card foot so a grid row stays aligned. */}
+  <div class="mt-auto pt-6">
+    <TechStack items={d.techStack} placeholderToken={d.techStackPlaceholder} />
+  </div>
+
+  <footer class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-rule pt-4">
+    {
+      d.liveUrl && (
+        <a class="project-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
+          Live site
+        </a>
+      )
+    }
+
+    {/* Unfilled Vercel URL — impossible to ship silently. */}
+    {liveKey && !d.liveUrl && <Placeholder of={liveKey} token={d.liveUrlPlaceholder} />}
+
+    {
+      d.githubUrl && (
+        <a class="project-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
+          Source
+        </a>
+      )
+    }
+
+    {/*
+      CONTEXT §1.1 — a private repository must not be linked to github.com. A
+      logged-out visitor gets a 404, which does not read as "private"; it reads
+      as "fabricated". The content schema fails the build if such a link is added.
+    */}
+    {d.sourcePrivate && <span class="annotation">Source private · available on request</span>}
+
+    {/* CONTEXT §3.3 — employment, not a personal repo. No link exists. */}
+    {d.employment && <span class="annotation">Internal platform · no public repository</span>}
+  </footer>
+
+  {/* PHASE 4 adds the "Read the case study" link once /work/[slug] exists. */}
+</article>
+
+<style>
+  .project-link {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+
+  .project-link::after {
+    content: ' ↗';
+    text-decoration: none;
+  }
+
+  .project-link:hover {
+    color: var(--color-accent);
+  }
+</style>
