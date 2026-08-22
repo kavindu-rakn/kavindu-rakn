@@ -1,0 +1,36 @@
+---
+import Placeholder from './Placeholder.astro';
+
+/*
+ * Technology badges.
+ *
+ * ORDER IS LOAD-BEARING. CONTEXT §5: "Ordered by how central it is to his
+ * actual work, not alphabetically." The array is rendered exactly as authored —
+ * this component must never sort, dedupe or reorder.
+ *
+ * There is no mobile development anywhere in this stack. No React Native, no
+ * Flutter, no Swift, no Kotlin. That gap is stated openly and is not to be
+ * papered over with a badge.
+ */
+
+interface Props {
+  items?: readonly string[];
+  placeholderToken?: string;
+}
+
+const { items, placeholderToken } = Astro.props;
+---
+
+{
+  items ? (
+    <ul class="flex flex-wrap gap-x-2 gap-y-2">
+      {items.map((tech) => (
+        <li class="border border-rule px-2 py-1 font-mono text-[0.6875rem] tracking-[0.12em] text-figure-muted uppercase">
+          {tech}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <Placeholder of="talenthubStack" token={placeholderToken} />
+  )
+}

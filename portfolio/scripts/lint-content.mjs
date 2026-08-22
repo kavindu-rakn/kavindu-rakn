@@ -1,0 +1,165 @@
+/**
+ * Content guard.
+ *
+ * The schema in src/content.config.ts makes bad *links* impossible. It cannot
+ * see prose. This does — it reads the built HTML, which is what actually ships,
+ * and fails the build on the language and numbers the brief rules out.
+ *
+ *   node scripts/lint-content.mjs            banned content only (runs in build)
+ *   node scripts/lint-content.mjs --strict   also fails on unfilled placeholders
+ *
+ * The non-strict pass must always be green. The strict pass is the pre-deploy
+ * gate: during development the placeholders are supposed to be there and loud.
+ */
+
+import { readFileSync, globSync } from 'node:fs';
+import { join } from 'node:path';
+
+const STRICT = process.argv.includes('--strict');
+const DIST = join(process.cwd(), 'dist');
+
+/** Strip comments, script and style blocks, then all tags, leaving body text. */
+function visibleText(html) {
+  return html
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&#\d+;/g, ' ')
+    .replace(/\s+/g, ' ');
+}
+
+/*
+ * CONTEXT §3 — NUMBERS THAT MUST NOT APPEAR.
+ * "Numbers that describe the product are good. Numbers that describe him
+ * typing are not."
+ */
+const BANNED = [
+  {
+    rule: 'lines-of-code figure',
+    // The specific figures the user rejected, plus the general forms.
+    pattern:
+      /([+−-]\s*)?\b(36,853|22,892|32,573|84,000|6,386)\b|\blines of code\b|\bLOC\b|\bSLOC\b/gi,
+    why: 'Line count is a discredited metric and reads as padding.',
+  },
+  {
+    rule: 'percentage',
+    pattern: /\b\d+(\.\d+)?\s?%/g,
+    why: 'Raw counts only — "207 of 652", never a derived percentage.',
+  },
+  {
+    rule: 'self-description language',
+    pattern: /\b(passionate|hard[\s-]?working|team player|journey)\b/gi,
+    why: 'Explicitly rejected. The facts carry it.',
+  },
+  {
+    rule: 'false controller count',
+    pattern: /\b31\s+(backend\s+)?controllers\b/gi,
+    why: 'False — 33 controllers exist, five import the module, plus four services.',
+  },
+];
+
+/*
+ * A positive assertion, not a prohibition: the corrected phrasing must be
+ * present, so the false figure cannot be quietly dropped rather than fixed.
+ */
+const REQUIRED = [
+  {
+    rule: 'working-days module consumers',
+    pattern: /five controllers and four services/i,
+    where: 'index.html',
+    why: 'CONTEXT §2 requires the corrected consumer count to be stated explicitly.',
+  },
+];
+
+/** Tokens that must not survive to production. */
+const PLACEHOLDER_TOKENS = [
+  'LIVE_URL_SCHEMASHIFT',
+  'LIVE_URL_TAMARIND',
+  'LINKEDIN_URL',
+  'TALENTHUB_STACK',
+  'OG_IMAGE_DEFAULT',
+  'SITE_DOMAIN',
+];
+
+let pages;
+try {
+  pages = globSync('**/*.html', { cwd: DIST }).map((p) => join(DIST, p));
+} catch {
+  pages = [];
+}
+
+if (pages.length === 0) {
+  console.error('lint:content — no HTML found in dist/. Run `astro build` first.');
+  process.exit(1);
+}
+
+const failures = [];
+const placeholderHits = [];
+const corpus = new Map();
+
+for (const file of pages) {
+  const text = visibleText(readFileSync(file, 'utf8'));
+  corpus.set(file, text);
+
+  for (const { rule, pattern, why } of BANNED) {
+    for (const match of text.matchAll(pattern)) {
+      const start = Math.max(0, match.index - 50);
+      failures.push({
+        file,
+        rule,
+        why,
+        found: match[0].trim(),
+        context: text.slice(start, match.index + match[0].length + 50).trim(),
+      });
+    }
+  }
+
+  for (const token of PLACEHOLDER_TOKENS) {
+    if (text.includes(token)) placeholderHits.push({ file, token });
+  }
+}
+
+for (const { rule, pattern, where, why } of REQUIRED) {
+  const target = [...corpus].find(([file]) => file.endsWith(where));
+  if (!target || !pattern.test(target[1])) {
+    failures.push({
+      file: where,
+      rule: `MISSING — ${rule}`,
+      why,
+      found: '(absent)',
+      context: 'Required phrasing did not appear in the built page.',
+    });
+  }
+}
+
+const rel = (f) => f.replace(process.cwd(), '').replace(/^[\\/]/, '');
+
+if (failures.length > 0) {
+  console.error(`\nlint:content — ${failures.length} violation(s)\n`);
+  for (const f of failures) {
+    console.error(`  ${rel(f.file)}`);
+    console.error(`    rule    ${f.rule}`);
+    console.error(`    found   ${JSON.stringify(f.found)}`);
+    console.error(`    why     ${f.why}`);
+    console.error(`    context …${f.context}…\n`);
+  }
+  process.exit(1);
+}
+
+if (placeholderHits.length > 0) {
+  const unique = [...new Set(placeholderHits.map((h) => h.token))];
+  if (STRICT) {
+    console.error(`\nlint:content --strict — ${unique.length} unfilled placeholder(s)\n`);
+    for (const token of unique) console.error(`  ${token}`);
+    console.error('\nSupply these before deploying. See PLACEHOLDERS in src/consts.ts.\n');
+    process.exit(1);
+  }
+  console.log(
+    `lint:content — clean. ${unique.length} placeholder(s) still unfilled: ${unique.join(', ')}`,
+  );
+} else {
+  console.log('lint:content — clean. No placeholders outstanding.');
+}

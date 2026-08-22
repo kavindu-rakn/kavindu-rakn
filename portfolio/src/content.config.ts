@@ -34,8 +34,15 @@ const work = defineCollection({
          * Ordered exactly as CONTEXT §4 specifies — by centrality to the work,
          * never alphabetically. Do not reorder. Do not add a technology he does
          * not use; there is no mobile development anywhere in this stack.
+         *
+         * Optional because CONTEXT specifies a stack for five of the six
+         * projects but NOT for TalentHub. Rather than infer one, that entry
+         * carries `techStackPlaceholder` and renders as an unfilled placeholder.
          */
-        techStack: z.array(z.string()).nonempty(),
+        techStack: z.array(z.string()).nonempty().optional(),
+
+        /** Token shown when the real stack has not been verified yet. */
+        techStackPlaceholder: z.string().optional(),
 
         liveUrl: z.url().optional(),
 
@@ -107,6 +114,25 @@ const work = defineCollection({
             message:
               'A private project needs a live URL to be verifiable at all. Supply `liveUrl`, or ' +
               'carry `liveUrlPlaceholder` so the unfilled state is visually obvious.',
+          });
+        }
+
+        if (!data.techStack && !data.techStackPlaceholder) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['techStack'],
+            message:
+              'Every entry needs either a verified `techStack` ordered as CONTEXT §4 specifies, ' +
+              'or a `techStackPlaceholder` token. Never infer a stack the context file does not state.',
+          });
+        }
+
+        if (data.techStack && data.techStackPlaceholder) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['techStackPlaceholder'],
+            message:
+              'Remove `techStackPlaceholder` once a verified `techStack` is present.',
           });
         }
 

@@ -2,11 +2,12 @@
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import BlueprintHero from '../components/BlueprintHero.astro';
+import ProjectCard from '../components/ProjectCard.astro';
 import { SITE } from '../consts';
 
 /*
- * Phase 2: the hero is real. Everything below it is still scaffolding — Phase 3
- * replaces the list with the brutalist project grid.
+ * The six entries here are the same six leaves as the hero's schema tree, in
+ * the same order. That is deliberate: the hero is a diagram of this grid.
  */
 const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
   (a, b) => a.data.order - b.data.order,
@@ -16,27 +17,28 @@ const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
 <Layout title={SITE.name}>
   <BlueprintHero />
 
-  <section class="border-t border-rule">
-    <div class="mx-auto max-w-6xl px-6 py-24">
-      <p class="annotation">Phase 3 · Project grid goes here</p>
+  <section id="work" class="border-t-2 border-figure">
+    <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+      <header
+        class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b-2 border-figure pb-4"
+      >
+        <h2
+          class="font-display text-2xl font-extrabold tracking-[-0.02em] uppercase sm:text-3xl"
+        >
+          Selected work
+        </h2>
+        <p class="annotation">
+          {work.length} sheets · ordered by weight, not by date
+        </p>
+      </header>
 
-      <ul class="mt-8 space-y-8">
+      <div class="mt-10 grid gap-6 md:grid-cols-2">
         {
-          work.map((entry) => (
-            <li class="border-l-2 border-accent pl-4">
-              <h2 class="font-display text-2xl font-semibold">{entry.data.title}</h2>
-              {entry.data.tagline && (
-                <p class="mt-1 text-figure-muted">{entry.data.tagline}</p>
-              )}
-              <ul class="mt-3 flex flex-wrap gap-2">
-                {entry.data.techStack.map((tech) => (
-                  <li class="annotation border border-rule px-2 py-1">{tech}</li>
-                ))}
-              </ul>
-            </li>
+          work.map((entry, i) => (
+            <ProjectCard entry={entry} index={i + 1} feature={i === 0} />
           ))
         }
-      </ul>
+      </div>
     </div>
   </section>
 </Layout>

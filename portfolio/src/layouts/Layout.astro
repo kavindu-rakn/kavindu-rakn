@@ -1,4 +1,5 @@
 ---
+import { Font } from 'astro:assets';
 import { SITE } from '../consts';
 import '../styles/global.css';
 
@@ -80,6 +81,10 @@ const personSchema = {
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {/* Only the display face preloads — it renders the LCP headline. */}
+    <Font cssVariable="--font-archivo" preload />
+    <Font cssVariable="--font-plex-mono" />
 
     {/* Both grounds declared so the browser chrome matches the page in either scheme. */}
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fcfbf8" />
