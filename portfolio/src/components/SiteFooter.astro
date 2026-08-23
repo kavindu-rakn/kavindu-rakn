@@ -1,0 +1,77 @@
+---
+import { SITE, PLACEHOLDERS } from '../consts';
+import Placeholder from './Placeholder.astro';
+---
+
+<footer class="border-t-2 border-figure">
+  <div class="mx-auto max-w-6xl px-6 py-14">
+    <div class="grid gap-10 sm:grid-cols-2">
+      <div>
+        <p class="annotation">Contact</p>
+        <ul class="mt-4 space-y-2">
+          <li>
+            <a class="footer-link" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+          </li>
+          <li>
+            <a
+              class="footer-link"
+              href={SITE.github}
+              rel="noopener noreferrer"
+              target="_blank">github.com/kavindu-rakn</a
+            >
+          </li>
+        </ul>
+
+        {/* BRIEF §5.5 — the profile does not exist yet. Do not invent a URL. */}
+        {
+          PLACEHOLDERS.linkedin.value === null ? (
+            <div class="mt-4">
+              <Placeholder of="linkedin" />
+            </div>
+          ) : (
+            <a class="footer-link mt-4 inline-block" href={PLACEHOLDERS.linkedin.value}>
+              LinkedIn
+            </a>
+          )
+        }
+      </div>
+
+      <div>
+        <p class="annotation">Detail</p>
+        <dl class="mt-4 space-y-2 text-sm text-figure-muted">
+          <div class="flex gap-3">
+            <dt class="annotation w-20 shrink-0 pt-0.5">Based</dt>
+            <dd>{SITE.location}</dd>
+          </div>
+          <div class="flex gap-3">
+            <dt class="annotation w-20 shrink-0 pt-0.5">Study</dt>
+            <dd>{SITE.education}</dd>
+          </div>
+          <div class="flex gap-3">
+            <dt class="annotation w-20 shrink-0 pt-0.5">Open to</dt>
+            <dd>Full-time and freelance</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <p class="annotation mt-12 border-t border-rule pt-6">
+      Built with Astro and Three.js · No analytics · No cookies
+    </p>
+  </div>
+</footer>
+
+<style>
+  .footer-link {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+  .footer-link:hover {
+    color: var(--color-accent);
+  }
+</style>

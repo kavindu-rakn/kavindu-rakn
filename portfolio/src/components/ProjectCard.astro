@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import TechStack from './TechStack.astro';
 import Placeholder from './Placeholder.astro';
+import { STATUS_LABEL, LIVE_PLACEHOLDER_KEYS } from '../consts';
 
 /*
  * One project, as a drawing sheet: index number and status in the header rule,
@@ -23,20 +24,6 @@ interface Props {
 const { entry, index, feature = false } = Astro.props;
 const d = entry.data;
 
-const STATUS_LABEL = {
-  'in-production': 'In production',
-  'deployed-in-development': 'Deployed · in active development',
-  live: 'Live',
-} as const;
-
-/*
- * The literal tokens the brief specified, mapped to the registry so the
- * rendered placeholder carries both the token and the action needed to fill it.
- */
-const LIVE_PLACEHOLDER_KEYS = {
-  LIVE_URL_SCHEMASHIFT: 'schemashiftLive',
-  LIVE_URL_TAMARIND: 'tamarindLive',
-} as const;
 type LiveToken = keyof typeof LIVE_PLACEHOLDER_KEYS;
 
 const liveKey =
@@ -92,6 +79,11 @@ const liveKey =
   </div>
 
   <footer class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-rule pt-4">
+    {/* Primary action. Every entry has a route, generated from this collection. */}
+    <a class="project-link project-link--primary" href={`/work/${entry.id}`}>
+      Case study
+    </a>
+
     {
       d.liveUrl && (
         <a class="project-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
@@ -122,7 +114,6 @@ const liveKey =
     {d.employment && <span class="annotation">Internal platform · no public repository</span>}
   </footer>
 
-  {/* PHASE 4 adds the "Read the case study" link once /work/[slug] exists. */}
 </article>
 
 <style>
@@ -141,6 +132,15 @@ const liveKey =
   .project-link::after {
     content: ' ↗';
     text-decoration: none;
+  }
+
+  /* Internal navigation, so it does not carry the external-link mark. */
+  .project-link--primary {
+    font-weight: 500;
+  }
+
+  .project-link--primary::after {
+    content: ' →';
   }
 
   .project-link:hover {

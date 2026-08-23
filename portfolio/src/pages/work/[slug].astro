@@ -1,0 +1,182 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import TechStack from '../../components/TechStack.astro';
+import Placeholder from '../../components/Placeholder.astro';
+import MissingAsset from '../../components/MissingAsset.astro';
+import { STATUS_LABEL, LIVE_PLACEHOLDER_KEYS } from '../../consts';
+
+/*
+ * One route per entry in the `work` collection.
+ *
+ * Because the routes and the hero's clickable set are both derived from this
+ * same collection, a node in the 3D tree can never link to a page that does not
+ * exist — the two cannot drift.
+ */
+export async function getStaticPaths() {
+  const entries = (await getCollection('work', ({ data }) => !data.draft)).sort(
+    (a, b) => a.data.order - b.data.order,
+  );
+  return entries.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: entries[i - 1] ?? null,
+      next: entries[i + 1] ?? null,
+    },
+  }));
+}
+
+// No `interface Props` here: on a dynamic route Astro infers the prop types
+// from getStaticPaths, and declaring them again is dead code.
+const { entry, prev, next } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+
+type LiveToken = keyof typeof LIVE_PLACEHOLDER_KEYS;
+const liveKey =
+  d.liveUrlPlaceholder && d.liveUrlPlaceholder in LIVE_PLACEHOLDER_KEYS
+    ? LIVE_PLACEHOLDER_KEYS[d.liveUrlPlaceholder as LiveToken]
+    : null;
+---
+
+<Layout
+  title={d.title}
+  description={d.description}
+  ogType="article"
+  ogImage={d.ogImage?.src}
+>
+  <SiteHeader slot="header" current="/#work" />
+
+  <article class="mx-auto max-w-6xl px-6 py-16 sm:py-24">
+    <p class="annotation">
+      Sheet {String(d.order).padStart(2, '0')} · {STATUS_LABEL[d.status]}
+    </p>
+
+    <h1
+      class="mt-6 font-display text-5xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-7xl"
+    >
+      {d.title}
+    </h1>
+
+    {
+      d.tagline && (
+        <p class="mt-6 max-w-2xl text-lg text-figure-muted sm:text-xl">{d.tagline}</p>
+      )
+    }
+
+    <div class="mt-10">
+      <TechStack items={d.techStack} placeholderToken={d.techStackPlaceholder} />
+    </div>
+
+    <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+      {
+        d.liveUrl && (
+          <a class="study-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
+            Live site
+          </a>
+        )
+      }
+      {liveKey && !d.liveUrl && <Placeholder of={liveKey} token={d.liveUrlPlaceholder} />}
+      {
+        d.githubUrl && (
+          <a class="study-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
+            Source
+          </a>
+        )
+      }
+      {d.sourcePrivate && <span class="annotation">Source private · available on request</span>}
+      {d.employment && <span class="annotation">Internal platform · no public repository</span>}
+    </div>
+
+    {
+      d.captureBrief && d.captureBrief.length > 0 && (
+        <section class="mt-16">
+          <p class="annotation border-b border-rule pb-3">Imagery required</p>
+          <div class="mt-6 space-y-6">
+            {d.captureBrief.map((spec) => (
+              <MissingAsset spec={spec} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <div class="prose-blueprint mt-16">
+      <Content />
+    </div>
+
+    <nav
+      class="mt-24 grid gap-6 border-t-2 border-figure pt-6 sm:grid-cols-2"
+      aria-label="Case studies"
+    >
+      <div>
+        {
+          prev && (
+            <a class="sibling" href={`/work/${prev.id}`}>
+              <span class="annotation">Previous</span>
+              <span class="sibling__title">{prev.data.title}</span>
+            </a>
+          )
+        }
+      </div>
+      <div class="sm:text-right">
+        {
+          next && (
+            <a class="sibling" href={`/work/${next.id}`}>
+              <span class="annotation">Next</span>
+              <span class="sibling__title">{next.data.title}</span>
+            </a>
+          )
+        }
+      </div>
+    </nav>
+
+    <p class="mt-10">
+      <a class="study-link study-link--internal" href="/#work">All work</a>
+    </p>
+  </article>
+
+  <SiteFooter slot="footer" />
+</Layout>
+
+<style>
+  .study-link {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+  .study-link::after {
+    content: ' ↗';
+    text-decoration: none;
+  }
+  .study-link--internal::after {
+    content: ' →';
+  }
+  .study-link:hover {
+    color: var(--color-accent);
+  }
+
+  .sibling {
+    display: block;
+  }
+  .sibling__title {
+    display: block;
+    margin-top: 0.4rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+  }
+  .sibling:hover .sibling__title {
+    color: var(--color-accent);
+  }
+</style>

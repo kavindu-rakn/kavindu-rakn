@@ -1,6 +1,8 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import BlueprintHero from '../components/BlueprintHero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import { SITE } from '../consts';
@@ -15,6 +17,8 @@ const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
 ---
 
 <Layout title={SITE.name}>
+  <SiteHeader slot="header" current="/" />
+
   <BlueprintHero />
 
   <section id="work" class="border-t-2 border-figure">
@@ -38,7 +42,65 @@ const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
             <ProjectCard entry={entry} index={i + 1} feature={i === 0} />
           ))
         }
+
+        {/*
+          Sits in the cell the six cards leave empty. The alternative was letting
+          the last project span the full width, which would visually promote it
+          to feature status for a layout reason rather than a real one.
+        */}
+        <aside class="flex flex-col border-2 border-accent p-6 sm:p-8">
+          <header
+            class="flex items-baseline justify-between gap-4 border-b border-rule pb-3"
+          >
+            <span class="annotation">00</span>
+            <span class="annotation">About</span>
+          </header>
+
+          <h3
+            class="mt-6 font-display text-3xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-4xl"
+          >
+            Twelve months
+          </h3>
+
+          <p class="mt-4 text-figure-muted">
+            My first commit was on 17 August 2025.
+          </p>
+
+          <p class="mt-4 text-sm leading-relaxed">
+            Twelve months later: largest contributor to a platform in production
+            that twenty developers built, with 207 of its 652 commits — and five
+            projects of my own designed and shipped.
+          </p>
+
+          <footer class="mt-auto border-t border-rule pt-4">
+            <a class="about-link" href="/about">Read the rest</a>
+          </footer>
+        </aside>
       </div>
     </div>
   </section>
+
+  <SiteFooter slot="footer" />
 </Layout>
+
+<style>
+  .about-link {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+  .about-link::after {
+    content: ' →';
+    text-decoration: none;
+  }
+  .about-link:hover {
+    color: var(--color-accent);
+  }
+</style>

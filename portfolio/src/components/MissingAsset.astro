@@ -1,0 +1,74 @@
+---
+import { PLACEHOLDERS } from '../consts';
+
+/*
+ * A screenshot or recording that does not exist yet.
+ *
+ * BRIEF §5.1: "Screenshots and screen recordings of every project. He currently
+ * has almost none — SchemaShift's own README says 'Screenshots: not yet
+ * captured.'" This is the critical path, and no amount of code substitutes for
+ * it, so the slot is rendered at full size rather than quietly omitted.
+ */
+
+interface Props {
+  /** What specifically needs capturing, per project. */
+  spec: string;
+}
+const { spec } = Astro.props;
+const { token, action } = PLACEHOLDERS.screenshots;
+---
+
+<figure class="missing-asset" data-placeholder={token}>
+  <div class="missing-asset__body">
+    <p class="missing-asset__token">{token}</p>
+    <p class="missing-asset__spec">{spec}</p>
+    <p class="missing-asset__action">{action}</p>
+  </div>
+</figure>
+
+<style>
+  .missing-asset {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 16 / 9;
+    padding: 1.5rem;
+    border: 2px dashed var(--color-signal-500);
+    /* Hazard hatching, so an empty slot never reads as a design choice. */
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent 0 10px,
+      rgba(255, 59, 31, 0.1) 10px 20px
+    );
+  }
+
+  .missing-asset__body {
+    max-width: 34rem;
+    text-align: center;
+    font-family: var(--font-mono);
+  }
+
+  .missing-asset__token {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background-color: var(--color-signal-500);
+    color: #0a0a0a;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+  }
+
+  .missing-asset__spec {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-figure);
+  }
+
+  .missing-asset__action {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-figure-muted);
+  }
+</style>

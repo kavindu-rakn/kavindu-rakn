@@ -1,0 +1,44 @@
+---
+import { SITE, NAV } from '../consts';
+
+interface Props {
+  /** Marks the current page in the nav. */
+  current?: string;
+}
+const { current } = Astro.props;
+---
+
+<header class="border-b border-rule">
+  <nav
+    class="mx-auto flex max-w-6xl flex-wrap items-baseline justify-between gap-x-6 gap-y-2 px-6 py-4"
+    aria-label="Primary"
+  >
+    <a href="/" class="annotation hover:text-figure">{SITE.name}</a>
+    <ul class="flex flex-wrap gap-x-5 gap-y-1">
+      {
+        NAV.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="annotation hover:text-figure"
+              aria-current={current === item.href ? 'page' : undefined}
+              data-active={current === item.href ? 'true' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
+
+<style>
+  a[data-active='true'] {
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+</style>
