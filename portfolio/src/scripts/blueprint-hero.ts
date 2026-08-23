@@ -293,12 +293,22 @@ export function boot(ctx: BootContext): () => void {
   let viewW = 1;
   let viewH = 1;
 
+  /*
+   * Cached canvas box. Reading getBoundingClientRect() inside pointermove
+   * forces a synchronous layout on every mouse event, and positionLabels()
+   * writes transforms every frame — read-after-write is a layout thrash that
+   * shows up as stutter while the pointer moves. The box only changes on
+   * resize and on scroll, so it is measured there instead.
+   */
+  let canvasRect = canvas.getBoundingClientRect();
+
   function applyCameraDistance(assembleT: number) {
     camera.position.set(0, 0, zExploded + (zAssembled - zExploded) * assembleT);
   }
 
   function resize() {
     const rect = canvas.getBoundingClientRect();
+    canvasRect = rect;
     const w = Math.max(1, Math.round(rect.width));
     const h = Math.max(1, Math.round(rect.height));
     renderer.setSize(w, h, false);
@@ -334,7 +344,7 @@ export function boot(ctx: BootContext): () => void {
   const meshes = plates.map((p) => p.mesh);
 
   function onPointerMove(event: PointerEvent) {
-    const rect = canvas.getBoundingClientRect();
+    const rect = canvasRect;
     const nx = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     const ny = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
     ndc.set(nx, ny);
@@ -365,6 +375,33 @@ export function boot(ctx: BootContext): () => void {
       readout.dataset.state = 'idle';
       canvas.style.cursor = 'default';
     }
+  }
+
+  /*
+   * Hysteresis. Acquiring a node is instant; releasing it waits.
+   *
+   * Without this, a pixel of jitter at a plate edge flips the plate colour, the
+   * label chip and the readout line all at once, many times a second. Delaying
+   * only the release means a cursor that skims an edge, or crosses briefly
+   * between two plates, does not produce a strobe.
+   */
+  const HOVER_RELEASE_MS = 140;
+  let releaseTimer = 0;
+
+  function requestHover(id: string | null) {
+    if (id !== null) {
+      if (releaseTimer) {
+        clearTimeout(releaseTimer);
+        releaseTimer = 0;
+      }
+      setHovered(id);
+      return;
+    }
+    if (hoveredId === null || releaseTimer) return;
+    releaseTimer = window.setTimeout(() => {
+      releaseTimer = 0;
+      setHovered(null);
+    }, HOVER_RELEASE_MS);
   }
 
   function onClick() {
@@ -420,18 +457,45 @@ export function boot(ctx: BootContext): () => void {
     key.intensity = lit * 2.1;
     rim.intensity = lit * 1.4;
 
+    /*
+     * Pointer parallax, frozen while a node is hovered.
+     *
+     * A tree that keeps rotating toward the cursor slides the very node you are
+     * reaching for out from under it — you chase it, it moves again. Holding
+     * the rotation once a node is acquired breaks that feedback loop. The
+     * magnitudes are also well below what they were, so approaching a plate no
+     * longer shifts it by more than a hair.
+     */
     if (canHover) {
-      group.rotation.y += (pointerX * 0.17 - group.rotation.y) * 0.05;
-      group.rotation.x += (-pointerY * 0.1 - group.rotation.x) * 0.05;
+      const targetY = hoveredId ? group.rotation.y : pointerX * 0.075;
+      const targetX = hoveredId ? group.rotation.x : -pointerY * 0.045;
+      group.rotation.y += (targetY - group.rotation.y) * 0.05;
+      group.rotation.x += (targetX - group.rotation.x) * 0.05;
+    }
+
+    const hint = p > 0.96 ? ASSEMBLED_HINT : 'Scroll to assemble';
+    if (idleHint && hint !== shownHint) {
+      shownHint = hint;
+      idleHint.textContent = hint;
     }
 
     if (raycastDirty && canHover) {
       raycastDirty = false;
       raycaster.setFromCamera(ndc, camera);
       const hit = raycaster.intersectObjects(meshes, false)[0];
-      setHovered(hit ? ((hit.object.userData.nodeId as string) ?? null) : null);
+      requestHover(hit ? ((hit.object.userData.nodeId as string) ?? null) : null);
     }
   }
+
+  /*
+   * The idle hint reads "Scroll to assemble", which stops being true once the
+   * tree is assembled. Swap it for the end state rather than leaving stale
+   * instructions on screen. Touch devices get no raycast, so they are never
+   * told to hover.
+   */
+  const idleHint = readout.querySelector<HTMLElement>('[data-hero-readout-idle]');
+  const ASSEMBLED_HINT = canHover ? 'Hover a node' : 'Assembled';
+  let shownHint = 'Scroll to assemble';
 
   const projected = new THREE.Vector3();
 
@@ -492,6 +556,9 @@ export function boot(ctx: BootContext): () => void {
   }
   function onScroll() {
     measureProgress();
+    // The canvas sits in a sticky container, so its viewport box moves as the
+    // page scrolls even though its size does not.
+    canvasRect = canvas.getBoundingClientRect();
   }
   function onContextLost(event: Event) {
     event.preventDefault();
@@ -521,6 +588,10 @@ export function boot(ctx: BootContext): () => void {
   return function teardown() {
     if (rafId !== 0) cancelAnimationFrame(rafId);
     rafId = 0;
+    if (releaseTimer) {
+      clearTimeout(releaseTimer);
+      releaseTimer = 0;
+    }
     io.disconnect();
     ro.disconnect();
     document.removeEventListener('visibilitychange', onVisibility);

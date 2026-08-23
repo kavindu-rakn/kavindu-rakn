@@ -141,8 +141,18 @@ const linkable = JSON.stringify(studies.map((entry) => entry.id));
     font-size: 0.6875rem;
   }
 
+  /*
+   * The hovered plate fills with the accent colour, so an accent-coloured
+   * label vanishes into it. A chip keeps the name legible at every scroll
+   * position — the plate is 25% accent while wireframe and solid accent once
+   * lit — and in both themes, because ground always contrasts with accent.
+   */
   .hero-labels :global(.hero-node-label[data-hovered='true']) {
-    color: var(--color-accent);
+    color: var(--color-ground);
+    background-color: var(--color-accent);
+    /* Kept narrow: SCHEMASHIFT is the longest label and the leaf pitch is
+       tight, so a wider chip laps onto the neighbouring plate. */
+    padding: 0.1rem 0.3rem;
   }
 
   /* Crossfade once the first WebGL frame has actually been drawn. */
