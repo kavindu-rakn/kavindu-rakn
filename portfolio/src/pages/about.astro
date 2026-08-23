@@ -1,0 +1,91 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { SITE } from '../consts';
+
+/*
+ * BRIEF §4: "Tell it plainly, once, without melodrama. It is the most
+ * persuasive thing about him and it is entirely true. It also reframes the thin
+ * GitHub history from a weakness into the point."
+ *
+ * Every number here is a raw count from CONTEXT §2. No percentages, no hours,
+ * no self-description. `npm run lint:content` enforces that.
+ */
+const description =
+  'First commit 17 August 2025. Twelve months later, the largest contributor to a 652-commit production platform built by twenty developers.';
+---
+
+<Layout title="About" description={description}>
+  <SiteHeader slot="header" current="/about" />
+
+  <div class="mx-auto max-w-6xl px-6 py-16 sm:py-24">
+    <p class="annotation">Sheet 00 · About</p>
+
+    <h1
+      class="mt-6 font-display text-5xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-7xl"
+    >
+      Twelve months
+    </h1>
+
+    <div class="prose-blueprint mt-14">
+      <p>
+        My first commit was on <strong>17 August 2025</strong>. Before the internship
+        at Sri Lanka Telecom Mobitel I had not used git.
+      </p>
+
+      <p>
+        Twelve months later I was the largest contributor to TalentHub, a platform
+        in production that twenty developers built over a year — <strong
+          >207 of its 652 commits</strong
+        > and 37 pull requests merged. The next highest contributor has 94. I rebuilt
+        the interface across 27 of its 35 screens. In the same twelve months I designed
+        and shipped five projects of my own.
+      </p>
+
+      <p>
+        That is the whole of it. The GitHub history is short because it starts in
+        August 2025, and everything in it was written in the twelve months since.
+      </p>
+
+      <h2>What the work has in common</h2>
+
+      <p>
+        SchemaShift shows you the consequences of a schema change before you commit
+        it. Horologia takes a sealed mechanism apart so you can see how it drives
+        itself. Luna computes real orbital positions instead of drawing a picture of
+        a moon.
+      </p>
+
+      <p>
+        Each one takes something that normally happens out of sight and puts it on
+        screen. That is the kind of problem I look for.
+      </p>
+
+      <h2>What I do not do</h2>
+
+      <p>
+        No mobile development. No React Native, no Flutter, no Swift, no Kotlin. If
+        you need a native application, I am not the right person for it, and a badge
+        on a portfolio would not change that.
+      </p>
+
+      <h2>Now</h2>
+
+      <ul>
+        <li>Full-stack Developer Intern, Sri Lanka Telecom Mobitel, January–August 2026</li>
+        <li>{SITE.education}</li>
+        <li>Based in {SITE.location}</li>
+        <li>Open to full-time and freelance work</li>
+      </ul>
+
+      <p>
+        The fastest way to judge any of this is to read the code or run the projects.
+        Both are on the <a href="/#work">work page</a>; for the two private
+        repositories, source is available on request.
+      </p>
+    </div>
+  </div>
+
+  <SiteFooter slot="footer" />
+</Layout>

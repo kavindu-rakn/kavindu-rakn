@@ -12,7 +12,7 @@
  * gate: during development the placeholders are supposed to be there and loud.
  */
 
-import { readFileSync, globSync } from 'node:fs';
+import { readFileSync, globSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const STRICT = process.argv.includes('--strict');
@@ -80,6 +80,7 @@ const PLACEHOLDER_TOKENS = [
   'LIVE_URL_TAMARIND',
   'LINKEDIN_URL',
   'TALENTHUB_STACK',
+  'SCREENSHOT_REQUIRED',
   'OG_IMAGE_DEFAULT',
   'SITE_DOMAIN',
 ];
@@ -98,11 +99,32 @@ if (pages.length === 0) {
 
 const failures = [];
 const placeholderHits = [];
+const missingAssets = [];
 const corpus = new Map();
 
+/*
+ * Some placeholders have no token in the rendered text — an absent Open Graph
+ * image is just a <meta> pointing at a file that is not there. Checking only
+ * for token strings would let those ship silently, so referenced assets are
+ * resolved against dist as well.
+ */
+function checkReferencedAssets(html, file) {
+  for (const match of html.matchAll(
+    /<meta[^>]+property="og:image"[^>]+content="([^"]+)"/g,
+  )) {
+    const url = match[1];
+    const path = url.startsWith('http') ? new URL(url).pathname : url;
+    if (!existsSync(join(DIST, path))) {
+      missingAssets.push({ file, path });
+    }
+  }
+}
+
 for (const file of pages) {
-  const text = visibleText(readFileSync(file, 'utf8'));
+  const html = readFileSync(file, 'utf8');
+  const text = visibleText(html);
   corpus.set(file, text);
+  checkReferencedAssets(html, file);
 
   for (const { rule, pattern, why } of BANNED) {
     for (const match of text.matchAll(pattern)) {
@@ -149,17 +171,21 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-if (placeholderHits.length > 0) {
-  const unique = [...new Set(placeholderHits.map((h) => h.token))];
+const unfilledTokens = [...new Set(placeholderHits.map((h) => h.token))];
+const unresolvedAssets = [...new Set(missingAssets.map((a) => a.path))];
+const outstanding = unfilledTokens.length + unresolvedAssets.length;
+
+if (outstanding > 0) {
   if (STRICT) {
-    console.error(`\nlint:content --strict — ${unique.length} unfilled placeholder(s)\n`);
-    for (const token of unique) console.error(`  ${token}`);
+    console.error(`\nlint:content --strict — ${outstanding} item(s) unresolved\n`);
+    for (const token of unfilledTokens) console.error(`  placeholder  ${token}`);
+    for (const path of unresolvedAssets) console.error(`  missing file ${path}`);
     console.error('\nSupply these before deploying. See PLACEHOLDERS in src/consts.ts.\n');
     process.exit(1);
   }
-  console.log(
-    `lint:content — clean. ${unique.length} placeholder(s) still unfilled: ${unique.join(', ')}`,
-  );
+  console.log(`lint:content — clean. ${outstanding} item(s) still outstanding:`);
+  for (const token of unfilledTokens) console.log(`  placeholder  ${token}`);
+  for (const path of unresolvedAssets) console.log(`  missing file ${path}`);
 } else {
-  console.log('lint:content — clean. No placeholders outstanding.');
+  console.log('lint:content — clean. Nothing outstanding.');
 }

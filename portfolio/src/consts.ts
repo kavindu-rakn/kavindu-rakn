@@ -77,6 +77,13 @@ export const PLACEHOLDERS = {
       'Buy the domain and update `site` in astro.config.mjs. A vercel.app subdomain is an unforced signal.',
     value: null,
   },
+  screenshots: {
+    token: 'SCREENSHOT_REQUIRED',
+    label: 'Case-study imagery',
+    action:
+      'Two or three hero stills at 2x, plus one 10–20 second silent screen recording of the primary interaction.',
+    value: null,
+  },
   ogDefault: {
     token: 'OG_IMAGE_DEFAULT',
     label: 'Default Open Graph image',
@@ -87,9 +94,31 @@ export const PLACEHOLDERS = {
 
 export type PlaceholderKey = keyof typeof PLACEHOLDERS;
 
-/** Navigation. Kept here so Layout stays presentational. */
+/**
+ * Deployment-status wording, shared by the grid card and the case study so the
+ * two can never describe the same project differently.
+ */
+export const STATUS_LABEL = {
+  'in-production': 'In production',
+  'deployed-in-development': 'Deployed · in active development',
+  live: 'Live',
+} as const;
+
+/** The literal tokens from the brief, mapped to the placeholder registry. */
+export const LIVE_PLACEHOLDER_KEYS = {
+  LIVE_URL_SCHEMASHIFT: 'schemashiftLive',
+  LIVE_URL_TAMARIND: 'tamarindLive',
+} as const;
+
+/**
+ * Navigation. Kept here so the header stays presentational.
+ *
+ * Work points at the grid on the index rather than a separate listing page —
+ * a second page rendering the same six cards would be duplicate content for
+ * no gain. Individual case studies live at /work/<slug>.
+ */
 export const NAV = [
   { href: '/', label: 'Index' },
-  { href: '/work', label: 'Work' },
+  { href: '/#work', label: 'Work' },
   { href: '/about', label: 'About' },
 ] as const;

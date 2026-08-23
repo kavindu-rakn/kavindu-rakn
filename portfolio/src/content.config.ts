@@ -84,6 +84,13 @@ const work = defineCollection({
         heroImageAlt: z.string().optional(),
         ogImage: image().optional(),
 
+        /**
+         * What still has to be captured by hand for this project. Each entry
+         * renders as a visible missing-asset slot on the case study until the
+         * real image exists (BRIEF §5.1 — he currently has almost none).
+         */
+        captureBrief: z.array(z.string()).optional(),
+
         draft: z.boolean().default(false),
       })
       .superRefine((data, ctx) => {
