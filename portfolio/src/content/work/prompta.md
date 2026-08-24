@@ -16,9 +16,9 @@ highlights:
   - One-click launch into ChatGPT, Claude, Gemini, DeepSeek and Grok
   - Framer Motion `layoutId` card-to-fullscreen morphs
   - Plain CSS, no utility framework; left-aligned scrollbar via an RTL trick
-captureBrief:
-  - The card-to-fullscreen morph as a short loop, showing the shared element travelling rather than cross-fading.
-  - A folder containing an encrypted attachment, and the one-click launch menu open.
+figures:
+  - spec: The card-to-fullscreen morph as a short loop, showing the shared element travelling rather than cross-fading.
+  - spec: A folder containing an encrypted attachment, and the one-click launch menu open.
 draft: false
 ---
 
