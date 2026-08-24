@@ -5,7 +5,7 @@ description: 'A schema migration tool for catalogue data: see which categories, 
 order: 1
 status: deployed-in-development
 sourcePrivate: true
-liveUrlPlaceholder: LIVE_URL_SCHEMASHIFT
+liveUrl: https://schema-shift.vercel.app/
 techStack:
   - Next.js 16
   - React 19
