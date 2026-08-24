@@ -16,7 +16,36 @@
  * `boot` returns a teardown function that disposes every GPU resource it made.
  */
 
-import * as THREE from 'three';
+/*
+ * Named imports document exactly which of Three.js this island depends on.
+ *
+ * They do NOT make the bundle smaller: the emitted chunk is byte-identical to
+ * the `import * as THREE` version, because WebGLRenderer transitively reaches
+ * most of the library anyway. Lighthouse reports ~41% of this chunk as "unused
+ * JavaScript", but that figure is runtime code coverage — branches not taken
+ * during load — not dead code a bundler could remove. Measured, not assumed.
+ */
+import {
+  AmbientLight,
+  BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
+  Color,
+  DirectionalLight,
+  EdgesGeometry,
+  Group,
+  LineBasicMaterial,
+  LineSegments,
+  MathUtils,
+  Mesh,
+  MeshStandardMaterial,
+  PerspectiveCamera,
+  Raycaster,
+  Scene,
+  Vector2,
+  Vector3,
+  WebGLRenderer,
+} from 'three';
 import { SCHEMA_TREE, SCHEMA_EDGES, nodeById, type SchemaNode } from '../data/schema-tree';
 
 export type BootContext = {
@@ -60,10 +89,10 @@ const dimsFor = (depth: 0 | 1 | 2): PlateDims =>
 
 type Plate = {
   node: SchemaNode;
-  mesh: THREE.Mesh;
-  edges: THREE.LineSegments;
-  assembled: THREE.Vector3;
-  exploded: THREE.Vector3;
+  mesh: Mesh;
+  edges: LineSegments;
+  assembled: Vector3;
+  exploded: Vector3;
   half: number;
 };
 
@@ -72,9 +101,9 @@ function readTheme() {
   const pick = (name: string, fallback: string) =>
     cs.getPropertyValue(name).trim() || fallback;
   return {
-    line: new THREE.Color(pick('--color-accent', '#1d5c86')),
-    solid: new THREE.Color(pick('--color-ground-raised', '#f5f3ec')),
-    figure: new THREE.Color(pick('--color-figure', '#101109')),
+    line: new Color(pick('--color-accent', '#1d5c86')),
+    solid: new Color(pick('--color-ground-raised', '#f5f3ec')),
+    figure: new Color(pick('--color-figure', '#101109')),
   };
 }
 
@@ -82,9 +111,9 @@ export function boot(ctx: BootContext): () => void {
   const { canvas, stage, section, labels, readout, readoutLabel, readoutNote, linkable } =
     ctx;
 
-  let renderer: THREE.WebGLRenderer;
+  let renderer: WebGLRenderer;
   try {
-    renderer = new THREE.WebGLRenderer({
+    renderer = new WebGLRenderer({
       canvas,
       antialias: true,
       alpha: true,
@@ -99,33 +128,33 @@ export function boot(ctx: BootContext): () => void {
   // Hard cap. Uncapped DPR on a retina laptop spins the fans for no visible gain.
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-  const group = new THREE.Group();
+  const scene = new Scene();
+  const camera = new PerspectiveCamera(38, 1, 0.1, 100);
+  const group = new Group();
   scene.add(group);
 
   let theme = readTheme();
 
   // ── Materials ─────────────────────────────────────────────────────────────
   // One shared material per kind; per-plate opacity is uniform across the tree.
-  const lineMaterial = new THREE.LineBasicMaterial({
+  const lineMaterial = new LineBasicMaterial({
     color: theme.line,
     transparent: true,
     opacity: 1,
   });
-  const connectorMaterial = new THREE.LineBasicMaterial({
+  const connectorMaterial = new LineBasicMaterial({
     color: theme.line,
     transparent: true,
     opacity: 0.75,
   });
-  const solidMaterial = new THREE.MeshStandardMaterial({
+  const solidMaterial = new MeshStandardMaterial({
     color: theme.solid,
     roughness: 0.62,
     metalness: 0.12,
     transparent: true,
     opacity: 0,
   });
-  const highlightMaterial = new THREE.MeshStandardMaterial({
+  const highlightMaterial = new MeshStandardMaterial({
     color: theme.line,
     roughness: 0.45,
     metalness: 0.2,
@@ -134,16 +163,16 @@ export function boot(ctx: BootContext): () => void {
   });
 
   // ── Lights (start dark — the blueprint state is unlit) ────────────────────
-  const ambient = new THREE.AmbientLight(theme.figure, 0);
-  const key = new THREE.DirectionalLight(0xffffff, 0);
+  const ambient = new AmbientLight(theme.figure, 0);
+  const key = new DirectionalLight(0xffffff, 0);
   key.position.set(2.5, 3.5, 4);
-  const rim = new THREE.DirectionalLight(theme.line, 0);
+  const rim = new DirectionalLight(theme.line, 0);
   rim.position.set(-3, -1.5, 2);
   scene.add(ambient, key, rim);
 
   // ── Plates ────────────────────────────────────────────────────────────────
   const plates: Plate[] = [];
-  const geometries: THREE.BufferGeometry[] = [];
+  const geometries: BufferGeometry[] = [];
 
   /**
    * Worst-case half-extents of each plate in each state, used to derive the
@@ -156,21 +185,21 @@ export function boot(ctx: BootContext): () => void {
 
   for (const node of SCHEMA_TREE) {
     const { w, h, d } = dimsFor(node.depth);
-    const box = new THREE.BoxGeometry(w, h, d);
-    const edgeGeo = new THREE.EdgesGeometry(box);
+    const box = new BoxGeometry(w, h, d);
+    const edgeGeo = new EdgesGeometry(box);
     geometries.push(box, edgeGeo);
 
-    const mesh = new THREE.Mesh(box, solidMaterial);
-    const edges = new THREE.LineSegments(edgeGeo, lineMaterial);
+    const mesh = new Mesh(box, solidMaterial);
+    const edges = new LineSegments(edgeGeo, lineMaterial);
 
-    const assembled = new THREE.Vector3(X(node.gx), Y(node.gy), 0);
+    const assembled = new Vector3(X(node.gx), Y(node.gy), 0);
     /*
      * Exploded state. The separation is mostly vertical and toward the camera —
      * a large horizontal explosion throws the outer leaves out of frame and
      * their connectors stretch across the viewport, which reads as broken
      * rather than as an exploded assembly.
      */
-    const exploded = new THREE.Vector3(
+    const exploded = new Vector3(
       assembled.x * 1.12,
       assembled.y * 1.28,
       0.8 + node.depth * 0.85,
@@ -219,24 +248,24 @@ export function boot(ctx: BootContext): () => void {
   // ── Connectors ────────────────────────────────────────────────────────────
   // Right-angle routing, rebuilt each frame as the plates travel.
   const SEGMENTS_PER_EDGE = 3;
-  const connectorGeo = new THREE.BufferGeometry();
+  const connectorGeo = new BufferGeometry();
   const connectorPositions = new Float32Array(
     SCHEMA_EDGES.length * SEGMENTS_PER_EDGE * 2 * 3,
   );
   connectorGeo.setAttribute(
     'position',
-    new THREE.BufferAttribute(connectorPositions, 3),
+    new BufferAttribute(connectorPositions, 3),
   );
   geometries.push(connectorGeo);
-  const connectors = new THREE.LineSegments(connectorGeo, connectorMaterial);
+  const connectors = new LineSegments(connectorGeo, connectorMaterial);
   group.add(connectors);
 
-  const a = new THREE.Vector3();
-  const b = new THREE.Vector3();
-  const c = new THREE.Vector3();
-  const dV = new THREE.Vector3();
+  const a = new Vector3();
+  const b = new Vector3();
+  const c = new Vector3();
+  const dV = new Vector3();
 
-  function writeSegment(i: number, from: THREE.Vector3, to: THREE.Vector3) {
+  function writeSegment(i: number, from: Vector3, to: Vector3) {
     const o = i * 6;
     connectorPositions[o] = from.x;
     connectorPositions[o + 1] = from.y;
@@ -268,7 +297,7 @@ export function boot(ctx: BootContext): () => void {
   }
 
   // ── Camera framing ────────────────────────────────────────────────────────
-  const HALF_FOV_TAN = Math.tan(THREE.MathUtils.degToRad(FOV_DEGREES) / 2);
+  const HALF_FOV_TAN = Math.tan(MathUtils.degToRad(FOV_DEGREES) / 2);
 
   /**
    * Smallest camera distance that keeps every extent inside the frustum.
@@ -335,8 +364,8 @@ export function boot(ctx: BootContext): () => void {
 
   // ── Pointer / hover ───────────────────────────────────────────────────────
   const canHover = window.matchMedia('(hover: hover)').matches;
-  const raycaster = new THREE.Raycaster();
-  const ndc = new THREE.Vector2();
+  const raycaster = new Raycaster();
+  const ndc = new Vector2();
   let pointerX = 0;
   let pointerY = 0;
   let raycastDirty = false;
@@ -497,7 +526,7 @@ export function boot(ctx: BootContext): () => void {
   const ASSEMBLED_HINT = canHover ? 'Hover a node' : 'Assembled';
   let shownHint = 'Scroll to assemble';
 
-  const projected = new THREE.Vector3();
+  const projected = new Vector3();
 
   /** Runs after render, so `group.matrixWorld` is already current. */
   function positionLabels() {
