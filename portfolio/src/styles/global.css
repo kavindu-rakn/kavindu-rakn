@@ -85,6 +85,23 @@
 }
 
 @layer base {
+  /*
+   * Optical alignment for the blackletter R in the wordmark.
+   *
+   * These are set by eye, not computed: the glyph's viewBox is tight to the ink,
+   * so where its baseline falls inside that box cannot be recovered from the
+   * file. Tune here — one place, applies to the headline and the header mark.
+   *
+   *   height  cap-height of the R relative to the surrounding type
+   *   shift   downward nudge; the blackletter leg descends past the baseline
+   *   gap     sidebearing correction on both sides
+   */
+  :root {
+    --wordmark-r-height: 0.82em;
+    --wordmark-r-shift: 0.06em;
+    --wordmark-r-gap: -0.01em;
+  }
+
   html {
     /* Native form controls, scrollbars and UA surfaces follow the ground. */
     color-scheme: light dark;

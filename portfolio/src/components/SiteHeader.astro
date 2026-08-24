@@ -1,4 +1,5 @@
 ---
+import RGlyph from '../assets/wordmark-r.svg';
 import { SITE, NAV } from '../consts';
 
 interface Props {
@@ -13,7 +14,10 @@ const { current } = Astro.props;
     class="mx-auto flex max-w-6xl flex-wrap items-baseline justify-between gap-x-6 gap-y-2 px-6 py-4"
     aria-label="Primary"
   >
-    <a href="/" class="annotation hover:text-figure">{SITE.name}</a>
+    <a href="/" class="brand" aria-label={SITE.name}>
+      <span class="brand__mark" aria-hidden="true"><RGlyph /></span>
+      <span class="annotation" aria-hidden="true">{SITE.name}</span>
+    </a>
     <ul class="flex flex-wrap gap-x-5 gap-y-1">
       {
         NAV.map((item) => (
@@ -34,6 +38,23 @@ const { current } = Astro.props;
 </header>
 
 <style>
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .brand:hover .annotation {
+    color: var(--color-figure);
+  }
+
+  /* `:global` — the glyph belongs to the imported SVG component's scope. */
+  .brand__mark :global(svg) {
+    display: block;
+    height: 1.1rem;
+    width: auto;
+  }
+
   a[data-active='true'] {
     color: var(--color-figure);
     text-decoration: underline;

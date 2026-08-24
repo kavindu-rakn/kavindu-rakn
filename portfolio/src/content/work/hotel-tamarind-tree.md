@@ -5,7 +5,7 @@ description: 'A booking platform for a 4-star boutique hotel in Tissamaharama, b
 order: 2
 status: deployed-in-development
 sourcePrivate: true
-liveUrlPlaceholder: LIVE_URL_TAMARIND
+liveUrl: https://hotel-tamarind-tree.vercel.app/
 techStack:
   - Next.js 16
   - TypeScript

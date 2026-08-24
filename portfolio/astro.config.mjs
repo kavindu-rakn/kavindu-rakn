@@ -6,13 +6,8 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  /*
-   * PLACEHOLDER — the domain is not purchased yet (BRIEF §5.4).
-   * Tracked as PLACEHOLDERS.domain in src/consts.ts and surfaced in the UI.
-   * `site` must be a valid absolute URL for canonical tags, Open Graph URLs and
-   * the sitemap to generate, so it cannot itself be a fake token string.
-   */
-  site: 'https://kavinduranathunga.com',
+  // Drives canonical tags, Open Graph URLs and the sitemap.
+  site: 'https://kavindu-rakn.xyz',
 
   /*
    * Static output. Zero SSR, no adapter, nothing to run at request time.

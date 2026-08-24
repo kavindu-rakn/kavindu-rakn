@@ -1,0 +1,40 @@
+---
+import RGlyph from '../assets/wordmark-r.svg';
+
+/*
+ * "Kavindu Ranathunga", with the blackletter R standing in for Archivo's.
+ *
+ * Accessibility and copy-paste both stay intact: the glyph is aria-hidden and
+ * a visually-hidden "R" sits beside it, so a screen reader announces the name
+ * normally and selecting the headline copies "Kavindu Ranathunga" rather than
+ * "Kavindu anathunga".
+ *
+ * The SVG is imported as a component, so it inlines and inherits `currentColor`
+ * — which is what lets the mark invert on the dark cyanotype ground instead of
+ * disappearing into it.
+ *
+ * Size and vertical position are exposed as custom properties because the
+ * source viewBox is tight to the ink: where the baseline falls inside it is not
+ * recoverable from the file, so it is set by eye rather than computed.
+ */
+---
+
+Kavindu <span class="wordmark-r" aria-hidden="true"><RGlyph /></span><span
+  class="sr-only">R</span
+>anathunga
+
+<style>
+  /*
+   * `:global` because the glyph is rendered by the imported SVG component and
+   * therefore does not carry this component's scope attribute. A plain scoped
+   * selector would silently never match.
+   */
+  .wordmark-r :global(svg) {
+    display: inline-block;
+    height: var(--wordmark-r-height, 0.82em);
+    width: auto;
+    vertical-align: baseline;
+    transform: translateY(var(--wordmark-r-shift, 0.06em));
+    margin-inline: var(--wordmark-r-gap, -0.01em);
+  }
+</style>

@@ -46,7 +46,8 @@ const liveKey =
   title={d.title}
   description={d.description}
   ogType="article"
-  ogImage={d.ogImage?.src}
+  ogImage={d.ogImage?.src ?? `/og/${entry.id}.png`}
+  ogImageAlt={`${d.title} — ${d.tagline ?? 'case study'}`}
 >
   <SiteHeader slot="header" current="/#work" />
 
