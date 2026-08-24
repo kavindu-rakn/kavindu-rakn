@@ -19,9 +19,9 @@ highlights:
   - Analysis proven read-only under test; migrations proven atomic under injected failure
   - Append-only audit trail via omitted UPDATE/DELETE RLS policies
   - 234 tests across 48 suites, 9 ordered migrations, 11 SQL test suites
-captureBrief:
-  - The schema tab on a deeply nested category, showing which fields are inherited from ancestors and which are declared locally.
-  - The impact dialog mid-change, with a destructive row expanded so the values that will not survive are visible.
+figures:
+  - spec: The schema tab on a deeply nested category, showing which fields are inherited from ancestors and which are declared locally.
+  - spec: The impact dialog mid-change, with a destructive row expanded so the values that will not survive are visible.
 draft: false
 ---
 

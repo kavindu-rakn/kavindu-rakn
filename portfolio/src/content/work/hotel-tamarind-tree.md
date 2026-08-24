@@ -20,9 +20,9 @@ highlights:
   - Nightly Vercel cron expires abandoned bookings back to inventory
   - Admin dashboard for bookings, rooms and enquiries; Auth.js v5 with bcrypt
   - Stripe integration built, then removed — the property takes payment on arrival
-captureBrief:
-  - The booking flow on a phone, from date selection through to confirmation, showing that an already-taken unit cannot be selected.
-  - The admin dashboard listing bookings, with a pending booking visible before the nightly job expires it.
+figures:
+  - spec: The booking flow on a phone, from date selection through to confirmation, showing that an already-taken unit cannot be selected.
+  - spec: The admin dashboard listing bookings, with a pending booking visible before the nightly job expires it.
 draft: false
 ---
 

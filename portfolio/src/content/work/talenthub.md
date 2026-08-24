@@ -26,9 +26,9 @@ highlights:
   - Facial-recognition and QR attendance merged into a single interface
   - Compliance logic consolidated into a shared working-days and holiday module, imported by five controllers and four services
   - Seven animated seasonal login themes with a backend switch
-captureBrief:
-  - The 96-seat reservation map on a phone, mid pan-and-zoom. Every trainee name, face and identity number must be blurred or replaced before this is published.
-  - A seasonal login theme — Vesak or Sinhala and Tamil New Year. Check with SLT what may be shown before publishing anything from this platform.
+figures:
+  - spec: The 96-seat reservation map on a phone, mid pan-and-zoom. Every trainee name, face and identity number must be blurred or replaced before this is published.
+  - spec: A seasonal login theme — Vesak or Sinhala and Tamil New Year. Check with SLT what may be shown before publishing anything from this platform.
 draft: false
 ---
 

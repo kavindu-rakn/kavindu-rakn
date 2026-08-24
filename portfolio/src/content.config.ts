@@ -80,16 +80,27 @@ const work = defineCollection({
         /** Short factual bullets for the grid card. Product facts only. */
         highlights: z.array(z.string()).optional(),
 
-        heroImage: image().optional(),
-        heroImageAlt: z.string().optional(),
         ogImage: image().optional(),
 
         /**
-         * What still has to be captured by hand for this project. Each entry
-         * renders as a visible missing-asset slot on the case study until the
-         * real image exists (BRIEF §5.1 — he currently has almost none).
+         * Case-study imagery, as a list of required captures.
+         *
+         * While `src` is absent the figure renders as a visible missing-asset
+         * slot naming exactly what to shoot (BRIEF §5.1 — he currently has
+         * almost none). Add `src` and `alt` and the same slot becomes the real
+         * image, so filling a gap is editing one file, not touching a template.
+         *
+         * `src` is resolved relative to this markdown file, e.g. `./shot.png`.
          */
-        captureBrief: z.array(z.string()).optional(),
+        figures: z
+          .array(
+            z.object({
+              spec: z.string(),
+              src: image().optional(),
+              alt: z.string().optional(),
+            }),
+          )
+          .optional(),
 
         draft: z.boolean().default(false),
       })
@@ -143,13 +154,16 @@ const work = defineCollection({
           });
         }
 
-        if (data.heroImage && !data.heroImageAlt) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['heroImageAlt'],
-            message: 'heroImage requires heroImageAlt. Every image needs alt text.',
-          });
-        }
+        data.figures?.forEach((figure, i) => {
+          if (figure.src && !figure.alt) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['figures', i, 'alt'],
+              message:
+                'A figure with `src` needs `alt`. Every published image describes itself.',
+            });
+          }
+        });
       }),
 });
 

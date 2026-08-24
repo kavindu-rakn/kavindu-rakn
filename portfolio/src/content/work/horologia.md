@@ -18,9 +18,9 @@ highlights:
   - Raycasting inspector giving material hardness, friction coefficient and horological function per part
   - Synthesised Web Audio ticking at 28,800 vph with alternating pallet clicks
   - Live PBR material lab with 5 presets; Firestore gallery with a LocalStorage fallback
-captureBrief:
-  - A silent, autoplaying 10–20 second loop of the movement disassembling on scroll. This case study should be mostly video.
-  - The raycasting inspector open on one component, showing its material hardness, friction coefficient and horological function.
+figures:
+  - spec: A silent, autoplaying 10–20 second loop of the movement disassembling on scroll. This case study should be mostly video.
+  - spec: The raycasting inspector open on one component, showing its material hardness, friction coefficient and horological function.
 draft: false
 ---
 

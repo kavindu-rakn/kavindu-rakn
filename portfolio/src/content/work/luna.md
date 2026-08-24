@@ -14,8 +14,8 @@ techStack:
 highlights:
   - Real-time moon phase, orbital position and geolocation-aware sky panel
   - Draggable 3D moon, custom lunar mathematics, comet cursor trail
-captureBrief:
-  - The sky panel showing the moon at its real current phase, next to the draggable 3D moon.
+figures:
+  - spec: The sky panel showing the moon at its real current phase, next to the draggable 3D moon.
 draft: false
 ---
 
