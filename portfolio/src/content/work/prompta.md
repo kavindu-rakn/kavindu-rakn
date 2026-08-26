@@ -66,7 +66,9 @@ text direction for everything inside the container, so every child has to be
 flipped back one by one, and each new child is a chance to forget. For a purely
 cosmetic gain, that is a bad trade and I would not take it again.
 
-Plain CSS was worth doing once. What it actually taught me is that the cost is
-not writing the first screen, it is that every subsequent surface starts from
-zero and the conventions live only in my head. On a project I intended other
-people to work in, I would not repeat it.
+Plain CSS with no utility framework was a deliberate constraint, and a fair one
+on a project this size built alone. It scales badly in one specific way: nothing
+holds the shared vocabulary for spacing, colour and type, so every new surface
+re-decides them and consistency rests on memory rather than on the system. On
+anything I expected other people to work in, I would want the system holding
+those decisions instead.
