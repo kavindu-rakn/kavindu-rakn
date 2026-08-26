@@ -25,6 +25,8 @@ figures:
 draft: false
 ---
 
+import InheritanceDiagram from '../../components/InheritanceDiagram.astro';
+
 ## What it is
 
 A schema migration tool for catalogue data. You change a data model against live
@@ -53,6 +55,13 @@ default or position.
 A child may **not** delete an inherited field, and may **not** change its type.
 Those are precisely the two operations that silently invalidate data its
 ancestors own, and no amount of interface polish makes them safe.
+
+<InheritanceDiagram />
+
+Select a category to see its resolved schema — inherited fields first, in the
+order the resolver composes them, then whatever that node declares itself. Type
+a field name to watch it compose downward, and to see what the change would
+reach before anything is written.
 
 ## The decisions
 
