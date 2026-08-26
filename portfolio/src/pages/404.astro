@@ -1,0 +1,107 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+
+/*
+ * A missing address should still look like the rest of the site.
+ *
+ * Rather than a dead end, this lists the work that does exist — someone who
+ * mistyped a case-study URL is one click from the right one. Marked noindex,
+ * because a 404 that gets indexed is worse than no 404 at all.
+ */
+const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+---
+
+<Layout
+  title="Sheet not found"
+  description="That address does not correspond to anything on this site."
+  noindex
+>
+  <SiteHeader slot="header" />
+
+  <div class="blueprint-grid">
+    <div class="mx-auto max-w-6xl px-6 py-24 sm:py-32">
+      <p class="annotation">Error 404 · Sheet not found</p>
+
+      <h1
+        class="mt-6 font-display text-5xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-7xl"
+      >
+        Not in the set
+      </h1>
+
+      <p class="mt-6 max-w-xl text-lg text-figure-muted">
+        That address does not correspond to anything here. It may have been
+        mistyped, or it may never have existed.
+      </p>
+
+      <div class="mt-14 border-t-2 border-figure pt-6">
+        <p class="annotation">Sheets that do exist</p>
+        <ul class="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+          {
+            work.map((entry) => (
+              <li>
+                <a class="recover" href={`/work/${entry.id}`}>
+                  <span class="annotation">
+                    {String(entry.data.order).padStart(2, '0')}
+                  </span>
+                  <span class="recover__title">{entry.data.title}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+
+        <p class="mt-10 flex flex-wrap gap-x-6 gap-y-2">
+          <a class="recover recover--plain" href="/">Index</a>
+          <a class="recover recover--plain" href="/about">About</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <SiteFooter slot="footer" />
+</Layout>
+
+<style>
+  .recover {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.35rem 0;
+  }
+
+  .recover__title {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.125rem;
+    letter-spacing: -0.01em;
+  }
+
+  .recover:hover .recover__title {
+    color: var(--color-accent);
+  }
+
+  .recover--plain {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+
+  .recover--plain::after {
+    content: ' →';
+    text-decoration: none;
+  }
+
+  .recover--plain:hover {
+    color: var(--color-accent);
+  }
+</style>
