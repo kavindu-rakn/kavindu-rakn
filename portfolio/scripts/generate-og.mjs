@@ -140,8 +140,10 @@ written.push([
   ),
 ]);
 
-for (const file of readdirSync(WORK_DIR).filter((f) => f.endsWith('.md'))) {
-  const slug = file.replace(/\.md$/, '');
+// .mdx as well as .md — a case study that embeds a component is still a case
+// study, and filtering on .md alone would silently skip its card.
+for (const file of readdirSync(WORK_DIR).filter((f) => /\.mdx?$/.test(f))) {
+  const slug = file.replace(/\.mdx?$/, '');
   const { title, tagline } = frontmatter(file);
   if (!title) continue;
   written.push([
