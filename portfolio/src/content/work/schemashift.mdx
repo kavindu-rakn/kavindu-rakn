@@ -127,8 +127,8 @@ Listing this is part of the design, not an apology for it:
 ## What I would do differently
 
 The resolver exists twice — once in plpgsql, once in TypeScript — and the only
-thing holding them in step is an identical comment block and my own care. That
-is the weakest part of the design. I would add a test that runs both against the
+thing holding them in step is an identical comment block and the discipline to
+update both. That is the weakest part of the design. I would add a test that runs both against the
 same fixtures and fails when they disagree, so a divergence is caught by the
 suite rather than by a user watching the interface tell them something untrue.
 

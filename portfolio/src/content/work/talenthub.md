@@ -109,10 +109,13 @@ people who actually use the thing.
 
 ## What I would do differently
 
-I chose the Gemini model before I checked the daily rate limit, and had to
-migrate to a lighter one afterwards. The limit was published. Reading it first
-would have cost ten minutes and saved the migration.
+The model came first and the rate limit came second, and the migration to a
+lighter model was the consequence. The constraint existed the whole time — it
+simply was not part of the decision until it had to be. Capacity limits belong in
+the choice, not in the retrospective.
 
-The compliance duplication had been there a while before I consolidated it, and I
-had already added code near it more than once without noticing. I would now go
-looking for the second copy of a rule before writing against the first.
+The working-day and holiday rules lived in more than one place before I
+consolidated them, which means the platform briefly held two answers to "is this
+submission overdue" and nothing that would notice if they drifted apart.
+Consolidating them was the fix. What I would change is the order: look for the
+second copy of a rule before writing against the first.

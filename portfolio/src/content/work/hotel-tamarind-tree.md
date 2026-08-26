@@ -104,8 +104,8 @@ world.
 ## What I would do differently
 
 I would have asked what the property does about payment **before** building the
-Stripe integration rather than after. The decision to remove it was right; the
-week that produced it was avoidable, and the answer was one question away.
+Stripe integration rather than after. Removing it was the right call. Building it
+first was the avoidable part, and the answer was one question away.
 
 Random allocation among free units is fine and keeps things simple, but it makes
 a reported problem harder to reproduce — "guest was given unit 4" is not

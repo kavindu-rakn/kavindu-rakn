@@ -75,11 +75,14 @@ is not, so the piece works end to end with no network at all.
 
 ## What I would do differently
 
-It has no performance budget. I built it to find the ceiling, which meant I never
-asked what it costs on a mid-range Android — and mid-range Android is what most
-of the people I know are holding. I would now set that budget at the start and
-let it constrain the geometry, rather than measuring afterwards and hoping.
+It was built to find a ceiling rather than to hit a budget, and the result shows
+it: fourteen procedurally generated components, live PBR materials and
+synthesised audio are not the choices you make when a device budget is the
+constraint. Before calling it finished I would want to know what it actually
+costs on a mid-range Android, because that is the machine most of the people I
+would show it to are holding.
 
-No brief also meant no definition of done. Fourteen components is where I
-stopped, not a number I chose. That was fine here because nobody was waiting for
-it; it would not have been fine anywhere else.
+No brief also meant no definition of done. That is survivable on something nobody
+is waiting for, and a bad habit to carry into work that someone is expecting —
+deciding what finished means belongs at the start, not at the point you notice
+you have stopped.
