@@ -16,12 +16,19 @@ import { STATUS_LABEL, LIVE_PLACEHOLDER_KEYS } from '../consts';
 
 interface Props {
   entry: CollectionEntry<'work'>;
-  index: number;
+  /**
+   * Sheet number. Comes from the entry's own `order`, never from its position
+   * in the grid — a sheet keeps its number for life, the way a drawing does.
+   * Positional numbering silently disagreed with the case-study page, which has
+   * always printed `order`; the two matched only while no entry was drafted or
+   * reordered.
+   */
+  index?: number;
   /** The technical centrepiece spans the grid and sets larger. */
   feature?: boolean;
 }
 
-const { entry, index, feature = false } = Astro.props;
+const { entry, index = entry.data.order, feature = false } = Astro.props;
 const d = entry.data;
 
 type LiveToken = keyof typeof LIVE_PLACEHOLDER_KEYS;

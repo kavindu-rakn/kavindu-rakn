@@ -190,7 +190,7 @@ export const ROLES = [
   {
     title: 'Full-stack Developer Intern',
     org: 'Sri Lanka Telecom Mobitel',
-    period: 'January–August 2026',
+    period: 'February–August 2026',
     end: '2026-08-31' as string | null,
   },
 ] as const;
