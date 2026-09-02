@@ -7,7 +7,7 @@ import BlueprintHero from '../components/BlueprintHero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import SkillsMatrix from '../components/SkillsMatrix.astro';
 import ContactBlock from '../components/ContactBlock.astro';
-import { SITE, elapsedPhrase } from '../consts';
+import { SITE, ABOUT_PRECIS, elapsedPhrase } from '../consts';
 
 /*
  * The six entries here are the same six leaves as the hero's schema tree, in
@@ -35,9 +35,7 @@ const elapsed = elapsedPhrase();
         >
           Selected work
         </h2>
-        <p class="annotation">
-          {work.length} sheets · ordered by weight, not by date
-        </p>
+        <p class="annotation">{work.length} sheets</p>
       </header>
 
       {/*
@@ -54,37 +52,28 @@ const elapsed = elapsedPhrase();
           ))
         }
 
-        {/*
-          Sits in the cell the six cards leave empty. The alternative was letting
-          the last project span the full width, which would visually promote it
-          to feature status for a layout reason rather than a real one.
+{/*
+          Not a project card. It carried a sheet number and the same header rule
+          as the six beside it, so it read as a seventh project called "Twelve
+          months". The number is gone, the ground is raised, and the heading sets
+          smaller than a project title.
         */}
-        <aside class="flex min-w-0 flex-col border-2 border-accent p-6 sm:p-8">
-          <header
-            class="flex items-baseline justify-between gap-4 border-b border-rule pb-3"
-          >
-            <span class="annotation">00</span>
-            <span class="annotation">About</span>
-          </header>
+        <aside
+          class="flex min-w-0 flex-col border-2 border-accent bg-ground-raised p-6 sm:p-8"
+        >
+          <p class="annotation">About</p>
 
-          <h3
-            class="mt-6 font-display text-3xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-4xl"
-          >
-            {elapsed}
+          <h3 class="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">
+            {elapsed} of it
           </h3>
 
           <p class="mt-4 text-figure-muted">
             My first commit was on 17 August 2025.
           </p>
 
-          {/* duration-ok — fixed milestone, mirrors /about. */}
-          <p class="mt-4 text-sm leading-relaxed">
-            Twelve months later: largest contributor to a platform in production
-            that twenty developers built, with 207 of its 652 commits — and five
-            projects of my own designed and shipped.
-          </p>
+          <p class="mt-4 text-sm leading-relaxed">{ABOUT_PRECIS}</p>
 
-          <footer class="mt-auto border-t border-rule pt-4">
+          <footer class="mt-6 border-t border-rule pt-4">
             <a class="about-link" href="/about">Read the rest</a>
           </footer>
         </aside>

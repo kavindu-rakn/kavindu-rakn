@@ -46,7 +46,7 @@ const mimeFor = (path: string) => (path.endsWith('.webm') ? 'video/webm' : 'vide
       >
         <source src={figure.video} type={mimeFor(figure.video)} />
       </video>
-      <figcaption class="annotation mt-3">{figure.alt}</figcaption>
+      <figcaption class="mt-3 text-sm text-figure-muted">{figure.alt}</figcaption>
     </figure>
   ) : figure.src && figure.alt ? (
     <figure data-viewport={figure.viewport}>
@@ -59,7 +59,7 @@ const mimeFor = (path: string) => (path.endsWith('.webm') ? 'video/webm' : 'vide
         loading="lazy"
         decoding="async"
       />
-      <figcaption class="annotation mt-3">{figure.alt}</figcaption>
+      <figcaption class="mt-3 text-sm text-figure-muted">{figure.alt}</figcaption>
     </figure>
   ) : (
     <MissingAsset spec={figure.spec} viewport={figure.viewport} />

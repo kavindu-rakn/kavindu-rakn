@@ -204,6 +204,15 @@ export function currentRole(now: Date = new Date()) {
 export const LATEST_ROLE = ROLES[0];
 
 /**
+ * The one-paragraph version of /about, shown on the index card.
+ *
+ * Shared because the card used to restate these figures in its own words. Two
+ * copies of "207 of its 652 commits" is two things to keep true.
+ */
+export const ABOUT_PRECIS =
+  'Largest contributor to a platform in production that twenty developers built, with 207 of its 652 commits — and five projects of my own designed and shipped.';
+
+/**
  * What he is open to. Stored as the object alone and composed into a sentence at
  * each use site, so the footer's "Open to" label and the About page's sentence
  * cannot drift apart.
