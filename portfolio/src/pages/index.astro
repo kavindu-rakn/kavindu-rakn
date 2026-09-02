@@ -72,7 +72,7 @@ const elapsed = elapsedPhrase();
           <p class="mt-4 text-sm leading-relaxed">{ABOUT_PRECIS}</p>
 
           <footer class="mt-6 border-t border-rule pt-4">
-            <a class="about-link" href="/about">Read the rest</a>
+            <a class="rule-link rule-link--internal" href="/about">Read the rest</a>
           </footer>
         </aside>
       </div>
@@ -99,24 +99,3 @@ const elapsed = elapsedPhrase();
   <SiteFooter slot="footer" />
 </Layout>
 
-<style>
-  .about-link {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-figure);
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--color-accent);
-  }
-  .about-link::after {
-    content: ' →';
-    text-decoration: none;
-  }
-  .about-link:hover {
-    color: var(--color-accent);
-  }
-</style>
