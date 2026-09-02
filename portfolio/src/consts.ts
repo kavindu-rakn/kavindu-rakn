@@ -13,6 +13,8 @@ export const SITE = {
   location: 'Colombo, Sri Lanka',
   email: 'kavindu.rakn@gmail.com',
   github: 'https://github.com/kavindu-rakn',
+  /** This site's own repository, used to link the footer's build stamp. */
+  repo: 'https://github.com/kavindu-rakn/kavindu-rakn',
   education:
     'BSc (Hons) Information Technology, Software Engineering specialisation, SLIIT, 2022–2027',
   /** Site-level meta description. Kept under 160 characters for SERP display. */
@@ -68,7 +70,7 @@ export const PLACEHOLDERS = {
     token: 'LINKEDIN_URL',
     label: 'LinkedIn profile',
     action: 'Create the profile, then paste the URL. Do not invent one.',
-    value: null,
+    value: 'https://www.linkedin.com/in/kavindu-ranathunga/',
   },
   domain: {
     token: 'SITE_DOMAIN',
