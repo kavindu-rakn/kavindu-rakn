@@ -5,6 +5,9 @@
  * see prose. This does — it reads the built HTML, which is what actually ships,
  * and fails the build on the language and numbers the brief rules out.
  *
+ * It also reads src/ directly, for the one rule that cannot be checked against
+ * output: a hardcoded duration. See DURATION below.
+ *
  *   node scripts/lint-content.mjs            banned content only (runs in build)
  *   node scripts/lint-content.mjs --strict   also fails on unfilled placeholders
  *
@@ -142,6 +145,52 @@ for (const file of pages) {
   for (const token of PLACEHOLDER_TOKENS) {
     if (text.includes(token)) placeholderHits.push({ file, token });
   }
+}
+
+/*
+ * Hardcoded durations — checked in SOURCE, not in dist.
+ *
+ * "Twelve months" was typed by hand in four places and was wrong within a year
+ * of being written. It is now derived from FIRST_COMMIT (src/consts.ts), which
+ * means the rendered HTML legitimately contains the phrase and this rule cannot
+ * run against dist. It runs against the templates instead, where a typed
+ * duration is always a latent bug.
+ *
+ * A duration describing a fixed past milestone is legitimate and must stay put.
+ * Mark that line, or the line directly above it, `duration-ok`.
+ */
+const DURATION =
+  /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|twenty[\s-]?(?:one|two|three|four)|\d{1,3})[\s-]+(month|year)s?\b/gi;
+
+const SRC = join(process.cwd(), 'src');
+let sources;
+try {
+  sources = globSync(['**/*.astro', '**/*.md', '**/*.mdx'], { cwd: SRC }).map((p) =>
+    join(SRC, p),
+  );
+} catch {
+  sources = [];
+}
+
+for (const file of sources) {
+  const lines = readFileSync(file, 'utf8').split(/\r?\n/);
+  lines.forEach((line, i) => {
+    // The marker usually sits above the element wrapping the text, not
+    // immediately above the text itself, so look back a short window.
+    const marked = lines
+      .slice(Math.max(0, i - 3), i + 1)
+      .some((l) => /duration-ok/.test(l));
+    if (marked) return;
+    for (const match of line.matchAll(DURATION)) {
+      failures.push({
+        file: `${file}:${i + 1}`,
+        rule: 'hardcoded duration',
+        why: 'Derive it from FIRST_COMMIT, or mark the line `duration-ok` if it states a fixed past milestone.',
+        found: match[0].trim(),
+        context: line.trim(),
+      });
+    }
+  });
 }
 
 for (const { rule, pattern, where, why } of REQUIRED) {

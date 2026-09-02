@@ -2,18 +2,31 @@
 import Layout from '../layouts/Layout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import { SITE } from '../consts';
+import {
+  SITE,
+  AVAILABILITY,
+  LEARNING,
+  LATEST_ROLE,
+  currentRole,
+  elapsedPhrase,
+} from '../consts';
 
 /*
- * BRIEF §4: "Tell it plainly, once, without melodrama. It is the most
- * persuasive thing about him and it is entirely true. It also reframes the thin
- * GitHub history from a weakness into the point."
+ * Every number here is a raw count. No percentages, no hours, no
+ * self-description — `npm run lint:content` enforces that.
  *
- * Every number here is a raw count from CONTEXT §2. No percentages, no hours,
- * no self-description. `npm run lint:content` enforces that.
+ * Two kinds of duration appear on this page and they must not be confused:
+ *
+ *   - The *floating* figure (`elapsed`) means "how long he has been building",
+ *     and has to track today. It is derived from FIRST_COMMIT and refreshed by
+ *     the scheduled rebuild in .github/workflows/refresh.yml — never typed.
+ *   - *Fixed* figures describe a milestone that already happened and must stay
+ *     put. Those are marked `duration-ok` so the linter leaves them alone.
  */
-const description =
-  'First commit 17 August 2025. Twelve months later, the largest contributor to a 652-commit production platform built by twenty developers.';
+const elapsed = elapsedPhrase();
+const held = currentRole();
+
+const description = `First commit 17 August 2025. ${elapsed} later, the largest contributor to a 652-commit production platform built by twenty developers.`;
 ---
 
 <Layout title="About" description={description}>
@@ -25,7 +38,7 @@ const description =
     <h1
       class="mt-6 font-display text-5xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-7xl"
     >
-      Twelve months
+      {elapsed}
     </h1>
 
     <div class="prose-blueprint mt-14">
@@ -34,18 +47,18 @@ const description =
         at Sri Lanka Telecom Mobitel I had not used git.
       </p>
 
+      {/* duration-ok — a fixed milestone. This one must not track today. */}
       <p>
-        Twelve months later I was the largest contributor to TalentHub, a platform
-        in production that twenty developers built over a year — <strong
-          >207 of its 652 commits</strong
-        > and 37 pull requests merged. The next highest contributor has 94. I rebuilt
-        the interface across 27 of its 35 screens. In the same twelve months I designed
-        and shipped five projects of my own.
+        Twelve months after that first commit I was the largest contributor to
+        TalentHub, a platform in production that twenty developers built over a year
+        — <strong>207 of its 652 commits</strong> and 37 pull requests merged. The next
+        highest contributor has 94. I rebuilt the interface across 27 of its 35 screens.
+        In that same year I designed and shipped five projects of my own.
       </p>
 
       <p>
         That is the whole of it. The GitHub history is short because it starts in
-        August 2025, and everything in it was written in the twelve months since.
+        August 2025, and everything in it was written in the {elapsed.toLowerCase()} since.
       </p>
 
       <h2>What the work has in common</h2>
@@ -62,21 +75,22 @@ const description =
         screen. That is the kind of problem I look for.
       </p>
 
-      <h2>What I do not do</h2>
-
-      <p>
-        No mobile development. No React Native, no Flutter, no Swift, no Kotlin. If
-        you need a native application, I am not the right person for it, and a badge
-        on a portfolio would not change that.
-      </p>
-
       <h2>Now</h2>
 
       <ul>
-        <li>Full-stack Developer Intern, Sri Lanka Telecom Mobitel, January–August 2026</li>
+        {
+          held ? (
+            <li>{held.title}, {held.org}, {held.period}</li>
+          ) : (
+            <li>
+              Most recently {LATEST_ROLE.title}, {LATEST_ROLE.org}, {LATEST_ROLE.period}
+            </li>
+          )
+        }
         <li>{SITE.education}</li>
         <li>Based in {SITE.location}</li>
-        <li>Open to full-time and freelance work</li>
+        <li>Open to {AVAILABILITY.toLowerCase()}</li>
+        {LEARNING.length > 0 && <li>Currently working with {LEARNING.join(' and ')}</li>}
       </ul>
 
       <p>

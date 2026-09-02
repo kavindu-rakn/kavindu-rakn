@@ -13,6 +13,7 @@ export const SITE = {
   location: 'Colombo, Sri Lanka',
   email: 'kavindu.rakn@gmail.com',
   github: 'https://github.com/kavindu-rakn',
+  linkedin: 'https://www.linkedin.com/in/kavindu-ranathunga/',
   /** This site's own repository, used to link the footer's build stamp. */
   repo: 'https://github.com/kavindu-rakn/kavindu-rakn',
   education:
@@ -20,8 +21,8 @@ export const SITE = {
   /** Site-level meta description. Kept under 160 characters for SERP display. */
   description:
     'Full-stack developer in Colombo, Sri Lanka. Largest contributor to TalentHub, a production platform at Sri Lanka Telecom Mobitel.',
-  locale: 'en',
-  /** Default Open Graph image. Does not exist yet — tracked in PLACEHOLDERS.ogDefault. */
+  locale: 'en-GB',
+  /** Default Open Graph image. Generated into public/og/ by scripts/generate-og.mjs. */
   ogImage: '/og/default.png',
 } as const;
 
@@ -70,7 +71,7 @@ export const PLACEHOLDERS = {
     token: 'LINKEDIN_URL',
     label: 'LinkedIn profile',
     action: 'Create the profile, then paste the URL. Do not invent one.',
-    value: 'https://www.linkedin.com/in/kavindu-ranathunga/',
+    value: SITE.linkedin,
   },
   domain: {
     token: 'SITE_DOMAIN',
@@ -125,3 +126,88 @@ export const NAV = [
   { href: '/#work', label: 'Work' },
   { href: '/about', label: 'About' },
 ] as const;
+
+/**
+ * The first commit.
+ *
+ * Every elapsed figure on the site is derived from this date. None of them is
+ * written by hand, because a hand-written duration is correct only on the day it
+ * is committed and silently wrong every day after.
+ */
+export const FIRST_COMMIT = '2025-08-17';
+
+const NUMBER_WORDS = [
+  'Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight',
+  'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen',
+  'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty', 'Twenty-one',
+  'Twenty-two', 'Twenty-three',
+] as const;
+
+/** Whole months between `from` and `to`, floored. */
+export function monthsSince(from: string | Date = FIRST_COMMIT, to: Date = new Date()): number {
+  const start = typeof from === 'string' ? new Date(`${from}T00:00:00Z`) : from;
+  let months =
+    (to.getUTCFullYear() - start.getUTCFullYear()) * 12 +
+    (to.getUTCMonth() - start.getUTCMonth());
+  if (to.getUTCDate() < start.getUTCDate()) months -= 1;
+  return Math.max(0, months);
+}
+
+/**
+ * "Twelve months", "Nineteen months", "Two years".
+ *
+ * Spelled out below twenty-four months because the phrase is used as a headline;
+ * years after that, so the site never has to say "Thirty-seven months".
+ * Sentence-cased: every use on the site starts a sentence or a heading.
+ */
+export function elapsedPhrase(from: string | Date = FIRST_COMMIT, to: Date = new Date()): string {
+  const months = monthsSince(from, to);
+  if (months < 24) {
+    return `${NUMBER_WORDS[months] ?? months} month${months === 1 ? '' : 's'}`;
+  }
+  const years = Math.floor(months / 12);
+  return `${NUMBER_WORDS[years] ?? years} years`;
+}
+
+/**
+ * Positions, newest first.
+ *
+ * `period` is display text and is safe to hand-write: a date range in the past
+ * never becomes wrong. `end` is the only perishable part, and it exists solely
+ * so the About page can derive its own tense — `null` means current. Adding a
+ * new role with `end: null` is what moves the page from "Most recently" back to
+ * "Currently", with no prose to edit.
+ */
+export const ROLES = [
+  {
+    title: 'Full-stack Developer Intern',
+    org: 'Sri Lanka Telecom Mobitel',
+    period: 'January–August 2026',
+    end: '2026-08-31' as string | null,
+  },
+] as const;
+
+/** The role currently held, or `null` if between positions. */
+export function currentRole(now: Date = new Date()) {
+  return ROLES.find((r) => r.end === null || new Date(`${r.end}T23:59:59Z`) > now) ?? null;
+}
+
+/** The most recent role, current or not. */
+export const LATEST_ROLE = ROLES[0];
+
+/**
+ * What he is open to. Stored as the object alone and composed into a sentence at
+ * each use site, so the footer's "Open to" label and the About page's sentence
+ * cannot drift apart.
+ */
+export const AVAILABILITY = 'Full-time and freelance work';
+
+/**
+ * Currently being learned, as opposed to shipped.
+ *
+ * This replaces the old "What I do not do" section, which listed technologies as
+ * permanent exclusions and was factually wrong within a year of being written.
+ * A list of what is being picked up ages in the right direction: entries move
+ * out of it into a real project, they do not rot in place.
+ */
+export const LEARNING = ['React Native', 'Expo'] as const;

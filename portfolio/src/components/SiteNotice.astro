@@ -4,7 +4,7 @@ import { getCollection } from 'astro:content';
 /*
  * Build-status strip.
  *
- * Renders only while case-study figures are still missing their images, and
+ * Renders only while case-study figures are still missing their media, and
  * removes itself the moment the last one is supplied — there is no flag to
  * remember to switch off, because the condition is derived from the content.
  *
@@ -14,6 +14,16 @@ import { getCollection } from 'astro:content';
  *
  * It uses the accent colour, not signal red. Red is reserved for the unfilled
  * placeholders themselves; spending it here would dilute them.
+ *
+ * It states the outstanding count and nothing else. An earlier version claimed
+ * "the deploy gate refuses to pass until every one is supplied", which was not
+ * true — Vercel builds with the non-strict linter, so nothing blocked a deploy
+ * carrying unresolved placeholders, and this strip only ever renders in exactly
+ * the state that claim said was impossible. A banner asserting its own
+ * impossibility is worse than no banner. Say the count; let the reader judge.
+ *
+ * Not `role="status"`: this is build-time static text, so a live region would
+ * announce on every page load and never update.
  */
 
 const work = await getCollection('work', ({ data }) => !data.draft);
@@ -26,16 +36,15 @@ const outstanding = work.reduce(
 
 {
   outstanding > 0 && (
-    <div class="notice" role="status">
+    <aside class="notice" aria-label="Build status">
       <p class="notice__inner">
         <span class="notice__flag">In progress</span>
         <span class="notice__text">
-          Project imagery is still being captured. Unfilled assets are marked in
-          red rather than quietly hidden, and the deploy gate refuses to pass
-          until every one is supplied.
+          {outstanding} project {outstanding === 1 ? 'figure is' : 'figures are'} still
+          being captured. Unfilled assets are marked in red rather than quietly hidden.
         </span>
       </p>
-    </div>
+    </aside>
   )
 }
 
