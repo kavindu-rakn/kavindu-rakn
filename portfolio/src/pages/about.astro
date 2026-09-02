@@ -2,6 +2,8 @@
 import Layout from '../layouts/Layout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import SkillsMatrix from '../components/SkillsMatrix.astro';
+import ContactBlock from '../components/ContactBlock.astro';
 import {
   SITE,
   AVAILABILITY,
@@ -98,6 +100,14 @@ const description = `First commit 17 August 2025. ${elapsed} later, the largest 
         Both are on the <a href="/#work">work page</a>; for the two private
         repositories, source is available on request.
       </p>
+    </div>
+
+    <div class="mt-24">
+      <SkillsMatrix />
+    </div>
+
+    <div class="mt-24">
+      <ContactBlock compact />
     </div>
   </div>
 

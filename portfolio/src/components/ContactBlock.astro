@@ -1,0 +1,87 @@
+---
+import { SITE, AVAILABILITY } from '../consts';
+
+/*
+ * The close.
+ *
+ * Before this existed, the only way to make contact was a mailto in the footer,
+ * reached after the hero and seven cards, and the availability line was an 11px
+ * detail row — the smallest type on the page carrying its most commercially
+ * important fact. A visitor persuaded by the work had nowhere to go.
+ *
+ * Placed after the work grid rather than before it: the work is the argument and
+ * should not be pushed down the page by the ask. This is where a reader who has
+ * finished reading arrives.
+ */
+
+interface Props {
+  /** Trims the intro line where the surrounding page already says it. */
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+---
+
+<section class="border-2 border-accent p-6 sm:p-10" id="contact">
+  <p class="annotation">Contact</p>
+
+  <h2
+    class="mt-6 font-display text-3xl leading-[0.9] font-extrabold tracking-[-0.025em] uppercase sm:text-5xl"
+  >
+    {AVAILABILITY}
+  </h2>
+
+  {
+    !compact && (
+      <p class="mt-6 max-w-2xl text-figure-muted">
+        The fastest way to judge the work is to read the code or run the projects.
+        If you would rather just talk, email is the quickest route to me.
+      </p>
+    )
+  }
+
+  <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+    <a class="contact-link contact-link--primary" href={`mailto:${SITE.email}`}>
+      {SITE.email}
+    </a>
+    <a class="contact-link" href="/kavindu-ranathunga-resume.pdf">Résumé (PDF)</a>
+    <a class="contact-link" href={SITE.linkedin} rel="noopener noreferrer" target="_blank">
+      LinkedIn
+    </a>
+    <a class="contact-link" href={SITE.github} rel="noopener noreferrer" target="_blank">
+      GitHub
+    </a>
+  </div>
+
+  <p class="annotation mt-8">Based in {SITE.location}</p>
+</section>
+
+<style>
+  /*
+   * Padded to a 44px minimum target. The site's other link recipes are 11px
+   * mono with no padding, which is under the 24x24 floor before you even reach
+   * the comfortable size — and these are the links that must not be missed.
+   */
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+
+  .contact-link--primary {
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+
+  .contact-link:hover {
+    color: var(--color-accent);
+  }
+</style>

@@ -25,8 +25,9 @@ const { current } = Astro.props;
             <a
               href={item.href}
               class="annotation hover:text-figure"
-              aria-current={current === item.href ? 'page' : undefined}
-              data-active={current === item.href ? 'true' : undefined}
+              aria-current={!item.file && current === item.href ? 'page' : undefined}
+              data-active={!item.file && current === item.href ? 'true' : undefined}
+              data-file={item.file ? 'true' : undefined}
             >
               {item.label}
             </a>
@@ -53,6 +54,12 @@ const { current } = Astro.props;
     display: block;
     height: 1.1rem;
     width: auto;
+  }
+
+  /* Signals a download rather than a page, without a second type size. */
+  a[data-file='true']::after {
+    content: ' PDF';
+    opacity: 0.55;
   }
 
   a[data-active='true'] {
