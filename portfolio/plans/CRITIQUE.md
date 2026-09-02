@@ -1,304 +1,334 @@
-# Portfolio critique — kavindu-rakn.xyz
+# Portfolio critique and remediation — kavindu-rakn.xyz
 
 ## Context
 
-The site is live at a custom domain and the user asked for a brutal critique of the whole
-thing: design, content, engineering. Screen recordings and screenshots are known to be
-outstanding and are being worked on separately — so "you have no images" is not the finding.
-The finding is what the site currently *says about itself* while they are missing, and the
-gap between the site's claims of rigour and what an audit of it actually turns up.
+The site is live on Vercel at a custom domain. The user asked for a brutal critique of the whole
+thing, then pushed back on several findings and added their own. This document merges both.
 
 Assessed from: 10 live screenshots (`C:\Users\User\OneDrive\Pictures\Screenshots\portfolio\`,
-spanning both before and after the LinkedIn fix and build stamp), plus a full read of
-`portfolio/src`, `portfolio/scripts`, and `portfolio/package.json`.
+spanning before and after the LinkedIn fix and build stamp), a full read of `portfolio/src`,
+`portfolio/scripts` and `portfolio/package.json`, and the user's own observations from testing
+on Android and iOS.
 
-Verdict in one line: **a very well-engineered container that is currently arguing against its
-own author.** The craft is real. The problems are that the site decays on a timer, publishes a
-false claim about its own rigour, buries the only commercially useful facts, and spends its
-heaviest asset (Three.js) producing a worse image than its own free fallback.
+**Verdict:** the engineering craft is real and mostly good. The problems are that the site is
+about the projects rather than the person, reads like a newspaper at a moment when nobody is
+reading, encodes perishable facts as prose so it decays untouched, publishes a false claim about
+its own rigour, and spends its single heaviest dependency on an interaction the author himself
+cannot justify.
 
 ---
 
-## Tier 1 — Actively costing him the job (fix before anything else)
+## The root cause behind half of this: perishable facts encoded as prose
+
+The user's own framing, and it is the correct one:
+
+> "I keep building projects sometimes two-three per week. I revisit my old projects and add
+> fixes/improvements/revamps. So I shouldn't have to adjust outdated website content every
+> single time I do something."
+
+Every fact with an expiry date currently lives in hand-written prose, where it cannot be
+validated, cannot be derived, and cannot self-correct:
+
+| Perishable fact | Where it lives now | Already wrong? |
+|---|---|---|
+| "Twelve months" | `about.astro:28`, `:16`, `:38`; `index.astro:62` | Yes — 12.5 months as of 2026-09-02 |
+| Internship dates under `## Now` | `about.astro:76` prose | Yes — ended August 2026 |
+| "No React Native, no Flutter…" | `about.astro:68` prose | Yes — user is now building with RN + Expo |
+| Per-project status | frontmatter `status` (good — already data) | No |
+| Per-project last-touched | nowhere | n/a — should exist |
+
+The remedy is architectural, not editorial: **no fact with an expiry date may be written as
+prose.** It is computed, or it is a single-value constant, or it is not on the site.
+
+---
+
+## Tier 1 — Actively costing him the job
 
 ### 1.1 The build strip states something that is false
 
 `SiteNotice.astro:33-35` — "the deploy gate refuses to pass until every one is supplied."
 
-It does not. Verified:
-- Vercel runs `npm run build` → `node scripts/lint-content.mjs` **without `--strict`**
-  (`package.json:10`).
-- The placeholder check is strict-only (`lint-content.mjs:178-185`); non-strict just
+Corrected account of why (the earlier draft overstated this — Vercel *is* a real build pipeline
+and does build every push):
+
+- Vercel's build command is `npm run build`, which ends in `node scripts/lint-content.mjs`
+  **without `--strict`** (`package.json:10`).
+- The placeholder check is strict-only (`lint-content.mjs:178-185`). The non-strict path
   `console.log`s the outstanding list and exits 0.
-- `check:ship` (the actual gate, `package.json:15`) is a manual local command.
-- There is **no CI that builds the site at all** — the only workflow is `snake.yml`, which
-  renders the profile-README snake.
+- `check:ship` — the real gate (`package.json:15`) — is a manual local command, and there is no
+  GitHub Actions check that runs it. The only workflow in the repo is `snake.yml`, for the
+  profile README.
 
-So the live site is the counterexample to its own sentence. Worse: `SCREENSHOT_REQUIRED` is in
-`PLACEHOLDER_TOKENS` (`lint-content.mjs:83`) and renders as literal visible text on every case
-study — meaning `npm run check:ship` **fails right now**. The site is deployed in a state its
-own tooling classifies as un-shippable, while displaying a banner claiming that cannot happen.
+So nothing blocks a deploy carrying unresolved placeholders, and the live site proves it.
+`SCREENSHOT_REQUIRED` is in `PLACEHOLDER_TOKENS` (`lint-content.mjs:83`) and renders as visible
+text on every case study, so **`npm run check:ship` fails right now**.
 
-This is the single most damaging thing on the site, because the whole editorial posture is
-"every number here is verified, audit me." The one self-referential claim is the one that
-breaks.
+Note in mitigation, from the user: deploying in this state was *useful* — it is how they found
+real bugs on Android and iOS. Shipping early was correct. The defect is the sentence, not the
+deploy.
 
-Fix: either make the claim true (add CI running `check:ship` on PR, block the deploy) or delete
-the sentence. Recommend both — make it true, and still soften the strip to one clause.
+Fix: make the claim true (GitHub Actions running `check:ship` on PR, or point Vercel's build
+command at it) **and** soften the strip's wording to something that stays true either way.
 
-### 1.2 "Twelve months" is a hardcoded relative date and it is already wrong
+### 1.2 "Twelve months" decays on a clock, and the fix must not require a commit
 
-Today is 2026-09-02. First commit was 2025-08-17. That is **twelve and a half months**, and
-climbing every day.
+Today is 2026-09-02; first commit 2025-08-17. That is 12.5 months and climbing. It appears as
+the `<h1>` of `/about`, the index aside heading, the OG description, and in body prose.
 
-"Twelve months" is currently: the `<h1>` of `/about` (`about.astro:28`), the heading of the
-index aside (`index.astro:62`), and the body of the OG description (`about.astro:16`). The
-prose repeats it: "Twelve months later I was the largest contributor…" (`about.astro:38`).
+`lint-content.mjs` bans percentages, LOC figures and the word "passionate" — and passes the one
+number on the site that rots unattended.
 
-The lint script polices percentages, LOC figures and the word "passionate" — and lets through
-the one number on the site that rots on a clock. In three months a visitor reads "twelve
-months" under a date that is fifteen months old, and every other verified number on the page
-loses its credibility by association.
+**The user asked directly: does deriving it mean pushing a commit to refresh it? No.** Three
+layers, all of them:
 
-Fix: derive the elapsed figure from a `FIRST_COMMIT` constant at build time, or restate the
-claim in absolute terms that never decay ("Since August 2025"). Add a lint rule for hardcoded
-durations.
+1. **Build-time derivation** from a `FIRST_COMMIT = '2025-08-17'` constant in `consts.ts`.
+   Correct at deploy, drifts afterwards.
+2. **Vercel Deploy Hook + Cron**, fired monthly. The site rebuilds itself with no commit and no
+   content edit. This is what removes the maintenance burden.
+3. **Runtime self-correction.** Ship the build-time value inside a `<time datetime="…">`, plus
+   ~10 lines of inline script that recompute on load and rewrite the text if it has gone stale.
+   Crawlers and no-JS visitors get a correct-at-deploy figure; humans always get the true one.
 
-### 1.3 The `Now` section is in the past tense
+Also add a lint rule rejecting hardcoded durations ("twelve months", "N years") in rendered HTML,
+so this cannot come back.
 
-`about.astro:76` — "Full-stack Developer Intern, Sri Lanka Telecom Mobitel, January–August
-2026" — under a heading that says **Now**. As of today that internship ended last month. The
-most time-sensitive block on the site is stale, under the one heading that promises it isn't.
+### 1.3 `## Now` is in the past tense, and `## What I do not do` is now false
 
-Also unanswered, and it is the first question any recruiter has: *is he available, and when?*
-"Open to full-time and freelance" exists only as a footer detail row in 11px mono.
+- `about.astro:76` lists "Intern, SLT Mobitel, January–**August 2026**" under a heading that says
+  **Now**. That ended last month.
+- `about.astro:68` — "No React Native, no Flutter, no Swift, no Kotlin" — the user is **actively
+  building with React Native and Expo**. The site is currently disqualifying him from work he
+  can do.
 
-### 1.4 There is no way to hire him
+The second is the more serious of the two. It is a section written to narrow his own candidacy,
+and it is factually wrong in the direction that costs him. Recommend deleting the section
+outright rather than correcting it; a portfolio does not need a heading announcing what its
+author cannot build.
 
-- **No CV/résumé download.** Anywhere. Not linked, not in `public/`.
-- **No contact page and no contact CTA.** The only contact affordance on the entire site is a
-  `mailto:` in the footer (`SiteFooter.astro:27`) — reached after 240vh of hero plus seven
-  cards.
-- No phone, no availability date, no "hire me" moment at any point in the scroll.
+Neither should have been prose. See the root-cause section.
 
-A recruiter who is convinced by the SchemaShift write-up has nowhere to go. The site
-successfully argues the case and then provides no verdict form.
+### 1.4 The site is about the projects, not about the person
 
-Fix: a résumé PDF linked from the header, a contact block at the end of `/about` and after the
-work grid, and availability promoted out of the footer.
+The user's own words: *"I sometimes felt like this website is about my projects, not about me and
+my skills. And it's like a newspaper because there is way too much to read. No recruiter is
+reading all these. Even I am lazy."*
 
-### 1.5 Zero product imagery, on a portfolio
+Confirmed structurally, and it is worse than it looks:
 
-Five shipped products and the visitor never sees one of them. 11 hazard-hatched
-`MissingAsset` blocks ship instead. On `/work/luna` the first thing below the fold is a
-full-bleed red hatched box (screenshot 7).
+- **There is no skills data structure anywhere in the codebase.** No list, no const, no
+  collection. Capabilities exist only as `techStack` badges scattered across six separate cards,
+  so nobody can answer "what does he know" without reading all six.
+- **No résumé, no CV, no contact page, no CTA.** The only contact affordance on the entire site
+  is a `mailto:` in the footer (`SiteFooter.astro:27`) — after 240vh of hero and seven cards.
+- **Availability** — the single most commercially important fact — is a footer detail row in
+  11px mono.
+- **Reading load.** Six case studies, each with five `##` sections of dense prose, and no
+  summary layer anywhere. Nothing on the site can be consumed in under a minute.
 
-Understood that recordings are in progress. The point to keep after they land: a case study
-whose Imagery section renders a picture of a missing picture is strictly worse than a case
-study with no Imagery section. Until the assets exist, suppress the section rather than
-advertise the hole.
+**The user has an updated résumé and has offered it.** That one file plausibly resolves the
+missing skills section, the stale `Now` block, and the availability question together — it should
+be obtained before this tier is built.
+
+### 1.5 Imagery: the schema cannot hold what is coming
+
+Known and in progress: 11 hazard-hatched `MissingAsset` blocks currently ship. The user's plan
+is **two screen recordings per project (Luna included, it currently has only one figure), plus a
+mobile-view recording for every project.**
+
+The blocker nobody has hit yet: **the content schema has no video support.**
+
+- `figures[].src` is `image()` from `astro:assets` — it will not accept an `.mp4`/`.webm`.
+- `[slug].astro:107-119` renders `<Image>` only.
+- `MissingAsset.astro` is hardcoded to a 16:9 slot, so a 9:16 mobile recording has nowhere
+  correct to render.
+
+This has to be built *before* the assets land, not after. Needs: a discriminated figure type
+(`image` | `video`), a `viewport: 'desktop' | 'mobile'` field driving aspect ratio, `<video>`
+with `poster`, `muted`, `loop`, `playsinline`, `preload="metadata"`, and a reduced-motion path
+that shows the poster instead of autoplaying.
+
+Separately: while assets are outstanding, suppress the Imagery section rather than rendering a
+picture of a missing picture.
 
 ---
 
-## Tier 2 — The design is working against the content
+## Tier 2 — The design works against the content
 
-### 2.1 The 3D hero is a net loss
+### 2.1 The 3D hero — the author's own verdict is the harshest one
 
-- **240vh** of scroll (`BlueprintHero`) before the first project. ~2.4 screens of a box
-  diagram before the visitor learns anything.
-- **The SVG fallback looks better than the Three.js render.** Compare screenshot 1 (crisp line
-  drawing, genuinely blueprint-like, on-brand) with screenshots 2–4 (grey plastic slabs with
-  drop shadows, muddy fills that fight the paper palette). ~600KB of dependency produces the
-  worse image. This is the finding to sit with.
+> "Every time I visit this site, I question this 3D component. Why did I choose a product tree
+> to be the 3D component I build with Three.js in my most important website, out of all the cool
+> and unique things people build in their portfolios? There is nothing cool/immersive/useful/
+> unique about it. It glitches hard on mobile when scrolling, and glitches hard when I hover on
+> and off nodes on desktop."
+
+Corroborating evidence:
+
+- **The SVG fallback renders better than the Three.js version.** Screenshot 1 (crisp line
+  drawing, genuinely blueprint-like, sits correctly in the paper palette) versus screenshots 2–4
+  (grey plastic slabs with drop shadows that fight the design). ~600KB producing the worse image.
+- **290ms TBT** on the landing page, per the project's own README. Google's "good" bar is 200ms.
 - **The taxonomy is empty.** `ROOT → SYSTEMS / PRODUCT / CRAFT → six names`. Those three
-  categories appear nowhere else on the site, are not filters, are not links, and are never
-  explained. It is an org chart of nothing, diagramming the grid immediately below it.
-- **`HOVER A NODE`** is a hover-only affordance — dead on every touch device. The readout it
-  populates ("Luna — Real-time moon phase, orbital position and sky panel") is verbatim the
-  tagline already printed in the card below.
+  categories appear nowhere else on the site, are not filters, are not links, are never
+  explained. It diagrams the grid directly beneath it.
+- **`HOVER A NODE`** is hover-only — dead on touch. The readout prints the tagline already
+  visible in the card below.
 - **The nodes are links that are not links.** `blueprint-hero.ts:436-442` does
-  `canvas.addEventListener('click') → window.location.href`: no keyboard path, no focus ring,
-  no middle-click, no open-in-new-tab, no href in the status bar.
-- README's own number: **TBT 290ms** on the landing page. Google's "good" threshold is 200ms.
-  The hero measurably degrades the one page every visitor lands on.
+  `canvas.click → window.location.href`: no keyboard path, no focus ring, no middle-click, no
+  open-in-new-tab, no href in the status bar.
+- **240vh** of scroll before the first project.
+- Two reproducible glitches reported by the user (mobile scroll, desktop hover on/off) that
+  nobody has diagnosed.
 
-Recommend: keep the SVG, ship the 3D as an opt-in or drop it, and cut the section to ~100vh.
+Decision required from the user — cut it, or replace it with something that actually earns
+Three.js. Not worth debugging in place.
 
-### 2.2 One typographic note, played on everything
+### 2.2 The draughtsman conceit lost its purpose
 
-11px uppercase mono at 0.12em tracking is doing: nav, annotations, status labels, tech badges,
-sheet numbers, footer links, figure captions, the build strip, and "hover a node." Screenshot 5
-has **eleven** separate pieces of it inside a single card. When every element wears the accent
-treatment, there is no hierarchy left — and this setting is also the least legible option
-available, applied to the status information that matters most.
+User: *"This was not talking about Horologia. It was supposed to do something with the 3D model
+and with all the projects as I remember, but somehow it slipped out of scope, which is wrong."*
 
-Everything is additionally a 2px hard-cornered black rectangle. Cards inside cards inside
-rules. No elevation, no radius, no colour beyond one accent blue and one hazard red.
+So "Sheet 01 · Exploded assembly · Schema tree" is currently a costume with no mechanism behind
+it. Its fate is tied to 2.1: if the 3D goes, the conceit needs either a real job or removal.
 
-### 2.3 The card grid breaks visibly
+### 2.3 One typographic note played on everything
+
+11px uppercase mono at 0.12em tracking does nav, annotations, status labels, tech badges, sheet
+numbers, footer links, figure captions, the build strip, and "hover a node." Screenshot 5 shows
+**eleven** instances inside a single card. When everything wears the accent treatment there is no
+hierarchy left — and it is simultaneously the least legible setting available, applied to the
+status information that matters most.
+
+Everything is additionally a 2px hard-cornered rectangle: cards inside cards inside rules, no
+elevation, no radius, one accent blue and one hazard red.
+
+### 2.4 The card grid breaks visibly
 
 `ProjectCard` uses `mt-auto` footers in an equal-height grid, so a card with fewer highlights
-gets a void. Screenshot 5: Hotel Tamarind Tree (5 bullets) sits beside TalentHub (8 bullets)
-and shows a ~150px gap between its last bullet and its tech badges. Luna (2 bullets, screenshots
-6 and 9) has a chasm. It reads as a rendering bug, not as breathing room.
+gets a void. Screenshot 5: Hotel Tamarind Tree (5 bullets) beside TalentHub (8) shows a ~150px
+gap above its badges. Luna (2 bullets, screenshots 6 and 9) has a chasm. It reads as a rendering
+bug.
 
-### 2.4 The "00 / About" card is an about link cosplaying as a project
+### 2.5 The "00 / About" card is an about link cosplaying as a project
 
-Same border, same header, same numbering scheme, numbered `00` (`index.astro:51-78`). It reads
-as a seventh project called "Twelve months." Its copy is duplicated verbatim from `about.astro`
-with no shared source, so the two will drift. And `index.astro:46-50` openly admits it exists to
-fill the cell the six cards leave empty — layout dictating content, and it breaks the moment a
-seventh case study is added (which the README advertises as "writing a file, not editing a
-component").
+Same border, same header, numbered `00` (`index.astro:51-78`) — it reads as a seventh project
+called "Twelve months." Its copy duplicates `about.astro` verbatim with no shared source.
+`index.astro:46-50` admits it exists to fill the cell six cards leave empty: layout dictating
+content, and it breaks the moment a seventh study is added — which the README advertises as
+"writing a file, not editing a component," and which at 2–3 projects a week will happen soon.
 
-### 2.5 The blackletter R
+### 2.6 The wordmark — keep it, fix the break
 
-In the h1, the header brand, and the favicon — the three places a visitor decides whether this
-is a professional site. At a glance (screenshot 1) it does not read as a considered wordmark; it
-reads as a webfont that failed to load. The `--wordmark-r-*` tuning tokens are documented as
-"set by eye," which is honest and is also the tell.
+The blackletter R is the user's mark and stays. Withdrawing the aesthetic objection entirely.
+
+The real defect, found by the user on mobile: the h1 wraps as **"Kavindu R" / "anathunga"** —
+the glyph `<span>` in `Wordmark.astro` creates a break opportunity mid-surname. Fix with a
+non-breaking wrapper around the surname (`white-space: nowrap` on a span containing the R plus
+"anathunga"), and verify at 320px, 360px and 390px.
 
 ---
 
 ## Tier 3 — The writing
 
-Genuinely strong in places. TalentHub's "the feature degrades instead of breaking when the API
-is unavailable" is the best sentence on the site, and every case study having a "What I would do
-differently" section is rare and persuasive. What undercuts it:
+Genuinely strong in places. TalentHub's "the feature degrades instead of breaking when the API is
+unavailable" is the best sentence on the site, and "What I would do differently" on every study
+is rare and persuasive. What undercuts it:
 
 - **The hero thesis is retrofitted.** "Every project below makes an invisible mechanism visible."
-  Two of six do (Horologia, Luna). SchemaShift arguably. A hotel booking platform and an
-  internship management system do not. The claim is checkable and it is false at the stated scope.
-- **The draughtsman conceit is a costume.** "Sheet 01 · Exploded assembly · Schema tree" applied
-  to CRUD web apps. Horologia earns it. Nothing else does.
-- **"What I do not do"** — an unprompted disqualification list, with its own `<h2>`, on his own
-  portfolio. The intent (confidence, honesty) is not what a scanning recruiter takes from a
-  heading that announces what he cannot build.
-- **"6 sheets · ordered by weight, not by date"** is defensive. It draws attention to the count
-  being small and the dates being recent — neither of which the reader had noticed.
+  Horologia and Luna do; SchemaShift arguably. A hotel booking platform and an internship
+  management system do not. A checkable claim, false at the stated scope, on a site whose brand
+  is not overstating things.
+- **`## What I do not do`** — see 1.3. Delete.
+- **"6 sheets · ordered by weight, not by date"** is defensive; it points at the small count and
+  the recent dates before the reader had noticed either.
 - **The footer credit** — "Built with Astro and Three.js · No analytics · No cookies." Nobody
-  hiring cares what the portfolio is built with, and it is a privacy flex on a page with nothing
-  to protect.
+  hiring cares what the portfolio is built with.
+- **Length.** See 1.4. Every study needs a scannable summary layer above the prose.
 
 ---
 
-## Tier 4 — Engineering hygiene (matters because the site invites the audit)
+## Tier 4 — Engineering hygiene (the site invites this audit at `about.astro:83`)
 
-`about.astro:83` says "the fastest way to judge any of this is to read the code." Taking that
-invitation:
-
-- **No CI for the site.** No build, no typecheck, no lint on push or PR. See 1.1.
-- **No tests, no ESLint, no Prettier.** Nothing.
+- **No repo-level check.** Vercel builds every push, but runs the non-strict linter; no GitHub
+  Actions workflow runs `check:ship`. (Corrected from the earlier draft's "no CI at all.")
+- **No tests, no ESLint, no Prettier.**
 - **The placeholder machinery — the thing the README brags about — is dormant.**
-  `Placeholder.astro` currently renders **nowhere**. `liveUrlPlaceholder` and
-  `techStackPlaceholder` appear in zero content files, so those branches in
-  `ProjectCard.astro:96` and `[slug].astro:84` are unreachable, as is `TechStack`'s fallback
-  (which is also hardcoded to the TalentHub key inside a generic component,
-  `TechStack.astro:34`). `PLACEHOLDERS.talenthubStack.value` is still `null` and *cannot* be
-  caught, because the checker only looks for tokens that reach the HTML.
-- **Stale comments that contradict the code.** `consts.ts:24` "Default Open Graph image. Does
-  not exist yet" — it does. `Layout.astro:48-50` "the LinkedIn profile does not exist yet and
-  must not be invented" — it exists and is linked in the footer, and `sameAs` still omits it.
+  `Placeholder.astro` renders **nowhere**. `liveUrlPlaceholder` and `techStackPlaceholder` appear
+  in zero content files, so those branches (`ProjectCard.astro:96`, `[slug].astro:84`) are
+  unreachable, as is `TechStack`'s fallback — which is also hardcoded to the TalentHub key inside
+  a generic component (`TechStack.astro:34`). `PLACEHOLDERS.talenthubStack.value` is still `null`
+  and cannot be caught, because the checker only looks for tokens that reach the HTML.
+- **Stale comments contradicting the code.** `consts.ts:24` "Default Open Graph image. Does not
+  exist yet" — it does. `Layout.astro:48-50` "the LinkedIn profile does not exist yet and must
+  not be invented" — it exists, is linked in the footer, and `sameAs` still omits it.
 - **~40 comments cite `BRIEF §n` / `CONTEXT §n` / `CONTEXT-FOR-CLAUDE-CODE.md`, which are not in
   the repo.** Every reader hits references to a source of truth they cannot open.
-- **Dead tokens:** 19 of 22 palette colours unused. `--color-signal-600`, `PLACEHOLDERS.domain`,
-  `SITE.legalName`, `BlueprintSVG`'s `class` prop: zero references.
+- **Dead tokens:** 19 of 22 palette colours unused; `--color-signal-600`, `PLACEHOLDERS.domain`,
+  `SITE.legalName`, `BlueprintSVG`'s `class` prop all zero-reference.
 - **Duplication:** five copies of the underline-link CSS recipe, five copies of the display-h1
   utility string, four copies of the colour palette (`@theme`, `blueprint-hero.ts`,
-  `generate-og.mjs`, `favicon.svg`), the `LiveToken` block copy-pasted between two files, and
-  four independent `getCollection('work', …)` + sort calls with no shared helper.
-- **Every build dirties the tree:** 14 OG artifacts (~370KB) are committed and regenerated on
-  every build, and `SiteFooter.astro:17` stamps `new Date()` into every page, so every page's
-  HTML changes on every build regardless of content.
-- `blueprint-hero.ts` declares `FOV_DEGREES = 38` and then hardcodes `38` in the
-  `PerspectiveCamera` constructor (line 132).
+  `generate-og.mjs`, `favicon.svg`), the `LiveToken` block copy-pasted across two files, four
+  independent `getCollection('work', …)` + sort calls with no shared helper.
+- **Every build dirties the tree:** 14 committed OG artifacts (~370KB) regenerate on every build,
+  and `SiteFooter.astro:17` stamps `new Date()` into every page.
+- `blueprint-hero.ts` declares `FOV_DEGREES = 38` then hardcodes `38` at line 132.
 - `generate-og.mjs:53-56` sizes text by character count "verified by eye" — a title longer than
-  SchemaShift's silently overflows the card.
+  SchemaShift's silently overflows.
 
 ---
 
 ## Tier 5 — Accessibility and metadata
 
-The a11y baseline is above average — skip link, real landmarks, `role="img"` with `<title>`/
-`<desc>`, `sr-only` R preserving the accessible name, and a JS capability gate that never even
-fetches Three.js under reduced-motion. Which makes these stand out:
+Baseline is above average: skip link, real landmarks, `role="img"` with `<title>`/`<desc>`,
+`sr-only` R preserving the accessible name, and a capability gate that never fetches Three.js
+under reduced motion. Which makes these stand out:
 
 - `InheritanceDiagram.astro:283-286` kills the focus outline on the only text input on the site
-  (specificity 0,2,0 beats the global `:focus-visible`), replacing it with a border-colour change.
+  (specificity 0,2,0 beats the global `:focus-visible`).
 - `role="img"` on the diagram SVG wraps children the script gives `role="button"` — focusable but
   not announced to most AT.
-- `outline` on an SVG `<rect>` for `:focus-visible` is not reliably rendered (WebKit).
+- `outline` on an SVG `<rect>` for `:focus-visible` is unreliable in WebKit.
 - Nav and annotation links: 11px, no padding — touch targets far under 24×24.
 - `role="status"` on a static build-time strip: a live region that never updates, announced on
   every page load.
 - `aria-current="page"` on "Work" on case-study pages, which are not `/#work`.
-- Metadata leftovers: `sameAs` omits the now-real LinkedIn; no `og:image:width`/`height`;
-  `<html lang="en">` vs `og:locale=en_GB`; no `apple-touch-icon`, no manifest; repo README links
-  the `www.` host while `astro.config.mjs` canonicalises to the apex.
+- Metadata: `sameAs` omits the now-real LinkedIn; no `og:image:width`/`height`; `<html lang="en">`
+  vs `og:locale=en_GB`; no `apple-touch-icon`, no manifest; repo README links the `www.` host
+  while `astro.config.mjs` canonicalises to the apex.
 
 ---
 
-## What is genuinely good (so the above is calibrated)
+## What is genuinely good (calibration)
 
 - Zod `superRefine` turning editorial rules into build errors — `sourcePrivate && githubUrl`
-  fails the build. That is a real idea, well executed, and rare.
+  fails the build. A real idea, well executed, and rare.
 - `lint-content.mjs` as a concept: banning LOC figures, percentages and self-description at the
   rendered-HTML level.
 - Not inventing a LinkedIn URL, not linking a private repo, saying "internal platform · no public
   repository" out loud.
 - The TalentHub write-up, and "What I would do differently" on every study.
-- The Three.js capability gate (reduced-motion / cores / memory / WebGL2 → never fetched),
-  `teardown()` on `pagehide`, RAF stopped when hidden.
+- The Three.js capability gate, `teardown()` on `pagehide`, RAF stopped when hidden — better
+  engineering than the feature it protects deserves.
 - Static output, zero JS on 7 of 9 pages.
 
 ---
 
-## Proposed remediation, in order
+## Open decisions (blocking the build order)
 
-**Ship-blockers (do first):**
-1. Delete or correct the false sentence in `SiteNotice.astro`, and add a GitHub Actions workflow
-   running `npm run check:ship` on push/PR so the claim becomes true.
-2. Derive the "twelve months" figure at build time from a `FIRST_COMMIT` constant in
-   `consts.ts`; add a lint rule for hardcoded durations.
-3. Rewrite the `Now` list in `about.astro` to reflect post-August-2026 status and state
-   availability explicitly.
-4. Add a résumé PDF to `public/`, link it from `SiteHeader` and `/about`; add a contact block
-   after the work grid and at the end of `/about`.
-5. Suppress the Imagery section when a study has no resolved figures, instead of rendering
-   hazard blocks.
-
-**Design (next):**
-6. Cut the hero to ~100vh; make the SVG the default render and the 3D opt-in (or remove it).
-   Give the hero nodes real `<a>` elements over the canvas.
-7. Give the schema tree's three categories a job (filters, or labels reused in the grid) or
-   flatten it.
-8. Reduce the uppercase-mono treatment to two roles (sheet numbers + status), and set tech
-   badges and figure captions in the sans face.
-9. Fix the card-height voids — cap highlights at 4 on the grid, or drop `mt-auto` and let cards
-   size naturally.
-10. Restyle the About card so it is not a numbered project; source its copy from a shared const.
-
-**Copy:**
-11. Narrow the hero thesis to the projects it actually describes.
-12. Cut "What I do not do" or fold it into a single sentence.
-13. Cut "ordered by weight, not by date" and the Astro/Three.js credit.
-
-**Hygiene:**
-14. Remove the dormant placeholder machinery (`liveUrlPlaceholder`, `techStackPlaceholder`,
-    unreachable branches) or wire it to something real; resolve `talenthubStack`.
-15. Fix the stale comments; delete or vendor the `BRIEF`/`CONTEXT` references.
-16. Extract the link recipe and display-h1 into shared classes; extract a `getWork()` helper.
-17. Gitignore `public/og/*.png`; generate at build.
-18. Fix the a11y items in Tier 5 (focus outline, role conflict, `role="status"`, `aria-current`).
-19. Add LinkedIn to `sameAs`; add `og:image:width`/`height`; align `lang`/`og:locale`.
+1. **The 3D hero** — cut it, or replace it with something that earns Three.js?
+2. **The résumé file** — path needed. Gates the skills section, the `Now` rewrite and availability.
+3. **How far to restructure for scannability** — add a summary layer on top of the existing prose,
+   or genuinely cut the prose down?
 
 ## Verification
 
-- `cd portfolio && npm run check:ship` must exit 0 once imagery lands — that is the real gate,
-  and it currently fails.
-- `npm run build && npm run preview`, then walk `/`, `/about`, `/work/<each>`, `/404` at 375px,
-  768px and 1440px, in both colour schemes.
-- Keyboard-only pass: tab from the skip link to the footer on `/` and on `/work/schemashift`,
-  confirming every interactive element takes visible focus.
-- Lighthouse on `/` before and after the hero change; target TBT under 200ms.
+- `cd portfolio && npm run check:ship` must exit 0 once imagery lands — the real gate, currently
+  failing.
+- `npm run build && npm run preview`, then walk `/`, `/about`, `/work/<each>`, `/404` at 320px,
+  375px, 768px and 1440px, in both colour schemes. Confirm the wordmark never breaks mid-surname.
+- Keyboard-only pass: tab from skip link to footer on `/` and `/work/schemashift`, confirming
+  visible focus on every interactive element.
+- Lighthouse on `/` before and after the hero decision; target TBT under 200ms.
+- Verify the elapsed-time figure is correct in the built HTML *and* self-corrects with JS
+  disabled-then-enabled.
 - Confirm `https://www.kavindu-rakn.xyz` redirects to the apex.
