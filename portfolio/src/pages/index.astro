@@ -5,6 +5,8 @@ import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import BlueprintHero from '../components/BlueprintHero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import SkillsMatrix from '../components/SkillsMatrix.astro';
+import ContactBlock from '../components/ContactBlock.astro';
 import { SITE, elapsedPhrase } from '../consts';
 
 /*
@@ -80,6 +82,23 @@ const elapsed = elapsedPhrase();
           </footer>
         </aside>
       </div>
+    </div>
+  </section>
+
+  {/*
+    Capabilities and the ask both sit AFTER the work, not before it. The work is
+    the argument; pushing it further down the page to make room for a skills
+    list would trade the strong thing for the summary of it.
+  */}
+  <section class="border-t-2 border-figure">
+    <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+      <SkillsMatrix />
+    </div>
+  </section>
+
+  <section class="border-t-2 border-figure">
+    <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+      <ContactBlock />
     </div>
   </section>
 

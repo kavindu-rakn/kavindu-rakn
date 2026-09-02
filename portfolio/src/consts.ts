@@ -121,11 +121,19 @@ export const LIVE_PLACEHOLDER_KEYS = {
  * a second page rendering the same six cards would be duplicate content for
  * no gain. Individual case studies live at /work/<slug>.
  */
-export const NAV = [
+export type NavItem = {
+  readonly href: string;
+  readonly label: string;
+  /** A downloadable asset rather than a page. Never marked `aria-current`. */
+  readonly file?: boolean;
+};
+
+export const NAV: readonly NavItem[] = [
   { href: '/', label: 'Index' },
   { href: '/#work', label: 'Work' },
   { href: '/about', label: 'About' },
-] as const;
+  { href: '/kavindu-ranathunga-resume.pdf', label: 'Résumé', file: true },
+];
 
 /**
  * The first commit.
