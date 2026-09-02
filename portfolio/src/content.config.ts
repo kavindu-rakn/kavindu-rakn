@@ -77,6 +77,18 @@ const work = defineCollection({
          */
         employment: z.boolean().default(false),
 
+        /**
+         * Employment work that ALSO has a public artifact the author owns and
+         * can link — EasyApply runs on his own GitHub Pages, and SLT run a
+         * mirror of it on their servers.
+         *
+         * This exists so a link on an employment entry is always a deliberate,
+         * verified act. The blanket ban it replaces was written when TalentHub
+         * was the only employment entry, and generalised from it: it made an
+         * invented link impossible, but a real one impossible too.
+         */
+        ownPublicDeployment: z.boolean().default(false),
+
         /** Short factual bullets for the grid card. Product facts only. */
         highlights: z.array(z.string()).optional(),
 
@@ -115,13 +127,34 @@ const work = defineCollection({
           });
         }
 
-        if (data.employment && (data.githubUrl || data.liveUrl)) {
+        if (data.employment && (data.githubUrl || data.liveUrl) && !data.ownPublicDeployment) {
           ctx.addIssue({
             code: 'custom',
             path: ['githubUrl'],
             message:
-              'CONTEXT §3.3: TalentHub is employment, not a personal repo. There is no public ' +
-              'link and one must not be fabricated.',
+              'Employment work must not carry an invented link. TalentHub is internal and has ' +
+              'none. If this project genuinely has a public artifact you own and can link, set ' +
+              '`ownPublicDeployment: true` to say so deliberately.',
+          });
+        }
+
+        if (data.ownPublicDeployment && !data.employment) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['ownPublicDeployment'],
+            message:
+              '`ownPublicDeployment` qualifies `employment`. On a personal project it says ' +
+              'nothing — remove it.',
+          });
+        }
+
+        if (data.ownPublicDeployment && !data.githubUrl && !data.liveUrl && !data.draft) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['liveUrl'],
+            message:
+              '`ownPublicDeployment` claims a linkable public artifact, so supply the link. ' +
+              'Drafts are exempt while the URL is still being gathered.',
           });
         }
 

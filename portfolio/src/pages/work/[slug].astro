@@ -90,7 +90,9 @@ const liveKey =
         )
       }
       {d.sourcePrivate && <span class="annotation">Source private · available on request</span>}
-      {d.employment && <span class="annotation">Internal platform · no public repository</span>}
+      {d.employment && !d.githubUrl && !d.liveUrl && (
+        <span class="annotation">Internal platform · no public repository</span>
+      )}
     </div>
 
     {
