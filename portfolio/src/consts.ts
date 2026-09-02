@@ -48,38 +48,6 @@ export type PlaceholderSpec = {
 };
 
 export const PLACEHOLDERS = {
-  schemashiftLive: {
-    token: 'LIVE_URL_SCHEMASHIFT',
-    label: 'SchemaShift live URL',
-    action: 'Paste the Vercel deployment URL. Repo is private — do not link github.com.',
-    value: 'https://schema-shift.vercel.app/',
-  },
-  tamarindLive: {
-    token: 'LIVE_URL_TAMARIND',
-    label: 'Hotel Tamarind Tree live URL',
-    action: 'Paste the Vercel deployment URL. Repo is private — do not link github.com.',
-    value: 'https://hotel-tamarind-tree.vercel.app/',
-  },
-  talenthubStack: {
-    token: 'TALENTHUB_STACK',
-    label: 'TalentHub technology stack',
-    action:
-      'A stack is verified for every project except TalentHub. Confirm the real one — do not let it be guessed.',
-    value: null,
-  },
-  linkedin: {
-    token: 'LINKEDIN_URL',
-    label: 'LinkedIn profile',
-    action: 'Create the profile, then paste the URL. Do not invent one.',
-    value: SITE.linkedin,
-  },
-  domain: {
-    token: 'SITE_DOMAIN',
-    label: 'Production domain',
-    action:
-      'Buy the domain and update `site` in astro.config.mjs. A vercel.app subdomain is an unforced signal.',
-    value: 'https://kavindu-rakn.xyz',
-  },
   screenshots: {
     token: 'SCREENSHOT_REQUIRED',
     label: 'Case-study imagery',
@@ -106,12 +74,6 @@ export const STATUS_LABEL = {
   'in-production': 'In production',
   'deployed-in-development': 'Deployed · in active development',
   live: 'Live',
-} as const;
-
-/** The literal tokens from the brief, mapped to the placeholder registry. */
-export const LIVE_PLACEHOLDER_KEYS = {
-  LIVE_URL_SCHEMASHIFT: 'schemashiftLive',
-  LIVE_URL_TAMARIND: 'tamarindLive',
 } as const;
 
 /**
