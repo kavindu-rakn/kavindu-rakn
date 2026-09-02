@@ -1,5 +1,6 @@
 ---
 import { Font } from 'astro:assets';
+import SiteNotice from '../components/SiteNotice.astro';
 import { SITE } from '../consts';
 import '../styles/global.css';
 
@@ -118,6 +119,7 @@ const personSchema = {
   <body class="min-h-dvh bg-ground text-figure antialiased">
     <a class="skip-link" href="#main">Skip to content</a>
     <slot name="header" />
+    <SiteNotice />
     <main id="main">
       <slot />
     </main>

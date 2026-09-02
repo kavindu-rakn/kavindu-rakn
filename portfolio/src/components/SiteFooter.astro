@@ -1,6 +1,20 @@
 ---
 import { SITE, PLACEHOLDERS } from '../consts';
 import Placeholder from './Placeholder.astro';
+
+/*
+ * Build stamp. Vercel exposes the commit it built from as an environment
+ * variable, so the deployed page can say exactly which revision produced it and
+ * link to that commit. Locally those variables are absent and it reads "local",
+ * which is honest rather than a fabricated hash.
+ *
+ * This runs at build time — the site is static, so nothing is evaluated in the
+ * visitor's browser.
+ */
+const commit = process.env.VERCEL_GIT_COMMIT_SHA ?? null;
+const shortSha = commit ? commit.slice(0, 7) : null;
+const branch = process.env.VERCEL_GIT_COMMIT_REF ?? null;
+const builtAt = new Date().toISOString().replace('T', ' ').slice(0, 16);
 ---
 
 <footer class="border-t-2 border-figure">
@@ -29,9 +43,12 @@ import Placeholder from './Placeholder.astro';
               <Placeholder of="linkedin" />
             </div>
           ) : (
-            <a class="footer-link mt-4 inline-block" href={PLACEHOLDERS.linkedin.value}>
-              LinkedIn
-            </a>
+            <a
+              class="footer-link mt-4 inline-block"
+              href={PLACEHOLDERS.linkedin.value}
+              rel="noopener noreferrer"
+              target="_blank">LinkedIn</a
+            >
           )
         }
       </div>
@@ -55,9 +72,31 @@ import Placeholder from './Placeholder.astro';
       </div>
     </div>
 
-    <p class="annotation mt-12 border-t border-rule pt-6">
-      Built with Astro and Three.js · No analytics · No cookies
-    </p>
+    <div
+      class="mt-12 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-t border-rule pt-6"
+    >
+      <p class="annotation">Built with Astro and Three.js · No analytics · No cookies</p>
+
+      <p class="annotation build-stamp">
+        <span>Build</span>
+        {
+          commit && shortSha ? (
+            <a
+              class="build-stamp__sha"
+              href={`${SITE.repo}/commit/${commit}`}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              {shortSha}
+            </a>
+          ) : (
+            <span class="build-stamp__sha">local</span>
+          )
+        }
+        {branch && <span>· {branch}</span>}
+        <span>· {builtAt} UTC</span>
+      </p>
+    </div>
   </div>
 </footer>
 
@@ -72,6 +111,27 @@ import Placeholder from './Placeholder.astro';
     text-decoration-color: var(--color-accent);
   }
   .footer-link:hover {
+    color: var(--color-accent);
+  }
+
+  .build-stamp {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.4em;
+  }
+
+  .build-stamp__sha {
+    color: var(--color-figure);
+  }
+
+  a.build-stamp__sha {
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+
+  a.build-stamp__sha:hover {
     color: var(--color-accent);
   }
 </style>

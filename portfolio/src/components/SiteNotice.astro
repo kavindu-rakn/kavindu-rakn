@@ -1,0 +1,76 @@
+---
+import { getCollection } from 'astro:content';
+
+/*
+ * Build-status strip.
+ *
+ * Renders only while case-study figures are still missing their images, and
+ * removes itself the moment the last one is supplied — there is no flag to
+ * remember to switch off, because the condition is derived from the content.
+ *
+ * Deliberately NOT an overlay or an interstitial. It is static text in the
+ * normal flow, above the fold but below the header, so it costs nothing on the
+ * largest-contentful-paint element, which on every page is body text.
+ *
+ * It uses the accent colour, not signal red. Red is reserved for the unfilled
+ * placeholders themselves; spending it here would dilute them.
+ */
+
+const work = await getCollection('work', ({ data }) => !data.draft);
+
+const outstanding = work.reduce(
+  (total, entry) => total + (entry.data.figures?.filter((f) => !f.src).length ?? 0),
+  0,
+);
+---
+
+{
+  outstanding > 0 && (
+    <div class="notice" role="status">
+      <p class="notice__inner">
+        <span class="notice__flag">In progress</span>
+        <span class="notice__text">
+          Project imagery is still being captured. Unfilled assets are marked in
+          red rather than quietly hidden, and the deploy gate refuses to pass
+          until every one is supplied.
+        </span>
+      </p>
+    </div>
+  )
+}
+
+<style>
+  .notice {
+    border-bottom: 1px solid var(--color-rule);
+    background-color: var(--color-ground-raised);
+  }
+
+  .notice__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.85rem;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding: 0.6rem 1.5rem;
+  }
+
+  .notice__flag {
+    flex-shrink: 0;
+    padding: 0.15rem 0.4rem;
+    background-color: var(--color-accent);
+    color: var(--color-ground);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .notice__text {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.6;
+    color: var(--color-figure-muted);
+  }
+</style>
