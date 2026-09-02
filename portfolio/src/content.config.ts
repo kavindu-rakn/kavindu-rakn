@@ -5,14 +5,14 @@ import { z } from 'astro/zod';
 
 /**
  * Case studies. One file per project — adding work later is writing a file,
- * not editing a component (BRIEF §2, "Routing and content").
+ * not editing a component.
  *
  * The `superRefine` block at the bottom is not decoration. It turns the two
  * hard constraints that would most damage the deliverable into build errors:
  *   1. A private repository linked to github.com renders a 404 to logged-out
  *      visitors, which does not read as "private" — it reads as "fabricated".
- *      (CONTEXT §1.1)
- *   2. An unfilled live URL shipping silently. (BRIEF §5)
+ *     
+ *   2. An unfilled live URL shipping silently.
  */
 const work = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/work' }),
@@ -31,7 +31,7 @@ const work = defineCollection({
         order: z.number().int().positive(),
 
         /**
-         * Ordered exactly as CONTEXT §4 specifies — by centrality to the work,
+         * Ordered by centrality to the work,
          * never alphabetically. Do not reorder. Do not add a technology he does
          * not use; there is no mobile development anywhere in this stack.
          *
@@ -64,7 +64,7 @@ const work = defineCollection({
         /**
          * Deployment reality, as a closed vocabulary. Hotel Tamarind Tree is
          * `deployed-in-development` and must never be described as launched,
-         * paid, or client work (BRIEF §6). Only TalentHub is `in-production`,
+         * paid, or client work. Only TalentHub is `in-production`,
          * and that is verified by the repository README.
          */
         status: z.enum(['in-production', 'deployed-in-development', 'live']),
@@ -72,7 +72,7 @@ const work = defineCollection({
         /**
          * True for TalentHub only. It is employment, not a personal repo —
          * there is no public link and one must not be fabricated
-         * (CONTEXT §3.3). Orthogonal to `status`: TalentHub is simultaneously
+         *. Orthogonal to `status`: TalentHub is simultaneously
          * in production and unlinkable.
          */
         employment: z.boolean().default(false),
@@ -98,7 +98,7 @@ const work = defineCollection({
          * Case-study imagery, as a list of required captures.
          *
          * While `src` is absent the figure renders as a visible missing-asset
-         * slot naming exactly what to shoot (BRIEF §5.1 — he currently has
+         * slot naming exactly what to shoot (he currently has
          * almost none). Add `src` and `alt` and the same slot becomes the real
          * image, so filling a gap is editing one file, not touching a template.
          *
@@ -156,7 +156,7 @@ const work = defineCollection({
             code: 'custom',
             path: ['githubUrl'],
             message:
-              'CONTEXT §1.1: this repository is private. A github.com link renders a 404 to ' +
+              'this repository is private. A github.com link renders a 404 to ' +
               'logged-out visitors and reads as fabricated. Remove githubUrl, or make the repo public.',
           });
         }
@@ -207,7 +207,7 @@ const work = defineCollection({
             code: 'custom',
             path: ['techStack'],
             message:
-              'Every entry needs either a verified `techStack` ordered as CONTEXT §4 specifies, ' +
+              'Every entry needs either a verified `techStack` ordered by centrality to the work, ' +
               'or a `techStackPlaceholder` token. Never infer a stack the context file does not state.',
           });
         }

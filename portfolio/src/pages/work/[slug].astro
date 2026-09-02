@@ -1,5 +1,6 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
+import { getWork } from '../../lib/work';
 import Figure from '../../components/Figure.astro';
 import Layout from '../../layouts/Layout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
@@ -11,14 +12,11 @@ import { STATUS_LABEL } from '../../consts';
 /*
  * One route per entry in the `work` collection.
  *
- * Because the routes and the hero's clickable set are both derived from this
- * same collection, a node in the 3D tree can never link to a page that does not
- * exist — the two cannot drift.
+ * Routes come from the same helper the grid and the 404 recovery list use, so
+ * a link in either can never point at a page that was not generated.
  */
 export async function getStaticPaths() {
-  const entries = (await getCollection('work', ({ data }) => !data.draft)).sort(
-    (a, b) => a.data.order - b.data.order,
-  );
+  const entries = await getWork();
   return entries.map((entry, i) => ({
     params: { slug: entry.id },
     props: {

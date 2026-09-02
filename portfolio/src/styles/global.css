@@ -41,7 +41,7 @@
 
   /*
    * Signal red. Reserved exclusively for unresolved placeholders
-   * (BRIEF §5 — they must be impossible to ship unfilled).
+   * (they must be impossible to ship unfilled).
    * Do not use this colour decoratively; it would dilute the alarm.
    */
   --color-signal-500: #ff3b1f;
@@ -253,11 +253,11 @@
 }
 
 /*
- * BRIEF §2: "Respect prefers-reduced-motion: reduce. Same static fallback, no
- * exceptions, no 'reduced but still moving' compromise."
+ * prefers-reduced-motion: reduce, honoured with no exceptions and no "reduced
+ * but still moving" compromise.
  *
- * This is the site-wide CSS guard. The 3D island enforces the same preference
- * independently in JS (Phase 2) and never boots the render loop at all.
+ * This is the site-wide CSS guard. The hero enforces the same preference
+ * independently in JS and never fetches its renderer at all.
  */
 @media (prefers-reduced-motion: reduce) {
   *,

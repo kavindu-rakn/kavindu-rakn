@@ -4,10 +4,13 @@ import { PLACEHOLDERS } from '../consts';
 /*
  * A screenshot or recording that does not exist yet.
  *
- * BRIEF §5.1: "Screenshots and screen recordings of every project. He currently
- * has almost none — SchemaShift's own README says 'Screenshots: not yet
- * captured.'" This is the critical path, and no amount of code substitutes for
- * it, so the slot is rendered at full size rather than quietly omitted.
+ * Every project needs stills and a screen recording, and almost none exist yet.
+ * No amount of code substitutes for them, so during development the slot is
+ * rendered at full size rather than quietly omitted.
+ *
+ * It is dev-only: a public page should not show a reader a picture of a missing
+ * picture. The outstanding count in the build strip is the public disclosure,
+ * and scripts/lint-content.mjs enforces it from the frontmatter.
  */
 
 interface Props {

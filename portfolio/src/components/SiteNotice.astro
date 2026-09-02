@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getWork } from '../lib/work';
 
 /*
  * Build-status strip.
@@ -30,7 +30,7 @@ import { getCollection } from 'astro:content';
  * announce on every page load and never update.
  */
 
-const work = await getCollection('work', ({ data }) => !data.draft);
+const work = await getWork();
 
 const outstanding = work.reduce(
   (total, entry) =>

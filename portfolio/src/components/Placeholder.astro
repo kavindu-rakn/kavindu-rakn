@@ -4,10 +4,9 @@ import { PLACEHOLDERS, type PlaceholderKey } from '../consts';
 /*
  * An unfilled asset, rendered as a hazard label.
  *
- * BRIEF §5: "Placeholders for all of the above must be visually obvious in the
- * build so none of them can ship empty, exactly as the resume does with
- * [PHONE]." Signal red is reserved exclusively for this component — using it
- * decoratively anywhere else would dilute the alarm.
+ * An unfilled value must be visually obvious in the build, so none can ship
+ * empty — the same trick a resume plays with [PHONE]. Signal red is reserved
+ * exclusively for this component; using it decoratively would dilute the alarm.
  *
  * `npm run lint:content` fails the build if any of these still resolve to null,
  * so this is a loud reminder during development and a hard gate before deploy.
