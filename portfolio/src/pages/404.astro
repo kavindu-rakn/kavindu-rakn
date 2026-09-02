@@ -54,8 +54,8 @@ const work = await getWork();
         </ul>
 
         <p class="mt-10 flex flex-wrap gap-x-6 gap-y-2">
-          <a class="recover recover--plain" href="/">Index</a>
-          <a class="recover recover--plain" href="/about">About</a>
+          <a class="recover rule-link rule-link--internal" href="/">Index</a>
+          <a class="recover rule-link rule-link--internal" href="/about">About</a>
         </p>
       </div>
     </div>
@@ -83,23 +83,4 @@ const work = await getWork();
     color: var(--color-accent);
   }
 
-  .recover--plain {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--color-accent);
-  }
-
-  .recover--plain::after {
-    content: ' →';
-    text-decoration: none;
-  }
-
-  .recover--plain:hover {
-    color: var(--color-accent);
-  }
 </style>

@@ -142,6 +142,45 @@
     background-position: center center;
   }
 
+  /*
+   * The underlined mono link.
+   *
+   * Four files carried their own copy of this — .about-link, .recover--plain,
+   * .study-link and .project-link — identical down to the 0.35em underline
+   * offset and differing only in which arrow they appended. One definition, two
+   * modifiers.
+   */
+  .rule-link {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+
+  /* Leaves the site. */
+  .rule-link::after {
+    content: ' ↗';
+    text-decoration: none;
+  }
+
+  /* Stays on it. */
+  .rule-link--internal::after {
+    content: ' →';
+  }
+
+  .rule-link--strong {
+    font-weight: 500;
+  }
+
+  .rule-link:hover {
+    color: var(--color-accent);
+  }
+
   /* Monospace construction annotation, as used on the blueprint labels. */
   .annotation {
     font-family: var(--font-mono);

@@ -88,14 +88,14 @@ const d = entry.data;
     <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
       {
         d.liveUrl && (
-          <a class="study-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
+          <a class="rule-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
             Live site
           </a>
         )
       }
       {
         d.githubUrl && (
-          <a class="study-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
+          <a class="rule-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
             Source
           </a>
         )
@@ -152,7 +152,7 @@ const d = entry.data;
     </nav>
 
     <p class="mt-10">
-      <a class="study-link study-link--internal" href="/#work">All work</a>
+      <a class="rule-link rule-link--internal" href="/#work">All work</a>
     </p>
   </article>
 
@@ -184,28 +184,6 @@ const d = entry.data;
 </Layout>
 
 <style>
-  .study-link {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-figure);
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--color-accent);
-  }
-  .study-link::after {
-    content: ' ↗';
-    text-decoration: none;
-  }
-  .study-link--internal::after {
-    content: ' →';
-  }
-  .study-link:hover {
-    color: var(--color-accent);
-  }
-
   .sibling {
     display: block;
   }
