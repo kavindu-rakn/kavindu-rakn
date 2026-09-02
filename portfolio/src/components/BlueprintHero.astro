@@ -1,42 +1,53 @@
 ---
-import { getCollection } from 'astro:content';
 import BlueprintSVG from './BlueprintSVG.astro';
 import Wordmark from './Wordmark.astro';
 
 /*
- * The 3D hero, as an isolated script island.
+ * The hero, as an isolated script island.
  *
  * Load order, and why it is this order:
  *
  *   1. The heading and lede are plain server-rendered text. They paint first,
- *      so the LCP element is text and never the canvas (BRIEF §2).
- *   2. The finished blueprint is already in the DOM as inline SVG. No request,
- *      no JavaScript. This is the whole experience for reduced-motion, low-power
+ *      so the LCP element is text and never the canvas.
+ *   2. The static blueprint is already in the DOM as inline SVG. No request, no
+ *      JavaScript. This is the whole experience for reduced-motion, low-power
  *      and no-JS visitors — a designed resting state, not a broken one.
- *   3. Only then does the gate run. If it passes, Three.js is dynamically
+ *   3. Only then does the gate run. If it passes, the raymarcher is dynamically
  *      imported inside requestIdleCallback, once the hero is near the viewport.
- *      The canvas crossfades in over the SVG.
  *
- * Nothing on this page is hydrated. There is no framework runtime — this is a
- * plain module script that happens to own a canvas.
+ * The section is 160vh, not 240vh. The scroll span exists only to give the
+ * camera somewhere to travel; two and a half screens of it meant the first
+ * project sat below two full viewports of preamble.
+ *
+ * Nothing here is clickable. The previous hero navigated from a canvas click,
+ * which is a link with no keyboard path, no focus ring, no middle-click and no
+ * href in the status bar. Every one of those links exists properly in the grid
+ * below, so the drawing is now honestly atmospheric.
  */
-
-// Only nodes with a real case study become clickable, so the hero can never
-// link to a route that does not exist yet.
-const studies = await getCollection('work', ({ data }) => !data.draft);
-const linkable = JSON.stringify(studies.map((entry) => entry.id));
 ---
 
-<section
-  class="relative h-[240vh]"
-  data-hero-section
-  data-linkable={linkable}
->
-  <div class="sticky top-0 flex h-dvh flex-col overflow-hidden">
-    <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 pt-14 pb-8 sm:pt-20">
-      <!-- Text first in DOM order. This is the LCP element. -->
+<section class="relative h-[160vh]" data-hero-section>
+  <div
+    class="sticky top-0 h-dvh overflow-hidden"
+    data-hero-stage
+    data-mode="static"
+  >
+    {/*
+      Both visual layers are full-bleed and sit behind the text. The shader
+      keeps its upper frame close to empty — the ground plane is below the
+      camera and the plates are low — so the heading has clear paper to sit on
+      without needing a scrim over the drawing.
+    */}
+    <div class="hero-layer hero-blueprint" aria-hidden="true">
+      <BlueprintSVG />
+    </div>
+    <canvas class="hero-layer hero-canvas" data-hero-canvas aria-hidden="true"></canvas>
+
+    <div
+      class="relative z-10 mx-auto flex h-full w-full max-w-6xl flex-col px-6 pt-14 pb-8 sm:pt-20"
+    >
       <header class="shrink-0">
-        <p class="annotation">Sheet 01 · Schema tree · Exploded assembly</p>
+        <p class="annotation">Sheet 01 · Blueprint space</p>
         {/*
           Weight 800, not 700: only 400/600/800 are shipped, so `font-bold`
           would make the browser synthesise a weight that does not exist.
@@ -47,48 +58,13 @@ const linkable = JSON.stringify(studies.map((entry) => entry.id));
           <Wordmark />
         </h1>
         <p class="mt-5 max-w-2xl text-base text-figure-muted sm:text-lg">
-          Full-stack developer in Colombo. Every project below makes an invisible
-          mechanism visible — a schema change before you commit it, a watch
-          movement mid-disassembly, the orbit behind a moon phase.
+          Full-stack developer in Colombo. Six projects below, each one a thing
+          that had to work before it could look like anything.
         </p>
       </header>
 
-      <!-- The blueprint. SVG is the default; canvas overlays it only when live. -->
-      <div class="relative mt-8 min-h-0 flex-1" data-hero-stage data-mode="static">
-        {/*
-          BlueprintSVG is wrapped rather than styled directly. Astro scopes
-          styles to the component that DEFINES an element, so a class handed to
-          a child component cannot be targeted from here — the child's root
-          carries the child's scope id, and the rule silently never matches.
-        */}
-        <div class="hero-layer hero-blueprint">
-          <BlueprintSVG />
-        </div>
-        <canvas
-          class="hero-layer hero-canvas"
-          data-hero-canvas
-          aria-hidden="true"></canvas>
-        {/*
-          Node labels are appended at runtime and projected from world space.
-          They are aria-hidden because the same names are already reachable as
-          real text in the static blueprint and in the grid below.
-        */}
-        <div class="hero-layer hero-labels" data-hero-labels aria-hidden="true"></div>
-      </div>
-
-      <!-- Hover readout. Also the scroll affordance before anything is hovered. -->
-      <footer
-        class="mt-4 flex shrink-0 flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-rule pt-3"
-        data-hero-readout
-        data-state="idle"
-      >
-        <span class="annotation" data-hero-readout-idle>
-          Scroll to assemble
-        </span>
-        <span
-          class="font-display text-sm font-semibold tracking-tight"
-          data-hero-readout-label></span>
-        <span class="text-sm text-figure-muted" data-hero-readout-note></span>
+      <footer class="mt-auto shrink-0">
+        <p class="annotation">Scroll</p>
       </footer>
     </div>
   </div>
@@ -103,74 +79,38 @@ const linkable = JSON.stringify(studies.map((entry) => entry.id));
   }
 
   .hero-canvas {
+    display: block;
     opacity: 0;
     transition: opacity 700ms ease;
   }
 
+  /*
+   * The fallback drawing sits low in the frame, under the text rather than
+   * behind it, and stays quiet enough that the heading never fights it.
+   */
   .hero-blueprint {
-    /* Never intercepts the canvas's hover raycast. */
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 1.5rem 4rem;
+    opacity: 0.85;
     pointer-events: none;
     transition: opacity 700ms ease;
   }
 
-  .hero-labels {
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 700ms ease;
+  .hero-blueprint :global(svg) {
+    width: 100%;
+    max-width: 56rem;
+    height: auto;
+    max-height: 62%;
   }
 
-  /*
-   * `:global` because these children are created in JavaScript. Astro only
-   * stamps its scope attribute onto elements present in this template, so a
-   * scoped `.hero-node-label` rule would never match an appended element.
-   */
-  .hero-labels :global(.hero-node-label) {
-    position: absolute;
-    top: 0;
-    left: 0;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    color: var(--color-figure);
-    will-change: transform;
-  }
-
-  .hero-labels :global(.hero-node-label[data-depth='0']) {
-    font-size: 0.6875rem;
-  }
-
-  /*
-   * The hovered plate fills with the accent colour, so an accent-coloured
-   * label vanishes into it. A chip keeps the name legible at every scroll
-   * position — the plate is 25% accent while wireframe and solid accent once
-   * lit — and in both themes, because ground always contrasts with accent.
-   */
-  .hero-labels :global(.hero-node-label[data-hovered='true']) {
-    color: var(--color-ground);
-    background-color: var(--color-accent);
-    /* Kept narrow: SCHEMASHIFT is the longest label and the leaf pitch is
-       tight, so a wider chip laps onto the neighbouring plate. */
-    padding: 0.1rem 0.3rem;
-  }
-
-  /* Crossfade once the first WebGL frame has actually been drawn. */
-  [data-mode='live'] .hero-canvas,
-  [data-mode='live'] .hero-labels {
+  /* Crossfade once the first frame has actually been drawn. */
+  [data-mode='live'] .hero-canvas {
     opacity: 1;
   }
   [data-mode='live'] .hero-blueprint {
     opacity: 0;
-  }
-
-  /* Idle hint disappears as soon as a node is hovered. */
-  [data-state='active'] [data-hero-readout-idle] {
-    display: none;
-  }
-  [data-state='idle'] [data-hero-readout-label],
-  [data-state='idle'] [data-hero-readout-note] {
-    display: none;
   }
 </style>
 
@@ -180,15 +120,12 @@ const linkable = JSON.stringify(studies.map((entry) => entry.id));
   const section = document.querySelector<HTMLElement>('[data-hero-section]');
   const stage = document.querySelector<HTMLElement>('[data-hero-stage]');
   const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
-  const labels = document.querySelector<HTMLElement>('[data-hero-labels]');
-  const readout = document.querySelector<HTMLElement>('[data-hero-readout]');
-  const readoutLabel = document.querySelector<HTMLElement>('[data-hero-readout-label]');
-  const readoutNote = document.querySelector<HTMLElement>('[data-hero-readout-note]');
 
   /**
-   * Capability gate. Detect capability, not screen width (BRIEF §2) — most of
-   * the audience for this site is on mid-range Android, and a 3D hero that
-   * janks is worse than no 3D hero.
+   * Capability gate. Detect capability, not screen width — most of the audience
+   * for this site is on mid-range Android, and a hero that janks is worse than
+   * no hero. Raymarching is fragment-bound, so this matters more here than it
+   * did for the mesh scene it replaces.
    */
   function webgl2Available(): boolean {
     try {
@@ -223,47 +160,38 @@ const linkable = JSON.stringify(studies.map((entry) => entry.id));
     }
   }
 
-  if (section && stage && canvas && labels && readout && readoutLabel && readoutNote) {
-    if (shouldRender3D()) {
-      let teardown: (() => void) | null = null;
+  if (section && stage && canvas && shouldRender3D()) {
+    let teardown: (() => void) | null = null;
 
-      // Do not even fetch Three.js until the hero is close to the viewport.
-      const loader = new IntersectionObserver(
-        (entries) => {
-          if (!entries.some((entry) => entry.isIntersecting)) return;
-          loader.disconnect();
+    // Do not even fetch the renderer until the hero is close to the viewport.
+    const loader = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        loader.disconnect();
 
-          whenIdle(async () => {
-            try {
-              const { boot } = await import('../scripts/blueprint-hero');
-              const slugs: string[] = JSON.parse(section.dataset.linkable ?? '[]');
-              const context: BootContext = {
-                canvas,
-                stage,
-                section,
-                labels,
-                readout,
-                readoutLabel,
-                readoutNote,
-                linkable: new Set(slugs),
-              };
-              teardown = boot(context);
-            } catch {
-              // Any failure leaves the static blueprint in place, which is a
-              // complete experience on its own.
-              stage.dataset.mode = 'static';
-            }
-          });
-        },
-        { rootMargin: '200px' },
-      );
+        whenIdle(async () => {
+          try {
+            const { boot } = await import('../scripts/blueprint-hero');
+            const context: BootContext = { canvas, stage, section };
+            teardown = boot(context);
+          } catch (error) {
+            // Any failure leaves the static blueprint in place, which is a
+            // complete experience on its own. In development it also says so —
+            // a silent catch here once hid a shader compile error behind a
+            // fallback that looked deliberate.
+            if (import.meta.env.DEV) console.error('[hero] boot failed', error);
+            stage.dataset.mode = 'static';
+          }
+        });
+      },
+      { rootMargin: '200px' },
+    );
 
-      loader.observe(stage);
+    loader.observe(stage);
 
-      window.addEventListener('pagehide', () => {
-        teardown?.();
-        teardown = null;
-      });
-    }
+    window.addEventListener('pagehide', () => {
+      teardown?.();
+      teardown = null;
+    });
   }
 </script>
