@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getWork } from '../lib/work';
 import Layout from '../layouts/Layout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
@@ -13,9 +13,7 @@ import { SITE, ABOUT_PRECIS, elapsedPhrase } from '../consts';
  * The six entries here are the same six leaves as the hero's schema tree, in
  * the same order. That is deliberate: the hero is a diagram of this grid.
  */
-const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
-  (a, b) => a.data.order - b.data.order,
-);
+const work = await getWork();
 
 const elapsed = elapsedPhrase();
 ---

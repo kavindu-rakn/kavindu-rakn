@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getWork } from '../lib/work';
 import Layout from '../layouts/Layout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
@@ -11,9 +11,7 @@ import SiteFooter from '../components/SiteFooter.astro';
  * mistyped a case-study URL is one click from the right one. Marked noindex,
  * because a 404 that gets indexed is worse than no 404 at all.
  */
-const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
-  (a, b) => a.data.order - b.data.order,
-);
+const work = await getWork();
 ---
 
 <Layout

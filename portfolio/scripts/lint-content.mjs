@@ -35,9 +35,10 @@ function visibleText(html) {
 }
 
 /*
- * CONTEXT §3 — NUMBERS THAT MUST NOT APPEAR.
- * "Numbers that describe the product are good. Numbers that describe him
- * typing are not."
+ * Numbers that must not appear.
+ *
+ * Numbers describing the product are good. Numbers describing the author typing
+ * are not.
  */
 const BANNED = [
   {
@@ -73,7 +74,7 @@ const REQUIRED = [
     rule: 'working-days module consumers',
     pattern: /five controllers and four services/i,
     where: 'index.html',
-    why: 'CONTEXT §2 requires the corrected consumer count to be stated explicitly.',
+    why: 'The corrected consumer count must to be stated explicitly.',
   },
 ];
 

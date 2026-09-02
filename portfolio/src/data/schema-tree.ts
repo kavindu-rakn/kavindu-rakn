@@ -1,17 +1,13 @@
 /**
- * The hero object: a schema tree drawn as an architectural exploded assembly.
+ * The schema tree: a node graph that inherits downward, with projects as its
+ * leaves — SchemaShift's own data model drawn as physical structure.
  *
- * BRIEF §1: "Use the structure of a schema tree: a node graph that inherits
- * downward... Nodes are projects. It is SchemaShift's actual data model rendered
- * as physical structure."
+ * Read by one renderer now, not two: src/components/BlueprintSVG.astro. The
+ * hero's WebGL layer used to consume this same graph, which is why the file
+ * calls itself a single source of truth; that layer is now a raymarched space
+ * with no node geometry, so this drives the static blueprint alone.
  *
- * This file is the SINGLE SOURCE OF TRUTH for that graph. Both renderers read
- * it — the static SVG (src/components/BlueprintSVG.astro) and the Three.js
- * island (src/scripts/blueprint-hero.ts). They cannot drift apart, which
- * matters because the SVG is what low-power and reduced-motion visitors see
- * *instead of* the 3D, not alongside it.
- *
- * Every `note` is lifted verbatim-in-substance from CONTEXT §4. No note here
+ * Every `note` is verified before it was written. No note here
  * may assert anything that file does not verify.
  */
 
@@ -21,7 +17,7 @@ export type SchemaNode = {
   readonly label: string;
   /** Short uppercase form that fits inside a node plate. */
   readonly short: string;
-  /** Verified one-line descriptor. CONTEXT §4 only. */
+  /** Verified one-line descriptor. */
   readonly note: string;
   /** 0 = root, 1 = branch, 2 = leaf (a project). */
   readonly depth: 0 | 1 | 2;

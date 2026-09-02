@@ -1,7 +1,7 @@
 /**
  * Single source of truth for identity, SEO defaults, and unfilled assets.
  *
- * Every fact here is verified — see CONTEXT-FOR-CLAUDE-CODE.md §6 (IDENTITY).
+ * Every fact here is verified against the resume and the repositories.
  * Nothing in this file may introduce a lines-of-code figure, a percentage
  * derived from one, or self-description language ("passionate", "hardworking").
  */
@@ -29,12 +29,12 @@ export const SITE = {
 /**
  * Assets and URLs that do not exist yet.
  *
- * BRIEF §5: "Placeholders for all of the above must be visually obvious in the
- * build so none of them can ship empty, exactly as the resume does with [PHONE]."
+ * An unfilled value must be visually obvious in the build so none can ship
+ * empty, the way a resume does with [PHONE].
  *
- * Every entry here is rendered by <Placeholder /> with a high-visibility
- * treatment. `npm run lint:content` (added in Phase 3) fails the build if any
- * token still resolves to `null` at deploy time.
+ * `npm run lint:content --strict` fails the build if a token still resolves to
+ * `null` at deploy time. Note that it can only catch tokens that actually reach
+ * the HTML — a registry entry nothing renders is invisible to it.
  */
 export type PlaceholderSpec = {
   /** The literal token the brief specified, or a stable equivalent. */
@@ -64,7 +64,7 @@ export const PLACEHOLDERS = {
     token: 'TALENTHUB_STACK',
     label: 'TalentHub technology stack',
     action:
-      'CONTEXT §4 specifies a stack for every project except TalentHub. Confirm the real one — do not let it be guessed.',
+      'A stack is verified for every project except TalentHub. Confirm the real one — do not let it be guessed.',
     value: null,
   },
   linkedin: {
