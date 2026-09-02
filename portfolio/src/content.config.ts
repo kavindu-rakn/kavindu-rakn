@@ -31,18 +31,15 @@ const work = defineCollection({
         order: z.number().int().positive(),
 
         /**
-         * Ordered by centrality to the work,
-         * never alphabetically. Do not reorder. Do not add a technology he does
-         * not use; there is no mobile development anywhere in this stack.
+         * Ordered by centrality to the work, never alphabetically. Do not
+         * reorder, and do not add a technology that was not used.
          *
-         * Optional because CONTEXT specifies a stack for five of the six
-         * projects but NOT for TalentHub. Rather than infer one, that entry
-         * carries `techStackPlaceholder` and renders as an unfilled placeholder.
+         * Required. It was optional while TalentHub's stack was unverified and
+         * that entry carried a placeholder token instead. The stack has been
+         * verified since, so optionality only left room for an entry to ship
+         * with no stack at all.
          */
-        techStack: z.array(z.string()).nonempty().optional(),
-
-        /** Token shown when the real stack has not been verified yet. */
-        techStackPlaceholder: z.string().optional(),
+        techStack: z.array(z.string()).nonempty(),
 
         liveUrl: z.url().optional(),
 
@@ -199,25 +196,6 @@ const work = defineCollection({
             message:
               'A private project needs a live URL to be verifiable at all. Supply `liveUrl`, or ' +
               'carry `liveUrlPlaceholder` so the unfilled state is visually obvious.',
-          });
-        }
-
-        if (!data.techStack && !data.techStackPlaceholder) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['techStack'],
-            message:
-              'Every entry needs either a verified `techStack` ordered by centrality to the work, ' +
-              'or a `techStackPlaceholder` token. Never infer a stack the context file does not state.',
-          });
-        }
-
-        if (data.techStack && data.techStackPlaceholder) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['techStackPlaceholder'],
-            message:
-              'Remove `techStackPlaceholder` once a verified `techStack` is present.',
           });
         }
 

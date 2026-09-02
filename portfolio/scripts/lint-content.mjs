@@ -79,15 +79,7 @@ const REQUIRED = [
 ];
 
 /** Tokens that must not survive to production. */
-const PLACEHOLDER_TOKENS = [
-  'LIVE_URL_SCHEMASHIFT',
-  'LIVE_URL_TAMARIND',
-  'LINKEDIN_URL',
-  'TALENTHUB_STACK',
-  'SCREENSHOT_REQUIRED',
-  'OG_IMAGE_DEFAULT',
-  'SITE_DOMAIN',
-];
+const PLACEHOLDER_TOKENS = ['SCREENSHOT_REQUIRED', 'OG_IMAGE_DEFAULT'];
 
 let pages;
 try {

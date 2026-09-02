@@ -1,6 +1,4 @@
 ---
-import Placeholder from './Placeholder.astro';
-
 /*
  * Technology badges.
  *
@@ -14,23 +12,16 @@ import Placeholder from './Placeholder.astro';
  */
 
 interface Props {
-  items?: readonly string[];
-  placeholderToken?: string;
+  items: readonly string[];
 }
 
-const { items, placeholderToken } = Astro.props;
+const { items } = Astro.props;
 ---
 
-{
-  items ? (
-    <ul class="flex flex-wrap gap-x-2 gap-y-2">
-      {items.map((tech) => (
-        <li class="border border-rule px-2.5 py-1 text-xs text-figure-muted">
-          {tech}
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <Placeholder of="talenthubStack" token={placeholderToken} />
-  )
-}
+<ul class="flex flex-wrap gap-x-2 gap-y-2">
+  {
+    items.map((tech) => (
+      <li class="border border-rule px-2.5 py-1 text-xs text-figure-muted">{tech}</li>
+    ))
+  }
+</ul>
