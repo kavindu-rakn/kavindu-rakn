@@ -19,6 +19,8 @@ highlights:
 figures:
   - spec: The card-to-fullscreen morph as a short loop, showing the shared element travelling rather than cross-fading.
   - spec: A folder containing an encrypted attachment, and the one-click launch menu open.
+  - spec: The card-to-fullscreen morph on a phone, as a silent 10-20 second recording.
+    viewport: mobile
 draft: false
 ---
 

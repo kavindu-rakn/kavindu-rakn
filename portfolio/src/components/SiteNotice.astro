@@ -12,8 +12,7 @@ import { getCollection } from 'astro:content';
  * normal flow, above the fold but below the header, so it costs nothing on the
  * largest-contentful-paint element, which on every page is body text.
  *
- * It uses the accent colour, not signal red. Red is reserved for the unfilled
- * placeholders themselves; spending it here would dilute them.
+ * It uses the accent colour, not signal red.
  *
  * It states the outstanding count and nothing else. An earlier version claimed
  * "the deploy gate refuses to pass until every one is supplied", which was not
@@ -22,6 +21,11 @@ import { getCollection } from 'astro:content';
  * the state that claim said was impossible. A banner asserting its own
  * impossibility is worse than no banner. Say the count; let the reader judge.
  *
+ * It also claimed unfilled assets were "marked in red rather than quietly
+ * hidden". That stopped being true when the hazard slots became dev-only, so it
+ * is gone too. This count is now the whole of the public disclosure, which is
+ * why it names a number rather than a vague state.
+ *
  * Not `role="status"`: this is build-time static text, so a live region would
  * announce on every page load and never update.
  */
@@ -29,7 +33,8 @@ import { getCollection } from 'astro:content';
 const work = await getCollection('work', ({ data }) => !data.draft);
 
 const outstanding = work.reduce(
-  (total, entry) => total + (entry.data.figures?.filter((f) => !f.src).length ?? 0),
+  (total, entry) =>
+    total + (entry.data.figures?.filter((f) => !f.src && !f.video).length ?? 0),
   0,
 );
 ---
@@ -41,7 +46,7 @@ const outstanding = work.reduce(
         <span class="notice__flag">In progress</span>
         <span class="notice__text">
           {outstanding} project {outstanding === 1 ? 'figure is' : 'figures are'} still
-          being captured. Unfilled assets are marked in red rather than quietly hidden.
+          being captured. Case-study imagery appears as each one lands.
         </span>
       </p>
     </aside>

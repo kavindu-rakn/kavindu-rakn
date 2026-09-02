@@ -21,7 +21,8 @@ highlights:
   - Admin dashboard for bookings, rooms and enquiries; Auth.js v5 with bcrypt
   - Stripe integration built, then removed — the property takes payment on arrival
 figures:
-  - spec: The booking flow on a phone, from date selection through to confirmation, showing that an already-taken unit cannot be selected.
+  - spec: The booking flow on a phone, from date selection through to confirmation, showing that an already-taken unit cannot be selected. Silent 10-20 second recording.
+    viewport: mobile
   - spec: The admin dashboard listing bookings, with a pending booking visible before the nightly job expires it.
 draft: false
 ---

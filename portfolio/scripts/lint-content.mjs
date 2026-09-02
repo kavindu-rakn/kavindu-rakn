@@ -193,6 +193,68 @@ for (const file of sources) {
   });
 }
 
+const LINE_RE = /\r?\n/;
+const FIGURES_RE = /^figures:\s*$/;
+const TOPKEY_RE = /^[A-Za-z_]\w*:/;
+const ITEM_RE = /^\s+-\s/;
+const RESOLVED_RE = /(^|\s)(src|video):\s*\S/;
+const SPEC_RE = /spec:\s*(.+)$/;
+
+/*
+ * Unresolved figures, read from frontmatter rather than from the built HTML.
+ *
+ * The hazard slots used to render on every public page, so the
+ * SCREENSHOT_REQUIRED token reached dist/ and this script could simply look for
+ * it. Those slots are now dev-only — a reader should not be shown eleven
+ * pictures of a missing picture — so the token no longer ships and that check
+ * went blind. The source of truth moves to where the figures are declared.
+ *
+ * A figure is resolved once it has `src:` (a still) or `video:` (a recording).
+ */
+const WORK = join(process.cwd(), 'src', 'content', 'work');
+let workFiles;
+try {
+  workFiles = globSync(['**/*.md', '**/*.mdx'], { cwd: WORK }).map((f) => join(WORK, f));
+} catch {
+  workFiles = [];
+}
+
+const unresolvedFigures = [];
+
+for (const file of workFiles) {
+  const text = readFileSync(file, 'utf8');
+  const lines = text.split(LINE_RE);
+  if (lines[0] !== '---') continue;
+  const end = lines.indexOf('---', 1);
+  if (end === -1) continue;
+  const fm = lines.slice(1, end);
+
+  // A draft does not render, so its captures cannot block a deploy.
+  if (fm.some((l) => /^draft:\s*true\s*$/.test(l))) continue;
+
+  const start = fm.findIndex((l) => FIGURES_RE.test(l));
+  if (start === -1) continue;
+
+  let current = null;
+  const items = [];
+  for (const line of fm.slice(start + 1)) {
+    if (TOPKEY_RE.test(line)) break;
+    if (ITEM_RE.test(line)) {
+      current = [line];
+      items.push(current);
+    } else if (current) {
+      current.push(line);
+    }
+  }
+
+  for (const item of items) {
+    const body = item.join(' ');
+    if (RESOLVED_RE.test(body)) continue;
+    const spec = (SPEC_RE.exec(body) || [, ''])[1].trim().slice(0, 60);
+    unresolvedFigures.push({ file, spec });
+  }
+}
+
 for (const { rule, pattern, where, why } of REQUIRED) {
   const target = [...corpus].find(([file]) => file.endsWith(where));
   if (!target || !pattern.test(target[1])) {
@@ -222,19 +284,23 @@ if (failures.length > 0) {
 
 const unfilledTokens = [...new Set(placeholderHits.map((h) => h.token))];
 const unresolvedAssets = [...new Set(missingAssets.map((a) => a.path))];
-const outstanding = unfilledTokens.length + unresolvedAssets.length;
+const outstanding =
+  unfilledTokens.length + unresolvedAssets.length + unresolvedFigures.length;
 
 if (outstanding > 0) {
   if (STRICT) {
     console.error(`\nlint:content --strict — ${outstanding} item(s) unresolved\n`);
     for (const token of unfilledTokens) console.error(`  placeholder  ${token}`);
     for (const path of unresolvedAssets) console.error(`  missing file ${path}`);
+    for (const f of unresolvedFigures)
+      console.error(`  figure       ${rel(f.file)} - ${f.spec}...`);
     console.error('\nSupply these before deploying. See PLACEHOLDERS in src/consts.ts.\n');
     process.exit(1);
   }
   console.log(`lint:content — clean. ${outstanding} item(s) still outstanding:`);
   for (const token of unfilledTokens) console.log(`  placeholder  ${token}`);
   for (const path of unresolvedAssets) console.log(`  missing file ${path}`);
+  for (const f of unresolvedFigures) console.log(`  figure       ${rel(f.file)} - ${f.spec}...`);
 } else {
   console.log('lint:content — clean. Nothing outstanding.');
 }

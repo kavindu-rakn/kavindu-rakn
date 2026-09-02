@@ -1,0 +1,86 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import MissingAsset from './MissingAsset.astro';
+
+/*
+ * One case-study figure: a still, a screen recording, or the hazard slot naming
+ * what still has to be captured.
+ *
+ * The three states share a component so a figure's shape is decided in one
+ * place. Supplying `src` (or `video` plus `poster`) turns the slot into the real
+ * asset; nothing in the page template changes.
+ *
+ * The player never carries `autoplay` in the markup. A short muted loop is the
+ * right default when motion is welcome and exactly wrong when it is not, and
+ * HTML has no way to say "autoplay unless prefers-reduced-motion". So the
+ * attribute is added at runtime by the guarded script in the case-study page,
+ * and every visitor without that permission — or without JS — gets the poster
+ * and a play button instead.
+ */
+
+type WorkFigure = NonNullable<CollectionEntry<'work'>['data']['figures']>[number];
+
+interface Props {
+  figure: WorkFigure;
+}
+
+const { figure } = Astro.props;
+
+const mimeFor = (path: string) => (path.endsWith('.webm') ? 'video/webm' : 'video/mp4');
+---
+
+{
+  figure.video && figure.poster && figure.alt ? (
+    <figure data-viewport={figure.viewport}>
+      <video
+        class="figure__media"
+        poster={figure.poster.src}
+        preload="metadata"
+        muted
+        loop
+        playsinline
+        controls
+        data-autoplay
+        aria-label={figure.alt}
+      >
+        <source src={figure.video} type={mimeFor(figure.video)} />
+      </video>
+      <figcaption class="annotation mt-3">{figure.alt}</figcaption>
+    </figure>
+  ) : figure.src && figure.alt ? (
+    <figure data-viewport={figure.viewport}>
+      <Image
+        src={figure.src}
+        alt={figure.alt}
+        widths={[640, 960, 1280]}
+        sizes="(min-width: 72rem) 68rem, 100vw"
+        class="figure__media"
+        loading="lazy"
+        decoding="async"
+      />
+      <figcaption class="annotation mt-3">{figure.alt}</figcaption>
+    </figure>
+  ) : (
+    <MissingAsset spec={figure.spec} viewport={figure.viewport} />
+  )
+}
+
+<style>
+  .figure__media {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 2px solid var(--color-figure);
+  }
+
+  /*
+   * A phone capture is 9:16. Left full-width it becomes a column of screen
+   * taller than the viewport, so it is held to a phone-sized measure and
+   * centred, which is also how it was actually seen.
+   */
+  figure[data-viewport='mobile'] {
+    max-width: 19rem;
+    margin-inline: auto;
+  }
+</style>

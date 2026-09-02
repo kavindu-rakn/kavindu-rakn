@@ -27,7 +27,8 @@ highlights:
   - Compliance logic consolidated into a shared working-days and holiday module, imported by five controllers and four services
   - Seven animated seasonal login themes with a backend switch
 figures:
-  - spec: The 96-seat reservation map on a phone, mid pan-and-zoom. Every trainee name, face and identity number must be blurred or replaced before this is published.
+  - spec: The 96-seat reservation map on a phone, mid pan-and-zoom, as a silent 10-20 second recording. Every trainee name, face and identity number must be blurred or replaced before this is published.
+    viewport: mobile
   - spec: A seasonal login theme — Vesak or Sinhala and Tamil New Year. Check with SLT what may be shown before publishing anything from this platform.
 draft: false
 ---
