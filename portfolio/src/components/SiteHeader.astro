@@ -3,10 +3,17 @@ import RGlyph from '../assets/wordmark-r.svg';
 import { SITE, NAV } from '../consts';
 
 interface Props {
-  /** Marks the current page in the nav. */
+  /** The nav href matching this exact page. Gets `aria-current="page"`. */
   current?: string;
+  /**
+   * The nav href this page sits *under* rather than *is* — a case study lives
+   * under Work but is not the Work anchor. It gets the active styling and
+   * `aria-current="true"`, because claiming `page` on a page that is not that
+   * page tells a screen reader something false.
+   */
+  within?: string;
 }
-const { current } = Astro.props;
+const { current, within } = Astro.props;
 ---
 
 <header class="border-b border-rule">
@@ -24,9 +31,21 @@ const { current } = Astro.props;
           <li>
             <a
               href={item.href}
-              class="annotation hover:text-figure"
-              aria-current={!item.file && current === item.href ? 'page' : undefined}
-              data-active={!item.file && current === item.href ? 'true' : undefined}
+              class="annotation nav-link hover:text-figure"
+              aria-current={
+                item.file
+                  ? undefined
+                  : current === item.href
+                    ? 'page'
+                    : within === item.href
+                      ? 'true'
+                      : undefined
+              }
+              data-active={
+                !item.file && (current === item.href || within === item.href)
+                  ? 'true'
+                  : undefined
+              }
               data-file={item.file ? 'true' : undefined}
             >
               {item.label}
@@ -39,10 +58,27 @@ const { current } = Astro.props;
 </header>
 
 <style>
+  /*
+   * 11px mono with no padding is a target well under the 24x24 minimum, and
+   * these are the only navigation controls on the site. Padding gives them a
+   * real hit area; the negative margin keeps the header the height it was.
+   */
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-block: -0.75rem;
+    padding-block: 0.75rem;
+  }
+
   .brand {
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
+    /* Same target floor as the nav items — it is a link to the index. */
+    min-height: 44px;
+    margin-block: -0.75rem;
+    padding-block: 0.75rem;
   }
 
   .brand:hover .annotation {

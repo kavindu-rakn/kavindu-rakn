@@ -63,7 +63,8 @@ const d = entry.data;
   ogImage={d.ogImage?.src ?? `/og/${entry.id}.png`}
   ogImageAlt={`${d.title} — ${d.tagline ?? 'case study'}`}
 >
-  <SiteHeader slot="header" current="/#work" />
+  {/* Under Work, not Work itself — see the `within` prop. */}
+  <SiteHeader slot="header" within="/#work" />
 
   <article class="mx-auto max-w-6xl px-6 py-16 sm:py-24">
     <p class="annotation">
