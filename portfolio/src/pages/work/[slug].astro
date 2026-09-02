@@ -5,9 +5,8 @@ import Layout from '../../layouts/Layout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import TechStack from '../../components/TechStack.astro';
-import Placeholder from '../../components/Placeholder.astro';
 
-import { STATUS_LABEL, LIVE_PLACEHOLDER_KEYS } from '../../consts';
+import { STATUS_LABEL } from '../../consts';
 
 /*
  * One route per entry in the `work` collection.
@@ -55,11 +54,6 @@ const { Content } = await render(entry);
 const hasVideo = entry.data.figures?.some((f) => f.video) ?? false;
 const d = entry.data;
 
-type LiveToken = keyof typeof LIVE_PLACEHOLDER_KEYS;
-const liveKey =
-  d.liveUrlPlaceholder && d.liveUrlPlaceholder in LIVE_PLACEHOLDER_KEYS
-    ? LIVE_PLACEHOLDER_KEYS[d.liveUrlPlaceholder as LiveToken]
-    : null;
 ---
 
 <Layout
@@ -100,7 +94,6 @@ const liveKey =
           </a>
         )
       }
-      {liveKey && !d.liveUrl && <Placeholder of={liveKey} token={d.liveUrlPlaceholder} />}
       {
         d.githubUrl && (
           <a class="study-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">

@@ -1,8 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import TechStack from './TechStack.astro';
-import Placeholder from './Placeholder.astro';
-import { STATUS_LABEL, LIVE_PLACEHOLDER_KEYS } from '../consts';
+import { STATUS_LABEL } from '../consts';
 
 /*
  * One project, as a drawing sheet: index number and status in the header rule,
@@ -30,22 +29,17 @@ interface Props {
 
 const { entry, index = entry.data.order, feature = false } = Astro.props;
 const d = entry.data;
-
-type LiveToken = keyof typeof LIVE_PLACEHOLDER_KEYS;
-
-const liveKey =
-  d.liveUrlPlaceholder && d.liveUrlPlaceholder in LIVE_PLACEHOLDER_KEYS
-    ? LIVE_PLACEHOLDER_KEYS[d.liveUrlPlaceholder as LiveToken]
-    : null;
 ---
 
 <article
   class:list={[
-    'flex flex-col border-2 border-figure bg-ground p-6 sm:p-8',
+    'flex min-w-0 flex-col border-2 border-figure bg-ground p-6 sm:p-8',
     feature && 'md:col-span-2',
   ]}
 >
-  <header class="flex items-baseline justify-between gap-4 border-b border-rule pb-3">
+  <header
+    class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-rule pb-3"
+  >
     <span class="annotation">{String(index).padStart(2, '0')}</span>
     <span class="annotation">{STATUS_LABEL[d.status]}</span>
   </header>
@@ -98,9 +92,6 @@ const liveKey =
         </a>
       )
     }
-
-    {/* Unfilled Vercel URL — impossible to ship silently. */}
-    {liveKey && !d.liveUrl && <Placeholder of={liveKey} token={d.liveUrlPlaceholder} />}
 
     {
       d.githubUrl && (
