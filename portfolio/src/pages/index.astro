@@ -40,7 +40,14 @@ const elapsed = elapsedPhrase();
         </p>
       </header>
 
-      <div class="mt-10 grid gap-6 md:grid-cols-2">
+      {/*
+        `items-start` rather than the default stretch. Stretching made every card
+        in a row as tall as the tallest, and the `mt-auto` footers then left a
+        void above the tech stack on any entry with fewer highlights — Luna's was
+        a chasm. Sizing each card to its own content removes it without dropping
+        any content from the shorter ones.
+      */}
+      <div class="mt-10 grid items-start gap-6 md:grid-cols-2">
         {
           work.map((entry, i) => (
             <ProjectCard entry={entry} feature={i === 0} />
@@ -52,7 +59,7 @@ const elapsed = elapsedPhrase();
           the last project span the full width, which would visually promote it
           to feature status for a layout reason rather than a real one.
         */}
-        <aside class="flex flex-col border-2 border-accent p-6 sm:p-8">
+        <aside class="flex min-w-0 flex-col border-2 border-accent p-6 sm:p-8">
           <header
             class="flex items-baseline justify-between gap-4 border-b border-rule pb-3"
           >
