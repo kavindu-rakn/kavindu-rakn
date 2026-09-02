@@ -5,7 +5,7 @@ import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import BlueprintHero from '../components/BlueprintHero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import { SITE } from '../consts';
+import { SITE, elapsedPhrase } from '../consts';
 
 /*
  * The six entries here are the same six leaves as the hero's schema tree, in
@@ -14,6 +14,8 @@ import { SITE } from '../consts';
 const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
   (a, b) => a.data.order - b.data.order,
 );
+
+const elapsed = elapsedPhrase();
 ---
 
 <Layout title={SITE.name}>
@@ -59,13 +61,14 @@ const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
           <h3
             class="mt-6 font-display text-3xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-4xl"
           >
-            Twelve months
+            {elapsed}
           </h3>
 
           <p class="mt-4 text-figure-muted">
             My first commit was on 17 August 2025.
           </p>
 
+          {/* duration-ok — fixed milestone, mirrors /about. */}
           <p class="mt-4 text-sm leading-relaxed">
             Twelve months later: largest contributor to a platform in production
             that twenty developers built, with 207 of its 652 commits — and five
