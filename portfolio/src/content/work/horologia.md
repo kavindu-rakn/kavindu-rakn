@@ -21,6 +21,8 @@ highlights:
 figures:
   - spec: A silent, autoplaying 10–20 second loop of the movement disassembling on scroll. This case study should be mostly video.
   - spec: The raycasting inspector open on one component, showing its material hardness, friction coefficient and horological function.
+  - spec: The scroll disassembly on a phone, as a silent 10-20 second recording, showing the movement holding its frame rate on a touch device.
+    viewport: mobile
 draft: false
 ---
 

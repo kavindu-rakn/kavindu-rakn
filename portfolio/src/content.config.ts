@@ -108,7 +108,41 @@ const work = defineCollection({
           .array(
             z.object({
               spec: z.string(),
+
+              /**
+               * Drives the slot's aspect ratio. A phone recording is 9:16 and
+               * has nowhere correct to live in a 16:9 frame — it either letterboxes
+               * into a strip or gets cropped, and both misrepresent the work.
+               */
+              viewport: z.enum(['desktop', 'mobile']).default('desktop'),
+
+              /** Still image, resolved relative to this markdown file. */
               src: image().optional(),
+
+              /**
+               * Screen recording, as a path under public/media/.
+               *
+               * Not `image()`: astro:assets processes images only, and would
+               * reject an .mp4 outright. Videos are served from public/ as-is,
+               * so lint-content.mjs checks the file actually exists in dist —
+               * a typo here would otherwise ship as a silently broken player.
+               */
+              video: z
+                .string()
+                .regex(
+                  /^\/media\/[A-Za-z0-9._-]+\.(mp4|webm)$/,
+                  'Must be a path under /media/ ending in .mp4 or .webm.',
+                )
+                .optional(),
+
+              /**
+               * Poster frame. Required with `video`: it is what a visitor sees
+               * before playback, on a slow connection, and — because the player
+               * never autoplays without JS confirming motion is welcome — it is
+               * the whole experience under prefers-reduced-motion.
+               */
+              poster: image().optional(),
+
               alt: z.string().optional(),
             }),
           )
@@ -188,12 +222,33 @@ const work = defineCollection({
         }
 
         data.figures?.forEach((figure, i) => {
-          if (figure.src && !figure.alt) {
+          if (figure.src && figure.video) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['figures', i, 'video'],
+              message:
+                'A figure is one thing: a still (`src`) or a recording (`video`). For both, ' +
+                'write two figures.',
+            });
+          }
+
+          if (figure.video && !figure.poster) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['figures', i, 'poster'],
+              message:
+                'A recording needs a `poster`. It is what shows before playback and under ' +
+                'prefers-reduced-motion, where the video never plays at all.',
+            });
+          }
+
+          if ((figure.src || figure.video) && !figure.alt) {
             ctx.addIssue({
               code: 'custom',
               path: ['figures', i, 'alt'],
               message:
-                'A figure with `src` needs `alt`. Every published image describes itself.',
+                'A figure with `src` or `video` needs `alt`. Every published asset describes ' +
+                'itself.',
             });
           }
         });
