@@ -117,8 +117,14 @@ const liveKey =
     */}
     {d.sourcePrivate && <span class="annotation">Source private · available on request</span>}
 
-    {/* CONTEXT §3.3 — employment, not a personal repo. No link exists. */}
-    {d.employment && <span class="annotation">Internal platform · no public repository</span>}
+    {/*
+      Employment work with no linkable artifact. Conditioned on the links rather
+      than on `employment` alone, so an employment entry that does have a public
+      deployment cannot announce "no public repository" beside its own link.
+    */}
+    {d.employment && !d.githubUrl && !d.liveUrl && (
+      <span class="annotation">Internal platform · no public repository</span>
+    )}
   </footer>
 
 </article>
