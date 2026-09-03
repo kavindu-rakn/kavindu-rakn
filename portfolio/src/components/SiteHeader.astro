@@ -32,6 +32,8 @@ const { current, within } = Astro.props;
             <a
               href={item.href}
               class="annotation nav-link hover:text-figure"
+              target={item.file ? '_blank' : undefined}
+              rel={item.file ? 'noopener noreferrer' : undefined}
               aria-current={
                 item.file
                   ? undefined
