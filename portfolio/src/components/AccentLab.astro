@@ -1,70 +1,71 @@
 ---
 /*
- * TEMPORARY — a switch for trying accents against the real site.
+ * TEMPORARY — the last open question: lime or chartreuse for dark mode.
  *
  * Rendered only when `import.meta.env.DEV` is true, so it cannot reach a build.
- * Delete this file and its one line in Layout.astro once a pair is chosen.
+ * Delete this file and its one line in Layout.astro once dark is settled.
  *
- * Dark is settled — lime, which clears about 14:1 against the near-black
- * ground. Only the light accent is still open, and the number beside each swatch
- * is its contrast against the ink. That column is the whole point: every colour
- * rejected so far sat between 1.6 and 2.7, which is why they all read as black
- * whatever their hue. Nothing here is below 4.8.
+ * Light is finished: gold, 6.5:1 against the near-black ink. It is set in
+ * global.css and is not switchable here any more.
  *
- * The trade is fixed by the two grounds: ratio-to-ink times ratio-to-cream is
- * roughly constant, so separating harder from black necessarily means sitting
- * lighter on the paper. Higher up this list is bolder against the text and
- * fainter against the page.
+ * The two numbers matter for different reasons, and in dark mode they pull
+ * against each other. `vs ground` is how hard the colour pops off the black —
+ * lime wins that outright. `vs ink` is how far it stays from the WHITE text,
+ * and that is where lime is thin at 1.38. The risk inverts between the modes:
+ * in light a bad accent disappears into black type, in dark it disappears into
+ * white type. Chartreuse trades 3.4 points of ground separation for half a
+ * point more distance from the text.
  *
- * No JavaScript. `html:has(:checked)` re-points --color-accent, and every accent
- * on the site resolves through that one token, so the whole page follows.
+ * Where to judge it: the "In progress" flag, where the accent is a filled block
+ * behind ground-coloured text, and the Contact block's border against the seven
+ * project cards. Those are the two places the accent does structural work
+ * rather than decoration.
  *
- * The rules are wrapped in a light-mode media query, and that is load-bearing.
- * Unwrapped they applied in dark mode as well, and because `html:has()` scores
- * (1,1,1) against `:root`'s (0,1,0) they beat the stylesheet outright — so the
- * light pick silently replaced the dark accent. Specificity decides this, not
- * source order, which is exactly what the earlier comment here got wrong.
+ * The rules are wrapped in a dark-mode media query, and that is load-bearing:
+ * unwrapped they would apply in light mode too, and `html:has()` at (1,1,1)
+ * beats `:root` at (0,1,0), so they would silently replace the settled gold —
+ * which is exactly the bug that hid lime last round. Specificity decides this,
+ * not source order.
  */
 
-const LIGHT = [
-  ['chartreuse', '#9acd32', 'Chartreuse', '10.1'],
-  ['amber', '#e0a21a', 'Amber', '8.5'],
-  ['mustard', '#d4a017', 'Mustard', '8.0'],
-  ['olive', '#7cb518', 'Olive', '7.7'],
-  ['orchid', '#c77dff', 'Orchid', '7.1'],
-  ['gold', '#ca8a04', 'Gold', '6.5'],
-  ['brass', '#b8860b', 'Brass', '5.8'],
-  ['violet', '#a855f7', 'Violet', '4.8'],
+const DARK = [
+  ['lime', '#c3e640', 'Lime', '13.9', '1.38'],
+  ['chartreuse', '#9acd32', 'Chartreuse', '10.5', '1.82'],
 ] as const;
 ---
 
-<form class="accent-lab" aria-label="Accent preview (development only)">
-  <p class="accent-lab__title">Accent lab · dev only</p>
+<form class="accent-lab" aria-label="Dark accent preview (development only)">
+  <p class="accent-lab__title">Dark accent · dev only</p>
 
-  <fieldset class="accent-lab__group">
-    <legend>Light accent · x:1 vs ink</legend>
-    {
-      LIGHT.map(([id, hex, label, sep], i) => (
-        <label class="accent-lab__row">
-          <input type="radio" name="accent-light" id={`lt-${id}`} checked={i === 0} />
-          <i class="accent-lab__chip" style={`background:${hex}`} />
-          <span>{label}</span>
-          <b class="accent-lab__sep">{sep}</b>
-        </label>
-      ))
-    }
-  </fieldset>
+  <p class="accent-lab__legend">
+    <span>ground</span>
+    <span>ink</span>
+  </p>
 
+  {
+    DARK.map(([id, hex, label, ground, ink], i) => (
+      <label class="accent-lab__row">
+        <input type="radio" name="accent-dark" id={`dk-${id}`} checked={i === 0} />
+        <i class="accent-lab__chip" style={`background:${hex}`} />
+        <span class="accent-lab__name">{label}</span>
+        <b class="accent-lab__sep">{ground}</b>
+        <b class="accent-lab__sep">{ink}</b>
+      </label>
+    ))
+  }
+
+  <p class="accent-lab__note">Light settled: gold · 6.5 vs ink</p>
 </form>
 
 {/*
-  `is:global` and `set:html`: the selector targets <html>, which never carries a
-  component's scope attribute, so a scoped rule would match nothing and fail
-  silently — which is exactly how the parallax script died.
+  `is:global`: the selector targets <html>, which never carries a component's
+  scope attribute, so a scoped rule would match nothing and fail silently.
 */}
 <style
   is:global
-  set:html={`@media (prefers-color-scheme: light) {\n${LIGHT.map(([id, hex]) => `html:has(#lt-${id}:checked){--color-accent:${hex};}`).join('\n')}\n}`}
+  set:html={`@media (prefers-color-scheme: dark) {
+${DARK.map(([id, hex]) => `html:has(#dk-${id}:checked){--color-accent:${hex};}`).join('\n')}
+}`}
 />
 
 <style>
@@ -75,9 +76,7 @@ const LIGHT = [
     z-index: 100;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
-    max-height: 90vh;
-    overflow-y: auto;
+    gap: 0.45rem;
     padding: 0.75rem 0.9rem;
     background-color: var(--color-ground);
     border: 2px solid var(--color-figure);
@@ -94,20 +93,19 @@ const LIGHT = [
     border-bottom: 1px solid var(--color-rule);
   }
 
-  .accent-lab__group {
+  .accent-lab__legend {
     display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    border: 0;
-    padding: 0;
-    margin: 0;
-  }
-
-  .accent-lab__group legend {
-    letter-spacing: 0.12em;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    font-size: 0.5625rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-figure-muted);
-    padding-bottom: 0.3rem;
+  }
+
+  .accent-lab__legend span {
+    width: 2.6rem;
+    text-align: right;
   }
 
   .accent-lab__row {
@@ -117,9 +115,21 @@ const LIGHT = [
     cursor: pointer;
   }
 
+  .accent-lab__name {
+    min-width: 5.5rem;
+  }
+
   .accent-lab__sep {
-    margin-left: auto;
+    width: 2.6rem;
+    text-align: right;
     font-weight: 400;
+    color: var(--color-figure-muted);
+  }
+
+  .accent-lab__note {
+    margin-top: 0.2rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid var(--color-rule);
     color: var(--color-figure-muted);
   }
 
