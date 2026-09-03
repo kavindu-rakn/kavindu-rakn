@@ -28,14 +28,13 @@
   --color-carbon-700: #35332e;
   --color-carbon-300: #a5a29b;
 
-  /* Cyanotype blues — now only the accent draws from these */
-  --color-blueprint-950: #04101b;
-  --color-blueprint-900: #071a2b;
-  --color-blueprint-700: #14405f;
+  /*
+   * The accent, and nothing else. Seven cyanotype shades used to build the whole
+   * dark theme; now that the dark theme is black, only these two are referenced
+   * — one per colour scheme — and the other five went with the blueprint idea.
+   */
   --color-blueprint-600: #1d5c86;
-  --color-blueprint-400: #4ba3d4;
   --color-blueprint-300: #7cc6ec;
-  --color-blueprint-200: #b3ddf5;
 
   /* Drafting paper + graphite */
   --color-paper-50: #fcfbf8;
