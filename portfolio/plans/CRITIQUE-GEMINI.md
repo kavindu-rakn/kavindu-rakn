@@ -109,7 +109,7 @@ The bad:
 Look at the bottom of your landing page:
 1. **The Double Contact Section:**
    - In `hero-9.png`, you have a giant lime-bordered callout box:
-     `FULL-TIME AND FREELANCE WORK` with links to Email, Resume, LinkedIn, GitHub.
+     `FULL - TIME AND FREELANCE WORK` with links to Email, Resume, LinkedIn, GitHub.
    - Then immediately in `hero-10.png` (just 40 pixels below it), you have another section:
      `CONTACT: kavindu.rakn@gmail.com, github..., linkedin...`
    - Why are you rendering the exact same links and text twice in a 300px vertical span? It looks like an unfinished layout merge where you designed a new CTA card but forgot to delete the old tabular footer.
