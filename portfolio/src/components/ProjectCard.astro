@@ -33,7 +33,7 @@ const d = entry.data;
 
 <article
   class:list={[
-    'flex min-w-0 flex-col border-2 border-figure bg-ground transition-colors duration-150',
+    'flex h-full min-w-0 flex-col border-2 border-figure bg-ground transition-colors duration-150',
     feature
       ? 'md:col-span-2 card-solid p-6 sm:p-8 lg:p-10 hover:border-accent'
       : 'p-6 sm:p-8 hover:border-figure/70',
@@ -134,7 +134,7 @@ const d = entry.data;
 
         {d.highlights && (
           <ul class="mt-6 space-y-2.5">
-            {d.highlights.map((point) => (
+            {d.highlights.slice(0, 2).map((point) => (
               <li class="flex gap-3 text-sm leading-relaxed">
                 <span class="mt-[0.6em] h-px w-3 shrink-0 bg-accent" aria-hidden="true" />
                 <span>{point}</span>
