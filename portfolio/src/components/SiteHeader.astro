@@ -92,6 +92,36 @@ const { current, within } = Astro.props;
     width: auto;
   }
 
+  /*
+   * The Work item, marked while its section is the target.
+   *
+   * "Work" points at #work on the index — a section, not a page — so `current`
+   * can never mark it: on the index the current page IS the index, and clicking
+   * Work left nothing highlighted. `:target` knows, and `:has()` lets the header
+   * act on it with no JavaScript.
+   *
+   * These live here rather than in global.css because the rule they have to beat
+   * is this component's own, and component styles are unlayered: anything inside
+   * `@layer components` loses to them no matter how specific it is. That is a
+   * cascade-layer rule, not a specificity one, and it cost a debugging round.
+   *
+   * `aria-current` deliberately stays on Index — that is still the page being
+   * viewed. This is a "you are looking at this section" mark, a different claim.
+   */
+  :global(html:has(#work:target)) a[href='/#work'] {
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+
+  /* Only one item carries the mark at a time. */
+  :global(html:has(#work:target)) a[data-active='true'] {
+    color: var(--color-figure-muted);
+    text-decoration: none;
+  }
+
   a[data-active='true'] {
     color: var(--color-figure);
     text-decoration: underline;
