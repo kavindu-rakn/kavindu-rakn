@@ -202,6 +202,36 @@ for (const file of readdirSync(WORK_DIR).filter((f) => /\.mdx?$/.test(f))) {
   ]);
 }
 
+/*
+ * Apple touch icon.
+ *
+ * iOS ignores an SVG favicon: a page saved to the home screen without this falls
+ * back to a screenshot of itself, which is both unrecognisable at that size and
+ * a picture of whatever happened to be on screen. Safari uses it for pinned tabs
+ * and bookmarks too.
+ *
+ * It cannot follow the colour scheme — the file is chosen once, at save time,
+ * and iOS never revisits it. So it takes the dark treatment: a white mark on the
+ * near-black ground, which holds against a light or dark wallpaper, where a
+ * white tile would glare on one and a black mark would vanish on the other.
+ */
+const TOUCH = 180;
+const TOUCH_INSET = 26;
+
+const touchSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${TOUCH}" height="${TOUCH}" viewBox="0 0 ${TOUCH} ${TOUCH}">
+  <rect width="${TOUCH}" height="${TOUCH}" fill="${GROUND}"/>
+  <svg x="${TOUCH_INSET}" y="${TOUCH_INSET}" width="${TOUCH - TOUCH_INSET * 2}" height="${TOUCH - TOUCH_INSET * 2}" viewBox="${glyphViewBox}" fill="${FIGURE}">
+    ${glyph}
+  </svg>
+</svg>`;
+
+const touchBytes = await sharp(Buffer.from(touchSvg))
+  .resize(TOUCH, TOUCH, { fit: 'contain' })
+  .png({ compressionLevel: 9 })
+  .toBuffer();
+writeFileSync(join(ROOT, 'public', 'apple-touch-icon.png'), touchBytes);
+console.log(`  apple-touch-icon.png — ${(touchBytes.length / 1024).toFixed(1)} KiB`);
+
 for (const [name, bytes] of written) {
   console.log(`  og/${name}.png — ${(bytes / 1024).toFixed(1)} KiB`);
 }
