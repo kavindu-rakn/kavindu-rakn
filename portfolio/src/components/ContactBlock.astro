@@ -44,7 +44,12 @@ const { compact = false } = Astro.props;
     <a class="contact-link contact-link--primary" href={`mailto:${SITE.email}`}>
       {SITE.email}
     </a>
-    <a class="contact-link" href="/kavindu-ranathunga-resume.pdf">Résumé (PDF)</a>
+    <a
+      class="contact-link"
+      href="/kavindu-ranathunga-resume.pdf"
+      target="_blank"
+      rel="noopener noreferrer">Résumé (PDF)</a
+    >
     <a class="contact-link" href={SITE.linkedin} rel="noopener noreferrer" target="_blank">
       LinkedIn
     </a>
