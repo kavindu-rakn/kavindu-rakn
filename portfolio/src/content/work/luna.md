@@ -22,14 +22,29 @@ highlights:
   - 24-hour continuous 48-point sky transit curve with sidereal and tropical zodiac tracking
   - Particle comet cursor with velocity-reactive plasma tail and difference-blending core
 figures:
-  - spec: The sky panel showing the moon at its real current phase, next to the draggable 3D moon.
-  - spec: The moon mid-drag, with the comet cursor trail following it.
-  - spec: The orbital data panel, showing illuminated fraction and phase angle as computed values rather than a chosen picture.
-  - spec: The sky panel on a phone, showing the geolocation-aware panel on a real device.
+  - spec: The 3D lunar surface sphere rendered with USGS albedo and relief mapping, scrubbable lunar cycle timeline, and velocity-reactive particle comet cursor.
+    src: ./luna/desktop-1.png
+    alt: 3D USGS photographic lunar sphere at Waning Gibbous with scrubbable 30-day lunar cycle timeline and particle comet cursor.
+    viewport: desktop
+  - spec: The astronomical telemetry side panel displaying real-time illumination, lunar age, Earth-Moon distance, zodiac constellation, and 24-hour transit curve.
+    src: ./luna/desktop-2.png
+    alt: Astronomical telemetry drawer displaying real-time illumination fraction, lunar age, Earth-Moon distance gauge, and 24-hour transit curve.
+    viewport: desktop
+  - spec: Calendar date picker allowing deterministic time travel and sub-second quarter phase calculations across any historical or future epoch.
+    src: ./luna/desktop-3.png
+    alt: Deterministic calendar date navigation panel for instant phase calculation and astronomical timeline scrubbing across epochs.
+    viewport: desktop
+  - spec: The primary lunar explorer interface formatted for mobile viewports with touch scrubbing and header navigation.
+    src: ./luna/mobile-1.png
+    alt: Mobile interface showing the 3D lunar sphere with touch-scrubbing 30-day ephemeris timeline.
     viewport: mobile
-  - spec: The 3D moon on a phone, mid-drag.
+  - spec: Mobile telemetry modal displaying live ephemeris metrics, distance progress bar, and zodiac coordinates.
+    src: ./luna/mobile-2.png
+    alt: Mobile astronomical telemetry sheet with real-time illumination fraction, distance to Earth, and zodiac constellation.
     viewport: mobile
-  - spec: The orbital data panel on a phone.
+  - spec: Earth-Moon orbital geometry view with real-time lighting direction, orbital distance, and SunCalc calculations on mobile.
+    src: ./luna/mobile-3.png
+    alt: Earth-Moon 3D orbital geometry simulation showing true sunlight angle, orbital path, and distance readout.
     viewport: mobile
 draft: false
 ---
