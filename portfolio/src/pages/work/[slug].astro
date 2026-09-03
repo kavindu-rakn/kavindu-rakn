@@ -70,7 +70,7 @@ const d = entry.data;
     </p>
 
     <h1
-      class="mt-6 font-display text-5xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-7xl"
+      class="display-title mt-6 text-5xl leading-[0.88] sm:text-7xl"
     >
       {d.title}
     </h1>
@@ -113,8 +113,11 @@ const d = entry.data;
           <div class="mt-6 space-y-8">
             {d.figures
               .filter((figure) => figure.src || figure.video || import.meta.env.DEV)
-              .map((figure) => (
-                <Figure figure={figure} />
+              .map((figure, i) => (
+                <Figure
+                  figure={figure}
+                  plate={`${String(d.order).padStart(2, '0')}-${String.fromCharCode(65 + i)}`}
+                />
               ))}
           </div>
         </section>

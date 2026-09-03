@@ -23,9 +23,15 @@ type WorkFigure = NonNullable<CollectionEntry<'work'>['data']['figures']>[number
 
 interface Props {
   figure: WorkFigure;
+  /**
+   * Plate reference, e.g. "04-B" — the sheet number, then this figure's letter
+   * within it. Given rather than derived because only the page knows the
+   * figure's position among its siblings.
+   */
+  plate: string;
 }
 
-const { figure } = Astro.props;
+const { figure, plate } = Astro.props;
 
 const mimeFor = (path: string) => (path.endsWith('.webm') ? 'video/webm' : 'video/mp4');
 ---
@@ -46,7 +52,10 @@ const mimeFor = (path: string) => (path.endsWith('.webm') ? 'video/webm' : 'vide
       >
         <source src={figure.video} type={mimeFor(figure.video)} />
       </video>
-      <figcaption class="mt-3 text-sm text-figure-muted">{figure.alt}</figcaption>
+      <figcaption class="mt-3 text-sm text-figure-muted">
+        <span class="annotation figure__plate">Plate {plate}</span>
+        {figure.alt}
+      </figcaption>
     </figure>
   ) : figure.src && figure.alt ? (
     <figure data-viewport={figure.viewport}>
@@ -59,14 +68,27 @@ const mimeFor = (path: string) => (path.endsWith('.webm') ? 'video/webm' : 'vide
         loading="lazy"
         decoding="async"
       />
-      <figcaption class="mt-3 text-sm text-figure-muted">{figure.alt}</figcaption>
+      <figcaption class="mt-3 text-sm text-figure-muted">
+        <span class="annotation figure__plate">Plate {plate}</span>
+        {figure.alt}
+      </figcaption>
     </figure>
   ) : (
-    <MissingAsset spec={figure.spec} viewport={figure.viewport} />
+    <MissingAsset spec={figure.spec} viewport={figure.viewport} plate={plate} />
   )
 }
 
 <style>
+  /*
+   * The plate reference sits on the caption's own line, so a figure can be
+   * pointed at from the prose the way a drawing set does — "Plate 04-B" is a
+   * stable address, unlike "the second screenshot".
+   */
+  .figure__plate {
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
   .figure__media {
     display: block;
     width: 100%;
