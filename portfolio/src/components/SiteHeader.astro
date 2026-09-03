@@ -21,66 +21,95 @@ const resumeItem = NAV.find((item) => item.file);
 
 <header class="sticky top-0 z-50 border-b border-rule bg-ground">
   <nav
-    class="mx-auto flex max-w-6xl items-center justify-between gap-x-3 px-4 py-3.5 sm:px-6"
+    class="mx-auto flex max-w-6xl items-center justify-between gap-x-4 px-4 py-3.5 sm:px-6"
     aria-label="Primary"
   >
     <a href="/" class="brand" aria-label={SITE.name}>
       <span class="brand__mark" aria-hidden="true"><RGlyph /></span>
-      <span class="annotation hidden min-[540px]:inline" aria-hidden="true">{SITE.name}</span>
-      <span class="annotation inline min-[540px]:hidden" aria-hidden="true">K. Ranathunga</span>
+      <span class="annotation" aria-hidden="true">{SITE.name}</span>
     </a>
 
-    <div class="flex items-center gap-x-3 sm:gap-x-6 lg:gap-x-8">
-      <ul class="flex items-center gap-x-2.5 min-[380px]:gap-x-3.5 sm:gap-x-5 lg:gap-x-6" role="list">
-        {
-          pageLinks.map((item) => {
-            const sectionId = item.href.includes('#') ? item.href.split('#')[1] : undefined;
-            const isAboutPage = item.href === '/about' && current === '/about';
-            const isWorkSubPage = item.href.includes('work') && within === '/#work';
-
-            return (
-              <li>
-                <a
-                  href={item.href}
-                  class="annotation nav-link"
-                  data-section={sectionId}
-                  aria-current={current === item.href ? 'page' : isWorkSubPage ? 'true' : undefined}
-                  data-active={isAboutPage || isWorkSubPage ? 'true' : undefined}
-                >
-                  {item.label}
-                </a>
-              </li>
-            );
-          })
-        }
-      </ul>
-
+    <!-- Desktop Navigation Links -->
+    <ul class="hidden md:flex items-center gap-x-5 lg:gap-x-7" role="list">
       {
-        resumeItem && (
-          <a
-            href={resumeItem.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="nav-resume group"
-            aria-label="Resume (PDF)"
-          >
-            <span>{resumeItem.label}</span>
-            <svg
-              class="h-2.5 w-2.5 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-              viewBox="0 0 12 12"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.75"
-              aria-hidden="true"
-            >
-              <path d="M2.5 9.5L9.5 2.5M9.5 2.5H4.5M9.5 2.5V7.5" />
-            </svg>
-          </a>
-        )
+        pageLinks.map((item) => {
+          const sectionId = item.href.includes('#') ? item.href.split('#')[1] : undefined;
+          const isAboutPage = item.href === '/about' && current === '/about';
+          const isWorkSubPage = item.href.includes('work') && within === '/#work';
+
+          return (
+            <li>
+              <a
+                href={item.href}
+                class="annotation nav-link"
+                data-section={sectionId}
+                aria-current={current === item.href ? 'page' : isWorkSubPage ? 'true' : undefined}
+                data-active={isAboutPage || isWorkSubPage ? 'true' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          );
+        })
       }
-    </div>
+    </ul>
+
+    <!-- Resume Action Button (always pinned to the far right) -->
+    {
+      resumeItem && (
+        <a
+          href={resumeItem.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="nav-resume group"
+          aria-label="Resume (PDF)"
+        >
+          <span>{resumeItem.label}</span>
+          <svg
+            class="h-2.5 w-2.5 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            aria-hidden="true"
+          >
+            <path d="M2.5 9.5L9.5 2.5M9.5 2.5H4.5M9.5 2.5V7.5" />
+          </svg>
+        </a>
+      )
+    }
   </nav>
 </header>
+
+<!-- Mobile Tactical Bottom Dock -->
+<nav
+  class="mobile-dock fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-rule bg-ground"
+  aria-label="Mobile Navigation"
+>
+  <ul class="mx-auto flex max-w-md items-center justify-between px-4 py-1" role="list">
+    {
+      pageLinks.map((item) => {
+        const sectionId = item.href.includes('#') ? item.href.split('#')[1] : undefined;
+        const isAboutPage = item.href === '/about' && current === '/about';
+        const isWorkSubPage = item.href.includes('work') && within === '/#work';
+
+        return (
+          <li>
+            <a
+              href={item.href}
+              class="annotation nav-link nav-link--dock"
+              data-section={sectionId}
+              aria-current={current === item.href ? 'page' : isWorkSubPage ? 'true' : undefined}
+              data-active={isAboutPage || isWorkSubPage ? 'true' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
 
 <script>
   function initNavScrollspy() {
@@ -206,6 +235,26 @@ const resumeItem = NAV.find((item) => item.file);
 
   .nav-link:hover {
     color: var(--color-figure);
+  }
+
+  /*
+   * Mobile Tactical Bottom Dock
+   */
+  .mobile-dock {
+    /* Support iOS Safari home indicator and Android gesture bar */
+    padding-bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .nav-link--dock {
+    min-height: 42px;
+    padding-inline: 0.4rem;
+    font-size: 0.6875rem; /* 11px */
+    letter-spacing: 0.08em;
+  }
+
+  .nav-link--dock::after {
+    bottom: 0.35rem;
   }
 
   /*
