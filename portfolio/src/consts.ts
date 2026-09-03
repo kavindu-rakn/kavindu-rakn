@@ -93,9 +93,9 @@ export type NavItem = {
 export const NAV: readonly NavItem[] = [
   { href: '/#index', label: 'Index' },
   { href: '/#work', label: 'Work' },
+  { href: '/about', label: 'About' },
   { href: '/#tech', label: 'Tech' },
   { href: '/#contact', label: 'Contact' },
-  { href: '/about', label: 'About' },
   { href: '/kavindu-ranathunga-resume.pdf', label: 'Resume', file: true },
 ];
 
