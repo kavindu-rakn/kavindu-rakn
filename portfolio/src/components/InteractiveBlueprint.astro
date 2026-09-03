@@ -2,12 +2,12 @@
 /*
  * Interactive Blueprint Instrument.
  *
- * Replaces the static ASCII cover image with a compact, interactive drafting canvas.
+ * Replaces the static ASCII cover image with an expansive, interactive drafting canvas.
  * - Ships zero external dependencies (pure Canvas2D vector math).
  * - High-DPI Retina resolution support.
  * - Pauses requestAnimationFrame when out of viewport via IntersectionObserver.
  * - Respects prefers-reduced-motion with an instant static technical render.
- * - Reactive to light and dark theme CSS variables automatically.
+ * - Reactive to light (gold) and dark (lime) theme CSS variables automatically.
  */
 ---
 
@@ -49,7 +49,7 @@
     let touchTimeout: number | undefined;
     let time = 0;
 
-    // Pulse ripples on click
+    // Pulse ripples on click / tap
     interface Pulse {
       x: number;
       y: number;
@@ -64,6 +64,28 @@
     let colMuted = 'rgba(255, 255, 255, 0.25)';
     let colAccent = '#a3e635';
     let colRule = 'rgba(255, 255, 255, 0.1)';
+
+    function hexToRgba(hexOrCol: string, alpha: number): string {
+      const trimmed = hexOrCol.trim();
+      if (trimmed.startsWith('rgb')) {
+        const matches = trimmed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (matches) {
+          return `rgba(${matches[1]}, ${matches[2]}, ${matches[3]}, ${alpha})`;
+        }
+      }
+      const cleanHex = trimmed.replace('#', '');
+      let r = 163, g = 230, b = 53;
+      if (cleanHex.length === 6) {
+        r = parseInt(cleanHex.substring(0, 2), 16);
+        g = parseInt(cleanHex.substring(2, 4), 16);
+        b = parseInt(cleanHex.substring(4, 6), 16);
+      } else if (cleanHex.length === 3) {
+        r = parseInt(cleanHex[0] + cleanHex[0], 16);
+        g = parseInt(cleanHex[1] + cleanHex[1], 16);
+        b = parseInt(cleanHex[2] + cleanHex[2], 16);
+      }
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
 
     function updateTheme() {
       const style = getComputedStyle(document.documentElement);
@@ -89,7 +111,7 @@
       canvas.height = Math.floor(height * dpr);
 
       if (!isHovered) {
-        targetX = width * 0.65;
+        targetX = width < 640 ? width * 0.5 : width * 0.68;
         targetY = height * 0.5;
         mouseX = targetX;
         mouseY = targetY;
@@ -107,7 +129,7 @@
       ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, width, height);
 
-      const cx = width / 2;
+      const cx = width < 640 ? width * 0.5 : width * 0.36;
       const cy = height / 2;
 
       // Center crosshair
@@ -138,13 +160,28 @@
       ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, width, height);
 
-      const cx = width * 0.35;
+      const cx = width < 640 ? width * 0.5 : width * 0.36;
       const cy = height * 0.5;
 
-      // Subtle background grid ticks
+      // Subtle background grid lines
       ctx.strokeStyle = colRule;
+      ctx.lineWidth = 0.75;
+      ctx.setLineDash([1, 7]);
+      const gridSize = 48;
+      ctx.beginPath();
+      for (let x = gridSize; x < width; x += gridSize) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+      }
+      for (let y = gridSize; y < height; y += gridSize) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+      }
+      ctx.stroke();
+
+      // Major origin crosshair through dial center
+      ctx.setLineDash([3, 5]);
       ctx.lineWidth = 1;
-      ctx.setLineDash([2, 8]);
       ctx.beginPath();
       ctx.moveTo(0, cy);
       ctx.lineTo(width, cy);
@@ -159,21 +196,31 @@
       const rot = time * 0.2;
       ctx.rotate(rot);
 
-      const radius1 = Math.min(width, height) * 0.32;
+      const radius1 = Math.min(width, height) * 0.34;
       ctx.strokeStyle = colRule;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(0, 0, radius1, 0, Math.PI * 2);
       ctx.stroke();
 
+      // Outer auxiliary measurement ring
+      ctx.strokeStyle = hexToRgba(colMuted, 0.4);
+      ctx.setLineDash([2, 4]);
+      ctx.beginPath();
+      ctx.arc(0, 0, radius1 * 1.18, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
       // Radial ticks
       ctx.strokeStyle = colMuted;
-      for (let i = 0; i < 12; i++) {
-        const angle = (i * Math.PI * 2) / 12;
-        const x1 = Math.cos(angle) * (radius1 - 4);
-        const y1 = Math.sin(angle) * (radius1 - 4);
-        const x2 = Math.cos(angle) * (radius1 + 4);
-        const y2 = Math.sin(angle) * (radius1 + 4);
+      for (let i = 0; i < 24; i++) {
+        const angle = (i * Math.PI * 2) / 24;
+        const isMajor = i % 6 === 0;
+        const tickLen = isMajor ? 8 : 4;
+        const x1 = Math.cos(angle) * (radius1 - tickLen);
+        const y1 = Math.sin(angle) * (radius1 - tickLen);
+        const x2 = Math.cos(angle) * (radius1 + tickLen);
+        const y2 = Math.sin(angle) * (radius1 + tickLen);
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
@@ -185,11 +232,11 @@
       const numNodes = 3;
       const nodes: { x: number; y: number }[] = [];
       for (let i = 0; i < numNodes; i++) {
-        const orbitR = radius1 * (0.65 + i * 0.35);
-        const speed = (0.25 / (i + 1)) * (i % 2 === 0 ? 1 : -1);
+        const orbitR = radius1 * (0.65 + i * 0.32);
+        const speed = (0.22 / (i + 1)) * (i % 2 === 0 ? 1 : -1);
         const theta = time * speed + (i * Math.PI * 2) / numNodes;
         const nx = cx + Math.cos(theta) * orbitR;
-        const ny = cy + Math.sin(theta) * orbitR * 0.6;
+        const ny = cy + Math.sin(theta) * orbitR * 0.85;
         nodes.push({ x: nx, y: ny });
 
         // Node circle
@@ -224,21 +271,22 @@
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Dimension label along line
+      // Dimension label along line with Plex Mono font
       const midX = (cx + mouseX) / 2;
       const midY = (cy + mouseY) / 2;
-      ctx.font = '9px monospace';
+      ctx.font = '10px "IBM Plex Mono", monospace';
       ctx.fillStyle = colAccent;
       ctx.fillText(`R: ${dist.toFixed(0)}px  θ: ${angleDeg.toFixed(0)}°`, midX + 8, midY - 6);
 
-      // Connect nodes to mouse if in proximity
+      // Connect nodes to mouse if in proximity using active theme accent
+      const maxProximity = Math.min(220, Math.max(width, height) * 0.38);
       for (const node of nodes) {
         const ndx = mouseX - node.x;
         const ndy = mouseY - node.y;
         const nDist = Math.sqrt(ndx * ndx + ndy * ndy);
-        if (nDist < 160) {
-          const alpha = 1 - nDist / 160;
-          ctx.strokeStyle = `rgba(163, 230, 53, ${alpha * 0.6})`;
+        if (nDist < maxProximity) {
+          const alpha = 1 - nDist / maxProximity;
+          ctx.strokeStyle = hexToRgba(colAccent, alpha * 0.65);
           ctx.lineWidth = 1;
           ctx.setLineDash([2, 4]);
           ctx.beginPath();
@@ -284,14 +332,14 @@
       ctx.lineTo(mouseX + bOffset, mouseY + bOffset - bLen);
       ctx.stroke();
 
-      // Click / Tap Pulses
+      // Click / Tap Pulses using theme accent (Gold in light mode, Lime in dark mode)
       for (let i = pulses.length - 1; i >= 0; i--) {
         const p = pulses[i];
-        p.radius += 3;
+        p.radius += 3.5;
         p.alpha = Math.max(0, 1 - p.radius / p.maxRadius);
 
-        ctx.strokeStyle = `rgba(163, 230, 53, ${p.alpha * 0.8})`;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = hexToRgba(colAccent, p.alpha * 0.85);
+        ctx.lineWidth = 1.25;
         ctx.setLineDash([4, 6]);
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
@@ -312,10 +360,10 @@
 
       // Idle float when not hovered
       if (!isHovered) {
-        const cx = width * 0.65;
-        const cy = height * 0.5;
-        targetX = cx + Math.sin(time * 0.9) * (width * 0.18);
-        targetY = cy + Math.cos(time * 1.4) * (height * 0.22);
+        const orbitCenterX = width < 640 ? width * 0.5 : width * 0.68;
+        const orbitCenterY = height * 0.5;
+        targetX = orbitCenterX + Math.sin(time * 0.9) * (width * 0.14);
+        targetY = orbitCenterY + Math.cos(time * 1.4) * (height * 0.24);
       }
 
       draw();
@@ -327,8 +375,8 @@
       if (!container) return { x: 0, y: 0 };
       const rect = container.getBoundingClientRect();
       return {
-        x: Math.max(0, Math.min(width, e.clientX - rect.left)),
-        y: Math.max(0, Math.min(height, e.clientY - rect.top)),
+        x: Math.max(16, Math.min(width - 16, e.clientX - rect.left)),
+        y: Math.max(16, Math.min(height - 16, e.clientY - rect.top)),
       };
     }
 
@@ -456,7 +504,8 @@
   .blueprint-instrument {
     position: relative;
     width: 100%;
-    height: 160px;
+    height: 320px;
+    min-height: 280px;
     background-color: var(--color-ground-raised);
     border: 1px solid var(--color-rule);
     overflow: hidden;
@@ -468,7 +517,15 @@
 
   @media (min-width: 640px) {
     .blueprint-instrument {
-      height: 190px;
+      height: 400px;
+      min-height: 360px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .blueprint-instrument {
+      height: clamp(420px, 48vh, 560px);
+      min-height: 420px;
     }
   }
 
@@ -482,39 +539,39 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    padding: 0.75rem 1rem;
+    padding: 0.875rem 1.25rem;
   }
 
   .hud-item {
     position: absolute;
     font-family: var(--font-mono);
-    font-size: 0.5625rem;
+    font-size: 0.625rem;
     line-height: 1;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-figure-muted);
-    opacity: 0.6;
+    color: var(--color-figure);
+    opacity: 0.75;
   }
 
   .hud-top-left {
-    top: 0.75rem;
-    left: 1rem;
+    top: 0.875rem;
+    left: 1.25rem;
   }
 
   .hud-top-right {
-    top: 0.75rem;
-    right: 1rem;
+    top: 0.875rem;
+    right: 1.25rem;
   }
 
   .hud-bottom-left {
-    bottom: 0.75rem;
-    left: 1rem;
+    bottom: 0.875rem;
+    left: 1.25rem;
     color: var(--color-accent);
-    opacity: 0.9;
+    opacity: 1;
   }
 
   .hud-bottom-right {
-    bottom: 0.75rem;
-    right: 1rem;
+    bottom: 0.875rem;
+    right: 1.25rem;
   }
 </style>

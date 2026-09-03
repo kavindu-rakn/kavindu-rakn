@@ -5,15 +5,14 @@ import Wordmark from './Wordmark.astro';
 /*
  * The cover.
  *
- * Replaces the static ASCII cover banner with an interactive kinematic blueprint
- * instrument. It reacts to pointer movement, touch, and clicks with dynamic
- * coordinate tracking, radial caliper geometry, and wave pulses, while keeping
- * the hero section compact so Selected Work arrives above the fold.
+ * Expands to fully occupy the initial viewport height on desktop, providing
+ * substantial canvas real estate for the interactive kinematic drafting instrument
+ * while placing the Selected Work separator cleanly at the fold.
  */
 ---
 
-<section class="border-b-2 border-figure">
-  <div class="mx-auto max-w-6xl px-6 pt-10 pb-12 sm:pt-14 sm:pb-16">
+<section class="border-b-2 border-figure min-h-[calc(100svh-3.5rem)] flex flex-col justify-between">
+  <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between px-6 pt-8 pb-10 sm:pt-10 sm:pb-12">
     <header>
       <p class="annotation">Sheet 01 · Cover</p>
       {/*
@@ -21,17 +20,17 @@ import Wordmark from './Wordmark.astro';
         would make the browser synthesise a weight that does not exist.
       */}
       <h1
-        class="mt-5 font-display text-[clamp(2.5rem,7vw,5.25rem)] leading-[0.92] font-extrabold tracking-[-0.025em]"
+        class="mt-4 font-display text-[clamp(2.5rem,7vw,5.25rem)] leading-[0.92] font-extrabold tracking-[-0.025em]"
       >
         <Wordmark />
       </h1>
-      <p class="mt-5 max-w-2xl text-base text-figure-muted sm:text-lg">
+      <p class="mt-4 max-w-2xl text-base text-figure-muted sm:text-lg">
         Product engineer in Colombo. Every project below is a thing that had to
         work before it could look like anything.
       </p>
     </header>
 
-    <div class="mt-8 sm:mt-12">
+    <div class="mt-6 flex flex-1 flex-col justify-center sm:mt-8">
       <InteractiveBlueprint />
     </div>
   </div>
