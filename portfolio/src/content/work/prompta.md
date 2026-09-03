@@ -4,6 +4,7 @@ tagline: Vault for AI prompts.
 description: 'A vault for AI prompts: folders, encrypted attachments, user-to-user delivery by email, and one-click launch into five different LLM providers.'
 order: 6
 status: live
+liveUrl: https://prompta-kvn.vercel.app/
 githubUrl: https://github.com/kavindu-rakn/Prompta
 techStack:
   - Next.js
