@@ -19,19 +19,21 @@
  * No JavaScript. `html:has(:checked)` re-points --color-accent, and every accent
  * on the site resolves through that one token, so the whole page follows.
  *
- * Only light rules are emitted now, unwrapped, so they apply in light mode and
- * are simply overridden by the stylesheet's own dark block in dark mode.
+ * The rules are wrapped in a light-mode media query, and that is load-bearing.
+ * Unwrapped they applied in dark mode as well, and because `html:has()` scores
+ * (1,1,1) against `:root`'s (0,1,0) they beat the stylesheet outright — so the
+ * light pick silently replaced the dark accent. Specificity decides this, not
+ * source order, which is exactly what the earlier comment here got wrong.
  */
 
 const LIGHT = [
-  ['now', '#1d5c86', 'Current blue', '2.6'],
-  ['cyan', '#00a3a3', 'Cyan', '6.1'],
-  ['azure', '#0ea5e9', 'Azure', '6.9'],
-  ['green', '#00a651', 'Green', '5.9'],
+  ['chartreuse', '#9acd32', 'Chartreuse', '10.1'],
+  ['amber', '#e0a21a', 'Amber', '8.5'],
+  ['mustard', '#d4a017', 'Mustard', '8.0'],
   ['olive', '#7cb518', 'Olive', '7.7'],
+  ['orchid', '#c77dff', 'Orchid', '7.1'],
   ['gold', '#ca8a04', 'Gold', '6.5'],
-  ['fuchsia', '#d946ef', 'Fuchsia', '5.5'],
-  ['blue', '#3b82f6', 'Blue', '5.2'],
+  ['brass', '#b8860b', 'Brass', '5.8'],
   ['violet', '#a855f7', 'Violet', '4.8'],
 ] as const;
 ---
@@ -62,7 +64,7 @@ const LIGHT = [
 */}
 <style
   is:global
-  set:html={LIGHT.map(([id, hex]) => `html:has(#lt-${id}:checked){--color-accent:${hex};}`).join('\n')}
+  set:html={`@media (prefers-color-scheme: light) {\n${LIGHT.map(([id, hex]) => `html:has(#lt-${id}:checked){--color-accent:${hex};}`).join('\n')}\n}`}
 />
 
 <style>
