@@ -186,23 +186,21 @@ const d = entry.data;
   {
     hasVideo && (
       <script is:inline>
-        {`
-          // Autoplay is added here, never in the markup: HTML cannot express
-          // "loop unless the visitor asked for less motion". No permission, no
-          // JS, or a failed play() all leave the poster and its play button.
-          if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
-            var io = new IntersectionObserver(function (entries) {
-              entries.forEach(function (e) {
-                if (e.isIntersecting) { e.target.play().catch(function () {}); }
-                else { e.target.pause(); }
-              });
-            }, { threshold: 0.25 });
-            document.querySelectorAll('video[data-autoplay]').forEach(function (v) {
-              v.autoplay = true;
-              io.observe(v);
-            });
-          }
-        `}
+      // Autoplay is added here, never in the markup: HTML cannot express
+      // "loop unless the visitor asked for less motion". No permission, no
+      // JS, or a failed play() all leave the poster and its play button.
+      if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.play().catch(function () {}); }
+            else { e.target.pause(); }
+          });
+        }, { threshold: 0.25 });
+        document.querySelectorAll('video[data-autoplay]').forEach(function (v) {
+          v.autoplay = true;
+          io.observe(v);
+        });
+      }
       </script>
     )
   }
