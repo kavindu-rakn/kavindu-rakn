@@ -1,197 +1,96 @@
 ---
-import BlueprintSVG from './BlueprintSVG.astro';
+import { Image } from 'astro:assets';
+import cover from '../assets/cover.png';
 import Wordmark from './Wordmark.astro';
 
 /*
- * The hero, as an isolated script island.
+ * The cover.
  *
- * Load order, and why it is this order:
+ * This replaces both the raymarched canvas and the static schema-tree drawing
+ * that stood in for it. The mark below is Kavindu's own — the block-letter
+ * KAVINDU-RAKN he signs the end of a README with — which makes it the one thing
+ * that could sit here without having to justify itself. The two things it
+ * replaced were each an argument about the work; this is simply his.
  *
- *   1. The heading and lede are plain server-rendered text. They paint first,
- *      so the LCP element is text and never the canvas.
- *   2. The static blueprint is already in the DOM as inline SVG. No request, no
- *      JavaScript. This is the whole experience for reduced-motion, low-power
- *      and no-JS visitors — a designed resting state, not a broken one.
- *   3. Only then does the gate run. If it passes, the raymarcher is dynamically
- *      imported inside requestIdleCallback, once the hero is near the viewport.
+ * Consequences worth stating, because they are large:
  *
- * The section is 160vh, not 240vh. The scroll span exists only to give the
- * camera somewhere to travel; two and a half screens of it meant the first
- * project sat below two full viewports of preamble.
+ *   - The section is a normal block now, not 160vh of sticky scroll. The first
+ *     project arrives about two viewports earlier than it did.
+ *   - The page ships no JavaScript at all. No capability gate, no idle import,
+ *     no renderer, no teardown: there is nothing to fall back FROM, so there is
+ *     nothing to gate.
+ *   - three and @types/three leave the project. The hero was their only consumer.
  *
- * Nothing here is clickable. The previous hero navigated from a canvas click,
- * which is a link with no keyboard path, no focus ring, no middle-click and no
- * href in the status bar. Every one of those links exists properly in the grid
- * below, so the drawing is now honestly atmospheric.
+ * The mark is monochrome art on a near-white ground, so it is composited rather
+ * than placed. `multiply` drops that ground into the paper in light mode; in
+ * dark mode it is inverted first and then screened, so the ground falls away and
+ * the glyphs come up light. Without this it would sit on the dark theme as a
+ * white slab.
  */
 ---
 
-<section class="relative h-[160vh]" data-hero-section>
-  <div
-    class="sticky top-0 h-dvh overflow-hidden"
-    data-hero-stage
-    data-mode="static"
-  >
+<section class="border-b-2 border-figure">
+  <div class="mx-auto max-w-6xl px-6 pt-14 pb-16 sm:pt-20 sm:pb-24">
+    <header>
+      <p class="annotation">Sheet 01 · Cover</p>
+      {/*
+        Weight 800, not 700: only 400/600/800 are shipped, so `font-bold`
+        would make the browser synthesise a weight that does not exist.
+      */}
+      <h1
+        class="mt-5 font-display text-[clamp(2.5rem,7vw,5.25rem)] leading-[0.92] font-extrabold tracking-[-0.025em]"
+      >
+        <Wordmark />
+      </h1>
+      <p class="mt-5 max-w-2xl text-base text-figure-muted sm:text-lg">
+        Product engineer in Colombo. Every project below is a thing that had to
+        work before it could look like anything.
+      </p>
+    </header>
+
     {/*
-      Both visual layers are full-bleed and sit behind the text. The shader
-      keeps its upper frame close to empty — the ground plane is below the
-      camera and the plates are low — so the heading has clear paper to sit on
-      without needing a scrim over the drawing.
+      Decorative: it spells the name the h1 already carries, so announcing it
+      again would repeat what a screen reader has just read.
     */}
-    <div class="hero-layer hero-blueprint" aria-hidden="true">
-      <BlueprintSVG />
-    </div>
-    <canvas class="hero-layer hero-canvas" data-hero-canvas aria-hidden="true"></canvas>
-
-    <div
-      class="relative z-10 mx-auto flex h-full w-full max-w-6xl flex-col px-6 pt-14 pb-8 sm:pt-20"
-    >
-      <header class="shrink-0">
-        <p class="annotation">Sheet 01 · Blueprint space</p>
-        {/*
-          Weight 800, not 700: only 400/600/800 are shipped, so `font-bold`
-          would make the browser synthesise a weight that does not exist.
-        */}
-        <h1
-          class="mt-5 font-display text-[clamp(2.5rem,7vw,5.25rem)] leading-[0.92] font-extrabold tracking-[-0.025em]"
-        >
-          <Wordmark />
-        </h1>
-        <p class="mt-5 max-w-2xl text-base text-figure-muted sm:text-lg">
-          Product engineer in Colombo. Every project below is a thing that had to
-          work before it could look like anything.
-        </p>
-      </header>
-
-      <footer class="mt-auto shrink-0">
-        <p class="annotation">Scroll</p>
-      </footer>
+    <div class="mt-14 sm:mt-20">
+      <Image
+        src={cover}
+        alt=""
+        widths={[640, 960, 1440, 2050]}
+        sizes="(min-width: 72rem) 68rem, 100vw"
+        class="cover"
+        loading="eager"
+        decoding="async"
+      />
     </div>
   </div>
 </section>
 
 <style>
-  .hero-layer {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .hero-canvas {
-    display: block;
-    opacity: 0;
-    transition: opacity 700ms ease;
-  }
-
   /*
-   * The fallback drawing sits low in the frame, under the text rather than
-   * behind it, and stays quiet enough that the heading never fights it.
+   * The artwork's ground is #f2f2f2, not pure white, and `multiply` only
+   * disappears against pure white — at #f2f2f2 it left the mark sitting in a
+   * visibly grey panel on the paper. `brightness` lifts that ground the last
+   * few percent to 255 before the blend, which costs the glyphs about two
+   * levels out of 27 and nothing anyone can see.
    */
-  .hero-blueprint {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 0 1.5rem 4rem;
-    opacity: 0.85;
-    pointer-events: none;
-    transition: opacity 700ms ease;
-  }
-
-  .hero-blueprint :global(svg) {
+  .cover {
+    display: block;
     width: 100%;
-    max-width: 56rem;
     height: auto;
-    max-height: 62%;
+    filter: brightness(1.08);
+    mix-blend-mode: multiply;
   }
 
-  /* Crossfade once the first frame has actually been drawn. */
-  [data-mode='live'] .hero-canvas {
-    opacity: 1;
-  }
-  [data-mode='live'] .hero-blueprint {
-    opacity: 0;
+  @media (prefers-color-scheme: dark) {
+    .cover {
+      /*
+       * Same lift first, so the inverted ground lands on pure black and screens
+       * away completely; then invert, so the glyphs come up light instead of
+       * the whole mark reading as a white slab on the dark theme.
+       */
+      filter: brightness(1.08) invert(1);
+      mix-blend-mode: screen;
+    }
   }
 </style>
-
-<script>
-  import type { BootContext } from '../scripts/blueprint-hero';
-
-  const section = document.querySelector<HTMLElement>('[data-hero-section]');
-  const stage = document.querySelector<HTMLElement>('[data-hero-stage]');
-  const canvas = document.querySelector<HTMLCanvasElement>('[data-hero-canvas]');
-
-  /**
-   * Capability gate. Detect capability, not screen width — most of the audience
-   * for this site is on mid-range Android, and a hero that janks is worse than
-   * no hero. Raymarching is fragment-bound, so this matters more here than it
-   * did for the mesh scene it replaces.
-   */
-  function webgl2Available(): boolean {
-    try {
-      const probe = document.createElement('canvas');
-      return Boolean(probe.getContext('webgl2'));
-    } catch {
-      return false;
-    }
-  }
-
-  function shouldRender3D(): boolean {
-    // No exceptions, and no "reduced but still moving" compromise.
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-
-    // 0/undefined means the browser will not say. Do not penalise for that.
-    const cores = navigator.hardwareConcurrency ?? 0;
-    const memory =
-      (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 0;
-    if (cores > 0 && cores <= 3) return false;
-    if (memory > 0 && memory < 4) return false;
-
-    return webgl2Available();
-  }
-
-  function whenIdle(run: () => void): void {
-    // `typeof` rather than `'x' in window`: the `in` form narrows Window itself
-    // to `never` in the else branch, because the lib types always declare it.
-    if (typeof window.requestIdleCallback === 'function') {
-      window.requestIdleCallback(run, { timeout: 2000 });
-    } else {
-      window.setTimeout(run, 200);
-    }
-  }
-
-  if (section && stage && canvas && shouldRender3D()) {
-    let teardown: (() => void) | null = null;
-
-    // Do not even fetch the renderer until the hero is close to the viewport.
-    const loader = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        loader.disconnect();
-
-        whenIdle(async () => {
-          try {
-            const { boot } = await import('../scripts/blueprint-hero');
-            const context: BootContext = { canvas, stage, section };
-            teardown = boot(context);
-          } catch (error) {
-            // Any failure leaves the static blueprint in place, which is a
-            // complete experience on its own. In development it also says so —
-            // a silent catch here once hid a shader compile error behind a
-            // fallback that looked deliberate.
-            if (import.meta.env.DEV) console.error('[hero] boot failed', error);
-            stage.dataset.mode = 'static';
-          }
-        });
-      },
-      { rootMargin: '200px' },
-    );
-
-    loader.observe(stage);
-
-    window.addEventListener('pagehide', () => {
-      teardown?.();
-      teardown = null;
-    });
-  }
-</script>
