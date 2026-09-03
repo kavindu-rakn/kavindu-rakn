@@ -117,12 +117,43 @@
     /* Native form controls, scrollbars and UA surfaces follow the ground. */
     color-scheme: light dark;
     -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent) var(--color-ground);
+  }
+
+  /*
+   * Architectural Blueprint Caliper Scrollbar
+   *
+   * Inspired by precision CAD drafting instruments:
+   * Track: 1px border rule against the site ground, acting like a millimeter gauge rail.
+   * Thumb: Vivid accent color (electric lime in dark mode, rich drafting gold in light mode).
+   */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-ground);
+    border-left: 1px solid var(--color-rule);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-accent);
+    border-radius: 0px; /* Technical square edge */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    filter: brightness(1.2);
+    box-shadow: 0 0 8px var(--color-accent);
   }
 
   body {
     background-color: var(--color-ground);
     color: var(--color-figure);
     font-family: var(--font-sans);
+    overflow-x: clip;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
@@ -317,6 +348,21 @@
     background-color: var(--color-ground);
     color: var(--color-figure);
     outline: 2px solid var(--color-accent);
+  }
+
+  /* Solid drafting card plate (white in light mode, pure black in dark mode, zero transparency) */
+  .card-solid,
+  .card-dark {
+    background-color: var(--color-ground) !important;
+    color: var(--color-figure);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .card-solid,
+    .card-dark {
+      background-color: var(--color-carbon-950) !important;
+      color: var(--color-figure);
+    }
   }
 }
 

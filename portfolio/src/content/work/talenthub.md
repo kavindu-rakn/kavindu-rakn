@@ -1,8 +1,8 @@
 ---
 title: TalentHub
 tagline: Internship platform in production at Sri Lanka Telecom Mobitel.
-description: 'The platform Sri Lanka Telecom Mobitel runs its trainee programme on, built by twenty developers over a year. Largest contributor: 207 of 652 commits.'
-order: 3
+description: 'The platform Sri Lanka Telecom Mobitel runs its trainee programme on, built by twenty developers over a year. Core contributor: rebuilt 27 of 35 screens and merged 37 PRs to main.'
+order: 2
 status: in-production
 employment: true
 techStack:
@@ -18,8 +18,7 @@ techStack:
   - Vite
   - Google Gemini
 highlights:
-  - Largest contributor — 207 of 652 commits; the next highest is 94
-  - 37 pull requests merged to main
+  - Core contributor across 37 pull requests merged to main
   - Rebuilt the interface across 27 of 35 screens, trainee portal and admin console
   - AI logbook validation degrades instead of breaking when the Gemini API is unavailable
   - 96-seat reservation map with custom pan, zoom, touch support and auto-fit
@@ -59,9 +58,7 @@ TalentHub is where all of that lives.
 
 ## My position on it
 
-Largest contributor: **207 of 652 commits**, and 37 pull requests merged to main.
-The next highest contributor has 94. I rebuilt the interface across 27 of the 35
-screens, covering both the trainee portal and the admin console.
+Primary contributor to the frontend overhaul and compliance backend, with **37 pull requests merged to main**. I rebuilt the interface across **27 of the 35 screens**, covering both the trainee portal and the admin console, and engineered the shared holiday compliance and AI logbook validation services.
 
 ## The hard problem
 

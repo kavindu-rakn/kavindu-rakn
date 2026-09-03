@@ -1,7 +1,6 @@
 ---
 import { Font } from 'astro:assets';
 import GridField from '../components/GridField.astro';
-import SiteNotice from '../components/SiteNotice.astro';
 import { SITE } from '../consts';
 import '../styles/global.css';
 
@@ -42,7 +41,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = new URL(ogImage, Astro.site);
 
 const fullTitle =
-  title === SITE.name ? `${SITE.name} — ${SITE.role}` : `${title} — ${SITE.name}`;
+  title === SITE.name ? SITE.name : `${title} — ${SITE.name}`;
 
 /*
  * Structured data. Verified facts only.
@@ -122,13 +121,12 @@ const personSchema = {
     />
   </head>
 
-  <body class="min-h-dvh bg-ground text-figure antialiased">
+  <body class="min-h-dvh bg-ground text-figure antialiased pb-16 md:pb-0">
     <a class="skip-link" href="#main">Skip to content</a>
 
     <GridField />
 
     <slot name="header" />
-    <SiteNotice />
     <main id="main">
       <slot />
     </main>

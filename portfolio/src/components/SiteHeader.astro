@@ -14,78 +14,188 @@ interface Props {
   within?: string;
 }
 const { current, within } = Astro.props;
+
+const desktopLinks = NAV.filter((item) => !item.file);
+const resumeItem = NAV.find((item) => item.file);
+
+// On mobile dock, About is centered: Index, Work, About, Tech, Contact
+const mobileLinks = [
+  desktopLinks.find((i) => i.label === 'Index')!,
+  desktopLinks.find((i) => i.label === 'Work')!,
+  desktopLinks.find((i) => i.label === 'About')!,
+  desktopLinks.find((i) => i.label === 'Tech')!,
+  desktopLinks.find((i) => i.label === 'Contact')!,
+];
 ---
 
 <header class="sticky top-0 z-50 border-b border-rule bg-ground">
   <nav
-    class="mx-auto flex max-w-6xl flex-wrap items-baseline justify-between gap-x-6 gap-y-2 px-6 py-4"
+    class="mx-auto flex max-w-6xl items-center justify-between gap-x-4 px-4 py-3.5 sm:px-6"
     aria-label="Primary"
   >
     <a href="/" class="brand" aria-label={SITE.name}>
       <span class="brand__mark" aria-hidden="true"><RGlyph /></span>
       <span class="annotation" aria-hidden="true">{SITE.name}</span>
     </a>
-    <ul class="flex flex-wrap gap-x-5 gap-y-1">
+
+    <!-- Right-Indented Navigation Controls (Desktop Navlinks + Resume Button) -->
+    <div class="flex items-center gap-x-5 lg:gap-x-7">
+      <ul class="hidden md:flex items-center gap-x-5 lg:gap-x-6" role="list">
+        {
+          desktopLinks.map((item) => {
+            const sectionId = item.href.includes('#') ? item.href.split('#')[1] : undefined;
+            const isAboutPage = item.href === '/about' && current === '/about';
+            const isWorkSubPage = item.href.includes('work') && within === '/#work';
+
+            return (
+              <li>
+                <a
+                  href={item.href}
+                  class="annotation nav-link"
+                  data-section={sectionId}
+                  aria-current={current === item.href ? 'page' : isWorkSubPage ? 'true' : undefined}
+                  data-active={isAboutPage || isWorkSubPage ? 'true' : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      <!-- Resume Action Button (always pinned to the far right corner) -->
       {
-        NAV.map((item) => (
+        resumeItem && (
+          <a
+            href={resumeItem.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="nav-resume group"
+            aria-label="Resume (PDF)"
+          >
+            <span>{resumeItem.label}</span>
+            <svg
+              class="h-2.5 w-2.5 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              aria-hidden="true"
+            >
+              <path d="M2.5 9.5L9.5 2.5M9.5 2.5H4.5M9.5 2.5V7.5" />
+            </svg>
+          </a>
+        )
+      }
+    </div>
+  </nav>
+</header>
+
+<!-- Mobile Tactical Bottom Dock -->
+<nav
+  class="mobile-dock fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-rule bg-ground"
+  aria-label="Mobile Navigation"
+>
+  <ul class="mx-auto flex max-w-md items-center justify-between px-4 py-1" role="list">
+    {
+      mobileLinks.map((item) => {
+        const sectionId = item.href.includes('#') ? item.href.split('#')[1] : undefined;
+        const isAboutPage = item.href === '/about' && current === '/about';
+        const isWorkSubPage = item.href.includes('work') && within === '/#work';
+
+        return (
           <li>
             <a
               href={item.href}
-              class="annotation nav-link hover:text-figure"
-              aria-current={
-                item.file
-                  ? undefined
-                  : current === item.href
-                    ? 'page'
-                    : within === item.href
-                      ? 'true'
-                      : undefined
-              }
-              data-active={
-                !item.file && (current === item.href || within === item.href)
-                  ? 'true'
-                  : undefined
-              }
-              data-file={item.file ? 'true' : undefined}
+              class="annotation nav-link nav-link--dock"
+              data-section={sectionId}
+              aria-current={current === item.href ? 'page' : isWorkSubPage ? 'true' : undefined}
+              data-active={isAboutPage || isWorkSubPage ? 'true' : undefined}
             >
               {item.label}
             </a>
           </li>
-        ))
-      }
-    </ul>
-  </nav>
-</header>
+        );
+      })
+    }
+  </ul>
+</nav>
 
-<style>
-  /*
-   * 11px mono with no padding is a target well under the 24x24 minimum, and
-   * these are the only navigation controls on the site. Padding gives them a
-   * real hit area; the negative margin keeps the header the height it was.
-   */
-  .nav-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    margin-block: -0.75rem;
-    padding-block: 0.75rem;
+<script>
+  function initNavScrollspy() {
+    const hasHomeSections = document.getElementById('index') && document.getElementById('work');
+    if (!hasHomeSections) return;
+
+    const sectionIds = ['index', 'work', 'tech', 'contact'];
+    const navLinks = document.querySelectorAll<HTMLAnchorElement>('nav a[data-section]');
+
+    let ticking = false;
+
+    function updateActive() {
+      const scrollPos = window.scrollY + 140;
+      let activeId = 'index';
+
+      // Check if scrolled near bottom of page
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60) {
+        activeId = 'contact';
+      } else {
+        for (const id of sectionIds) {
+          const el = document.getElementById(id);
+          if (el && scrollPos >= el.offsetTop) {
+            activeId = id;
+          }
+        }
+      }
+
+      navLinks.forEach((link) => {
+        const sec = link.getAttribute('data-section');
+        if (sec === activeId) {
+          link.setAttribute('data-active', 'true');
+        } else {
+          link.removeAttribute('data-active');
+        }
+      });
+    }
+
+    function onScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateActive();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    updateActive();
   }
 
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavScrollspy);
+  } else {
+    initNavScrollspy();
+  }
+  document.addEventListener('astro:page-load', initNavScrollspy);
+</script>
+
+<style>
   .brand {
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
-    /* Same target floor as the nav items — it is a link to the index. */
+    white-space: nowrap;
     min-height: 44px;
-    margin-block: -0.75rem;
-    padding-block: 0.75rem;
+    margin-block: -0.5rem;
+    padding-block: 0.5rem;
   }
 
   .brand:hover .annotation {
     color: var(--color-figure);
   }
 
-  /* `:global` — the glyph belongs to the imported SVG component's scope. */
   .brand__mark :global(svg) {
     display: block;
     height: 1.1rem;
@@ -93,40 +203,93 @@ const { current, within } = Astro.props;
   }
 
   /*
-   * The Work item, marked while its section is the target.
-   *
-   * "Work" points at #work on the index — a section, not a page — so `current`
-   * can never mark it: on the index the current page IS the index, and clicking
-   * Work left nothing highlighted. `:target` knows, and `:has()` lets the header
-   * act on it with no JavaScript.
-   *
-   * These live here rather than in global.css because the rule they have to beat
-   * is this component's own, and component styles are unlayered: anything inside
-   * `@layer components` loses to them no matter how specific it is. That is a
-   * cascade-layer rule, not a specificity one, and it cost a debugging round.
-   *
-   * `aria-current` deliberately stays on Index — that is still the page being
-   * viewed. This is a "you are looking at this section" mark, a different claim.
+   * Navlinks with dynamic left-to-right underline drawing
    */
-  :global(html:has(#work:target)) a[href='/#work'] {
-    color: var(--color-figure);
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--color-accent);
-  }
-
-  /* Only one item carries the mark at a time. */
-  :global(html:has(#work:target)) a[data-active='true'] {
+  .nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-block: -0.5rem;
+    padding-block: 0.5rem;
     color: var(--color-figure-muted);
-    text-decoration: none;
+    text-decoration: none !important;
+    transition: color 0.15s ease;
   }
 
-  a[data-active='true'] {
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0.55rem;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /*
+   * Active indicator styling
+   */
+  .nav-link[data-active='true'] {
     color: var(--color-figure);
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--color-accent);
+  }
+
+  .nav-link[data-active='true']::after {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+
+  .nav-link:hover {
+    color: var(--color-figure);
+  }
+
+  /*
+   * Mobile Tactical Bottom Dock
+   */
+  .mobile-dock {
+    /* Support iOS Safari home indicator and Android gesture bar */
+    padding-bottom: max(0.45rem, env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .nav-link--dock {
+    min-height: 42px;
+    padding-inline: 0.4rem;
+    font-size: 0.6875rem; /* 11px */
+    letter-spacing: 0.08em;
+  }
+
+  .nav-link--dock::after {
+    bottom: 0.35rem;
+  }
+
+  /*
+   * Distinctly styled Resume button at the far right corner
+   */
+  .nav-resume {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.28rem 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem; /* 11px */
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-figure);
+    border: 1px solid var(--color-figure);
+    background-color: transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .nav-resume:hover {
+    background-color: var(--color-figure);
+    color: var(--color-ground);
   }
 </style>

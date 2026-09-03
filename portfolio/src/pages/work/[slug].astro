@@ -82,39 +82,63 @@ const d = entry.data;
   {/* Under Work, not Work itself — see the `within` prop. */}
   <SiteHeader slot="header" within="/#work" />
 
-  <article class="mx-auto max-w-6xl px-6 py-16 sm:py-24">
-    <p class="annotation">
-      Sheet {String(d.order).padStart(2, '0')} · {STATUS_LABEL[d.status]}
-    </p>
+  <article class="mx-auto max-w-6xl px-6 py-12 sm:py-20">
+    <nav
+      class="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs text-figure-muted"
+      aria-label="Breadcrumb"
+    >
+      <a href="/#work" class="hover:text-figure transition-colors">Work</a>
+      <span class="opacity-40">/</span>
+      <span class="text-figure font-semibold">Sheet {String(d.order).padStart(2, '0')}</span>
+      <span class="opacity-40">·</span>
+      <span>{STATUS_LABEL[d.status]}</span>
+      {
+        (entry.id === 'schemashift' || entry.id === 'talenthub') && (
+          <span class="ml-2 font-sans text-[10px] font-bold px-2 py-0.5 border border-accent bg-accent/10 text-accent tracking-wider uppercase">
+            FLAGSHIP CASE STUDY
+          </span>
+        )
+      }
+    </nav>
 
     <h1
-      class="display-title mt-6 text-5xl leading-[0.88] sm:text-7xl"
+      class="display-title mt-2 text-4xl sm:text-6xl lg:text-7xl leading-[0.9] break-words"
     >
       {d.title}
     </h1>
 
     {
       d.tagline && (
-        <p class="mt-6 max-w-2xl text-lg text-figure-muted sm:text-xl">{d.tagline}</p>
+        <p class="mt-5 max-w-3xl text-lg sm:text-xl text-figure-muted leading-relaxed">{d.tagline}</p>
       )
     }
 
-    <div class="mt-10">
+    <div class="mt-8">
       <TechStack items={d.techStack} />
     </div>
 
-    <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+    <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
       {
         d.liveUrl && (
-          <a class="rule-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
-            Live site
+          <a
+            class="rule-link rule-link--strong text-sm"
+            href={d.liveUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            Live deployment
           </a>
         )
       }
       {
         d.githubUrl && (
-          <a class="rule-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
-            Source
+          <a
+            class="rule-link text-sm"
+            href={d.githubUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            GitHub repository
           </a>
         )
       }
@@ -138,7 +162,7 @@ const d = entry.data;
           )}
 
           {mobileFigures.length > 0 && (
-            <div class="mt-8 grid grid-cols-3 gap-3 sm:gap-6">
+            <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
               {mobileFigures.map((figure, i) => (
                 <Figure figure={figure} plate={plateFor(desktopFigures.length + i)} />
               ))}
@@ -153,34 +177,49 @@ const d = entry.data;
     </div>
 
     <nav
-      class="mt-24 grid gap-6 border-t-2 border-figure pt-6 sm:grid-cols-2"
-      aria-label="Case studies"
+      class="mt-24 border-t-2 border-figure pt-8"
+      aria-label="Case study pagination"
     >
-      <div>
+      <div class="grid gap-4 sm:grid-cols-2">
         {
-          prev && (
-            <a class="sibling" href={`/work/${prev.id}`}>
-              <span class="annotation">Previous</span>
-              <span class="sibling__title">{prev.data.title}</span>
+          prev ? (
+            <a class="sibling-card sibling-card--prev group" href={`/work/${prev.id}`}>
+              <span class="annotation flex items-center gap-1.5 text-figure-muted group-hover:text-accent transition-colors">
+                &larr; Sheet {String(prev.data.order).padStart(2, '0')} · Previous
+              </span>
+              <span class="sibling-card__title mt-1.5 block font-display text-xl sm:text-2xl font-bold tracking-tight text-figure group-hover:text-accent transition-colors">
+                {prev.data.title}
+              </span>
             </a>
+          ) : (
+            <div class="hidden sm:block" />
+          )
+        }
+        {
+          next ? (
+            <a class="sibling-card sibling-card--next group sm:text-right" href={`/work/${next.id}`}>
+              <span class="annotation flex items-center justify-start sm:justify-end gap-1.5 text-figure-muted group-hover:text-accent transition-colors">
+                Sheet {String(next.data.order).padStart(2, '0')} · Next &rarr;
+              </span>
+              <span class="sibling-card__title mt-1.5 block font-display text-xl sm:text-2xl font-bold tracking-tight text-figure group-hover:text-accent transition-colors">
+                {next.data.title}
+              </span>
+            </a>
+          ) : (
+            <div class="hidden sm:block" />
           )
         }
       </div>
-      <div class="sm:text-right">
-        {
-          next && (
-            <a class="sibling" href={`/work/${next.id}`}>
-              <span class="annotation">Next</span>
-              <span class="sibling__title">{next.data.title}</span>
-            </a>
-          )
-        }
+
+      <div class="mt-8 flex items-center justify-between border-t border-rule pt-4">
+        <a class="rule-link rule-link--internal text-sm" href="/#work">
+          All work
+        </a>
+        <span class="annotation font-mono text-[11px] text-figure-muted">
+          Sheet {String(d.order).padStart(2, '0')} of 07
+        </span>
       </div>
     </nav>
-
-    <p class="mt-10">
-      <a class="rule-link rule-link--internal" href="/#work">All work</a>
-    </p>
   </article>
 
   {
@@ -209,18 +248,15 @@ const d = entry.data;
 </Layout>
 
 <style>
-  .sibling {
+  .sibling-card {
     display: block;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--color-rule);
+    background-color: transparent;
+    transition: border-color 150ms ease, background-color 150ms ease;
   }
-  .sibling__title {
-    display: block;
-    margin-top: 0.4rem;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.25rem;
-    letter-spacing: -0.01em;
-  }
-  .sibling:hover .sibling__title {
-    color: var(--color-accent);
+  .sibling-card:hover {
+    border-color: var(--color-accent);
+    background-color: transparent;
   }
 </style>
