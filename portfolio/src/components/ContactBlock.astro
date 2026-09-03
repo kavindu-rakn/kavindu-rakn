@@ -22,7 +22,7 @@ interface Props {
 const { compact = false } = Astro.props;
 ---
 
-<section class="border-2 border-accent bg-ground-raised p-6 sm:p-10" id="contact">
+<section class="border-2 border-accent bg-ground-raised p-8 sm:p-12 lg:p-14" id="contact">
   <p class="annotation">Contact</p>
 
   <h2
@@ -40,21 +40,15 @@ const { compact = false } = Astro.props;
     )
   }
 
-  <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+  <div class="mt-8 flex flex-col items-start gap-3 sm:gap-3.5">
     <a class="contact-link contact-link--primary" href={`mailto:${SITE.email}`}>
       {SITE.email}
     </a>
-    <a
-      class="contact-link"
-      href="/kavindu-ranathunga-resume.pdf"
-      target="_blank"
-      rel="noopener noreferrer">Résumé (PDF)</a
-    >
-    <a class="contact-link" href={SITE.linkedin} rel="noopener noreferrer" target="_blank">
-      LinkedIn
-    </a>
     <a class="contact-link" href={SITE.github} rel="noopener noreferrer" target="_blank">
-      GitHub
+      github.com/kavindu-rakn
+    </a>
+    <a class="contact-link" href={SITE.linkedin} rel="noopener noreferrer" target="_blank">
+      linkedin.com/in/kavindu-ranathunga/
     </a>
   </div>
 

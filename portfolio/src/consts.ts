@@ -178,7 +178,7 @@ export const ABOUT_PRECIS =
  * each use site, so the footer's "Open to" label and the About page's sentence
  * cannot drift apart.
  */
-export const AVAILABILITY = 'Full-time and freelance work';
+export const AVAILABILITY = 'Full - time and freelance work';
 
 /**
  * Currently being learned, as opposed to shipped.
