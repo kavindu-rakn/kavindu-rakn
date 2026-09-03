@@ -1,36 +1,18 @@
 ---
-import { Image } from 'astro:assets';
-import cover from '../assets/cover.png';
+import InteractiveBlueprint from './InteractiveBlueprint.astro';
 import Wordmark from './Wordmark.astro';
 
 /*
  * The cover.
  *
- * This replaces both the raymarched canvas and the static schema-tree drawing
- * that stood in for it. The mark below is Kavindu's own — the block-letter
- * KAVINDU-RAKN he signs the end of a README with — which makes it the one thing
- * that could sit here without having to justify itself. The two things it
- * replaced were each an argument about the work; this is simply his.
- *
- * Consequences worth stating, because they are large:
- *
- *   - The section is a normal block now, not 160vh of sticky scroll. The first
- *     project arrives about two viewports earlier than it did.
- *   - The page ships no JavaScript at all. No capability gate, no idle import,
- *     no renderer, no teardown: there is nothing to fall back FROM, so there is
- *     nothing to gate.
- *   - three and @types/three leave the project. The hero was their only consumer.
- *
- * The mark is monochrome art on a near-white ground, so it is composited rather
- * than placed. `multiply` drops that ground into the paper in light mode; in
- * dark mode it is inverted first and then screened, so the ground falls away and
- * the glyphs come up light. Without this it would sit on the dark theme as a
- * white slab.
+ * Expands to fully occupy the initial viewport height on desktop, providing
+ * substantial canvas real estate for the interactive kinematic drafting instrument
+ * while placing the Selected Work separator cleanly at the fold.
  */
 ---
 
-<section class="border-b-2 border-figure">
-  <div class="mx-auto max-w-6xl px-6 pt-14 pb-16 sm:pt-20 sm:pb-24">
+<section id="index" class="border-b-2 border-figure min-h-[calc(100svh-3.5rem)] flex flex-col justify-between scroll-mt-14">
+  <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col justify-between px-6 pt-8 pb-10 sm:pt-10 sm:pb-12">
     <header>
       <p class="annotation">Sheet 01 · Cover</p>
       {/*
@@ -38,59 +20,18 @@ import Wordmark from './Wordmark.astro';
         would make the browser synthesise a weight that does not exist.
       */}
       <h1
-        class="mt-5 font-display text-[clamp(2.5rem,7vw,5.25rem)] leading-[0.92] font-extrabold tracking-[-0.025em]"
+        class="mt-4 font-display text-[clamp(2.5rem,7vw,5.25rem)] leading-[0.92] font-extrabold tracking-[-0.025em]"
       >
         <Wordmark />
       </h1>
-      <p class="mt-5 max-w-2xl text-base text-figure-muted sm:text-lg">
+      <p class="mt-4 max-w-2xl text-base text-figure-muted sm:text-lg">
         Product engineer in Colombo. Every project below is a thing that had to
         work before it could look like anything.
       </p>
     </header>
 
-    {/*
-      Decorative: it spells the name the h1 already carries, so announcing it
-      again would repeat what a screen reader has just read.
-    */}
-    <div class="mt-14 sm:mt-20">
-      <Image
-        src={cover}
-        alt=""
-        widths={[640, 960, 1440, 2050]}
-        sizes="(min-width: 72rem) 68rem, 100vw"
-        class="cover"
-        loading="eager"
-        decoding="async"
-      />
+    <div class="mt-6 flex flex-1 flex-col justify-center sm:mt-8">
+      <InteractiveBlueprint />
     </div>
   </div>
 </section>
-
-<style>
-  /*
-   * The artwork's ground is #f2f2f2, not pure white, and `multiply` only
-   * disappears against pure white — at #f2f2f2 it left the mark sitting in a
-   * visibly grey panel on the paper. `brightness` lifts that ground the last
-   * few percent to 255 before the blend, which costs the glyphs about two
-   * levels out of 27 and nothing anyone can see.
-   */
-  .cover {
-    display: block;
-    width: 100%;
-    height: auto;
-    filter: brightness(1.08);
-    mix-blend-mode: multiply;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .cover {
-      /*
-       * Same lift first, so the inverted ground lands on pure black and screens
-       * away completely; then invert, so the glyphs come up light instead of
-       * the whole mark reading as a white slab on the dark theme.
-       */
-      filter: brightness(1.08) invert(1);
-      mix-blend-mode: screen;
-    }
-  }
-</style>

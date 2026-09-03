@@ -5,7 +5,8 @@
  * email. They never appear on the site itself.
  *
  * One card per case study plus a default identity card, so a project link
- * previews with that project's name rather than a generic one.
+ * previews with that project's name, sheet index, flagship badge, and tech stack
+ * rather than a generic card.
  *
  * The R is read out of src/assets/wordmark-r.svg rather than duplicated here,
  * so the cards, the favicon and the headline all come from a single file.
@@ -31,14 +32,9 @@ if (!glyph || !glyphViewBox) {
 /*
  * The card palette, read out of the stylesheet rather than restated here.
  *
- * These five values used to be a fourth hand-written copy of the site's colours,
- * and they were still the old cyanotype long after the site itself had gone
- * black and white — so every shared link showed a blue card for a site that is
- * not blue. Parsing the source of truth costs a dozen lines and removes the
- * whole class of drift.
- *
+ * These values are parsed from global.css to avoid theme drift.
  * The dark values are used deliberately: a dark card stands out in a feed of
- * white preview cards, and reads correctly whether the chat app is light or dark.
+ * white preview cards and reads correctly in both light and dark viewer clients.
  */
 function readPalette() {
   const css = readFileSync(join(process.cwd(), 'src', 'styles', 'global.css'), 'utf8');
@@ -73,6 +69,7 @@ function readPalette() {
 
 const PALETTE = readPalette();
 const GROUND = PALETTE.get('ground');
+const GROUND_RAISED = PALETTE.get('ground-raised');
 const RULE = PALETTE.get('rule');
 const FIGURE = PALETTE.get('figure');
 const MUTED = PALETTE.get('figure-muted');
@@ -82,8 +79,8 @@ const W = 1200;
 const H = 630;
 const GRID = 40;
 /* Content stays inside the registration marks — some platforms crop the edges. */
-const LEFT = 452;
-const RIGHT = 1104;
+const LEFT = 450;
+const RIGHT = 1110;
 
 const esc = (s) =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -92,7 +89,7 @@ const esc = (s) =>
  * Rough advance-width fit. librsvg gives no text metrics, so the size is
  * estimated from character count and then verified by eye on the output.
  */
-function fitSize(text, maxSize, available, ratio = 0.53) {
+function fitSize(text, maxSize, available, ratio = 0.52) {
   const estimated = available / (text.length * ratio);
   return Math.min(maxSize, Math.floor(estimated));
 }
@@ -104,13 +101,32 @@ for (let y = GRID; y < H; y += GRID) gridLines.push(`<line x1="0" y1="${y}" x2="
 const SANS = 'Archivo, Segoe UI, Helvetica, Arial, sans-serif';
 const MONO = 'IBM Plex Mono, Consolas, monospace';
 
-function card({ eyebrow, title, subtitle, footnote }) {
-  const titleSize = fitSize(title, 76, RIGHT - LEFT);
-  const subtitleSize = subtitle ? fitSize(subtitle, 31, RIGHT - LEFT, 0.5) : 0;
+function card({ eyebrow, title, subtitle, badge, tags = [], footnote }) {
+  const titleSize = fitSize(title, 64, RIGHT - LEFT);
+  const subtitleSize = subtitle ? fitSize(subtitle, 24, RIGHT - LEFT, 0.48) : 0;
+
+  let tagX = LEFT;
+  const tagElements = [];
+  for (const tag of tags.slice(0, 4)) {
+    const tagW = Math.max(64, Math.floor(tag.length * 8.5 + 24));
+    if (tagX + tagW > RIGHT) break;
+    tagElements.push(
+      `<rect x="${tagX}" y="430" width="${tagW}" height="30" rx="4" fill="${GROUND_RAISED}" stroke="${RULE}" stroke-width="1.25"/>`,
+      `<text x="${tagX + tagW / 2}" y="450" fill="${MUTED}" font-family="${MONO}" font-size="12" text-anchor="middle">${esc(tag)}</text>`,
+    );
+    tagX += tagW + 10;
+  }
+
+  const badgeW = 180;
+  const badgeEl = badge
+    ? `<rect x="${LEFT}" y="148" width="${badgeW}" height="26" rx="4" fill="${ACCENT}" fill-opacity="0.12" stroke="${ACCENT}" stroke-width="1.25"/>
+       <text x="${LEFT + badgeW / 2}" y="165" fill="${ACCENT}" font-family="${MONO}" font-size="11" font-weight="700" letter-spacing="1.5" text-anchor="middle">${esc(badge)}</text>
+       <text x="${LEFT + badgeW + 16}" y="166" fill="${MUTED}" font-family="${MONO}" font-size="13" letter-spacing="2.5">${esc(eyebrow)}</text>`
+    : `<text x="${LEFT}" y="166" fill="${ACCENT}" font-family="${MONO}" font-size="14" letter-spacing="3">${esc(eyebrow)}</text>`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <rect width="${W}" height="${H}" fill="${GROUND}"/>
-  <g stroke="${RULE}" stroke-width="1" opacity="0.45">${gridLines.join('')}</g>
+  <g stroke="${RULE}" stroke-width="1" opacity="0.4">${gridLines.join('')}</g>
   <g stroke="${RULE}" stroke-width="2" fill="none">
     <path d="M40 40 H96 M40 40 V96"/>
     <path d="M1160 40 H1104 M1160 40 V96"/>
@@ -118,27 +134,36 @@ function card({ eyebrow, title, subtitle, footnote }) {
     <path d="M1160 590 H1104 M1160 590 V534"/>
   </g>
 
-  <svg x="96" y="184" width="292" height="262" viewBox="${glyphViewBox}" fill="${FIGURE}">
+  <!-- Precision reticle around trademark R -->
+  <g stroke="${RULE}" stroke-width="1" fill="none" opacity="0.5">
+    <circle cx="230" cy="315" r="145" stroke-dasharray="4 6"/>
+    <circle cx="230" cy="315" r="105" stroke-dasharray="2 4"/>
+    <line x1="230" y1="140" x2="230" y2="490" stroke-dasharray="2 6"/>
+    <line x1="55" y1="315" x2="405" y2="315" stroke-dasharray="2 6"/>
+  </g>
+
+  <svg x="100" y="195" width="260" height="240" viewBox="${glyphViewBox}" fill="${FIGURE}">
     ${glyph}
   </svg>
 
-  <text x="${LEFT}" y="228" fill="${ACCENT}" font-family="${MONO}"
-        font-size="22" letter-spacing="3.4">${esc(eyebrow)}</text>
+  ${badgeEl}
 
-  <text x="${LEFT}" y="330" fill="${FIGURE}" font-family="${SANS}"
-        font-size="${titleSize}" font-weight="800" letter-spacing="-1.4">${esc(title)}</text>
+  <text x="${LEFT}" y="255" fill="${FIGURE}" font-family="${SANS}"
+        font-size="${titleSize}" font-weight="800" letter-spacing="-1.2">${esc(title)}</text>
 
-  <line x1="${LEFT}" y1="372" x2="${RIGHT}" y2="372" stroke="${RULE}" stroke-width="2"/>
+  <line x1="${LEFT}" y1="295" x2="${RIGHT}" y2="295" stroke="${RULE}" stroke-width="1.5"/>
 
   ${
     subtitle
-      ? `<text x="${LEFT}" y="424" fill="${MUTED}" font-family="${SANS}"
-        font-size="${subtitleSize}">${esc(subtitle)}</text>`
+      ? `<text x="${LEFT}" y="340" fill="${MUTED}" font-family="${SANS}"
+        font-size="${subtitleSize}" font-weight="400">${esc(subtitle)}</text>`
       : ''
   }
 
-  <text x="${LEFT}" y="480" fill="${MUTED}" font-family="${MONO}"
-        font-size="21" letter-spacing="2.2">${esc(footnote)}</text>
+  <g>${tagElements.join('')}</g>
+
+  <text x="${LEFT}" y="525" fill="${MUTED}" font-family="${MONO}"
+        font-size="13" letter-spacing="2">${esc(footnote)}</text>
 </svg>`;
 }
 
@@ -153,7 +178,7 @@ async function write(name, svg) {
   return png.length;
 }
 
-/** Minimal frontmatter read — only the two scalar fields the cards need. */
+/** Frontmatter read — parses title, tagline, order and techStack. */
 function frontmatter(file) {
   const raw = readFileSync(join(WORK_DIR, file), 'utf8');
   const block = raw.split('---')[1] ?? '';
@@ -162,7 +187,20 @@ function frontmatter(file) {
     if (!m) return null;
     return m[1].trim().replace(/^['"]|['"]$/g, '');
   };
-  return { title: field('title'), tagline: field('tagline') };
+  const listField = (key) => {
+    const m = block.match(new RegExp(`^${key}:\\s*\\n((?:\\s*-\\s*.*\\n?)+)`, 'm'));
+    if (!m) return [];
+    return m[1]
+      .split('\n')
+      .map((l) => l.replace(/^\s*-\s*/, '').trim().replace(/^['"]|['"]$/g, ''))
+      .filter(Boolean);
+  };
+  return {
+    title: field('title'),
+    tagline: field('tagline'),
+    order: Number(field('order')) || 0,
+    techStack: listField('techStack'),
+  };
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
@@ -174,10 +212,11 @@ written.push([
   await write(
     'default',
     card({
-      eyebrow: 'KAVINDU-RAKN.XYZ',
+      eyebrow: 'ENGINEERING PORTFOLIO',
       title: 'Kavindu Ranathunga',
-      subtitle: 'Product Engineer · Colombo, Sri Lanka',
-      footnote: 'SHEET 01 · COVER',
+      subtitle: 'Product engineer in Colombo · Systems, WebGL & Modern Web',
+      tags: ['TypeScript', 'React', 'Node.js', 'PostgreSQL'],
+      footnote: 'SHEET 00 · KAVINDU-RAKN.XYZ',
     }),
   ),
 ]);
@@ -186,17 +225,23 @@ written.push([
 // study, and filtering on .md alone would silently skip its card.
 for (const file of readdirSync(WORK_DIR).filter((f) => /\.mdx?$/.test(f))) {
   const slug = file.replace(/\.mdx?$/, '');
-  const { title, tagline } = frontmatter(file);
+  const { title, tagline, order, techStack } = frontmatter(file);
   if (!title) continue;
+
+  const isFlagship = slug === 'schemashift' || slug === 'talenthub';
+  const sheetNum = String(order).padStart(2, '0');
+
   written.push([
     slug,
     await write(
       slug,
       card({
-        eyebrow: 'KAVINDU-RAKN.XYZ',
+        badge: isFlagship ? 'FLAGSHIP CASE STUDY' : undefined,
+        eyebrow: `SHEET ${sheetNum} · PORTFOLIO`,
         title,
         subtitle: tagline ?? '',
-        footnote: 'CASE STUDY · KAVINDU RANATHUNGA',
+        tags: techStack,
+        footnote: 'KAVINDU RANATHUNGA · PRODUCT ENGINEER',
       }),
     ),
   ]);
@@ -206,14 +251,9 @@ for (const file of readdirSync(WORK_DIR).filter((f) => /\.mdx?$/.test(f))) {
  * Apple touch icon.
  *
  * iOS ignores an SVG favicon: a page saved to the home screen without this falls
- * back to a screenshot of itself, which is both unrecognisable at that size and
- * a picture of whatever happened to be on screen. Safari uses it for pinned tabs
- * and bookmarks too.
+ * back to a screenshot of itself. Safari uses it for pinned tabs and bookmarks too.
  *
- * It cannot follow the colour scheme — the file is chosen once, at save time,
- * and iOS never revisits it. So it takes the dark treatment: a white mark on the
- * near-black ground, which holds against a light or dark wallpaper, where a
- * white tile would glare on one and a black mark would vanish on the other.
+ * Takes the dark treatment: a white mark on the near-black ground.
  */
 const TOUCH = 180;
 const TOUCH_INSET = 26;

@@ -18,13 +18,12 @@ const work = await getWork();
 const elapsed = elapsedPhrase();
 
 /*
- * The feature card occupies two cells, the rest one each. When that total is
- * even the cards fill whole rows and the About aside would start a row on its
- * own, leaving a hole beside it; when it is odd the aside fills the gap the
- * cards leave. Deriving it means adding a seventh case study stays "writing a
- * file", which is what the README promises and what a hardcoded span broke.
+ * SchemaShift and TalentHub are the two flagship case studies and each spans two cells.
+ * Single-column cards + About aside fill out the rest of the 2-column grid.
  */
-const asideFillsRow = (work.length + 1) % 2 === 0;
+const flagships = new Set(['schemashift', 'talenthub']);
+const singleCardCount = work.filter((w) => !flagships.has(w.id)).length;
+const asideFillsRow = (singleCardCount + 1) % 2 === 1;
 ---
 
 <Layout title={SITE.name}>
@@ -32,7 +31,7 @@ const asideFillsRow = (work.length + 1) % 2 === 0;
 
   <BlueprintHero />
 
-  <section id="work" class="border-t-2 border-figure">
+  <section id="work" class="border-t-2 border-figure scroll-mt-14">
     <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
       <header
         class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b-2 border-figure pb-4"
@@ -52,14 +51,14 @@ const asideFillsRow = (work.length + 1) % 2 === 0;
         a chasm. Sizing each card to its own content removes it without dropping
         any content from the shorter ones.
       */}
-      <div class="mt-10 grid items-start gap-6 md:grid-cols-2">
+      <div class="mt-10 grid gap-6 md:grid-cols-2">
         {
-          work.map((entry, i) => (
-            <ProjectCard entry={entry} feature={i === 0} />
+          work.map((entry) => (
+            <ProjectCard entry={entry} feature={flagships.has(entry.id)} />
           ))
         }
 
-{/*
+        {/*
           Not a project card. It carried a sheet number and the same header rule
           as the six beside it, so it read as a seventh project called "Twelve
           months". The number is gone, the ground is raised, and the heading sets
@@ -67,21 +66,23 @@ const asideFillsRow = (work.length + 1) % 2 === 0;
         */}
         <aside
           class:list={[
-            'flex min-w-0 flex-col border-2 border-accent bg-ground-raised p-6 sm:p-8',
+            'flex h-full min-w-0 flex-col justify-between border-2 border-accent card-solid p-6 sm:p-8',
             asideFillsRow && 'md:col-span-2',
           ]}
         >
-          <p class="annotation">About</p>
+          <div>
+            <p class="annotation">About</p>
 
-          <h3 class="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">
-            {elapsed} of it
-          </h3>
+            <h3 class="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">
+              {elapsed} of it
+            </h3>
 
-          <p class="mt-4 text-figure-muted">
-            My first commit was on 17 August 2025.
-          </p>
+            <p class="mt-4 text-figure-muted">
+              My first commit was on 17 August 2025.
+            </p>
 
-          <p class="mt-4 text-sm leading-relaxed">{ABOUT_PRECIS}</p>
+            <p class="mt-4 text-sm leading-relaxed">{ABOUT_PRECIS}</p>
+          </div>
 
           <footer class="mt-6 border-t border-rule pt-4">
             <a class="rule-link rule-link--internal" href="/about">Read the rest</a>
@@ -96,18 +97,18 @@ const asideFillsRow = (work.length + 1) % 2 === 0;
     the argument; pushing it further down the page to make room for a skills
     list would trade the strong thing for the summary of it.
   */}
-  <section class="border-t-2 border-figure">
+  <section id="tech" class="border-t-2 border-figure scroll-mt-14">
     <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
       <SkillsMatrix />
     </div>
   </section>
 
-  <section class="border-t-2 border-figure">
-    <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+  <section id="contact" class="border-t-2 border-figure min-h-[calc(100svh-3.5rem)] flex flex-col justify-center scroll-mt-14">
+    <div class="mx-auto w-full max-w-6xl px-6 py-12 sm:py-20">
       <ContactBlock />
     </div>
   </section>
 
-  <SiteFooter slot="footer" />
+  <SiteFooter slot="footer" compact />
 </Layout>
 

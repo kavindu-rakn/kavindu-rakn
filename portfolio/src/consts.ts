@@ -20,7 +20,7 @@ export const SITE = {
     'BSc (Hons) Information Technology, Software Engineering specialisation, SLIIT, 2022–2027',
   /** Site-level meta description. Kept under 160 characters for SERP display. */
   description:
-    'Product engineer in Colombo, Sri Lanka. Largest contributor to TalentHub, a production platform at Sri Lanka Telecom Mobitel.',
+    'Product engineer in Colombo, Sri Lanka. Core contributor to TalentHub, an enterprise production platform at Sri Lanka Telecom Mobitel.',
   locale: 'en-GB',
   /** Default Open Graph image. Generated into public/og/ by scripts/generate-og.mjs. */
   ogImage: '/og/default.png',
@@ -91,8 +91,10 @@ export type NavItem = {
 };
 
 export const NAV: readonly NavItem[] = [
-  { href: '/', label: 'Index' },
+  { href: '/#index', label: 'Index' },
   { href: '/#work', label: 'Work' },
+  { href: '/#tech', label: 'Tech' },
+  { href: '/#contact', label: 'Contact' },
   { href: '/about', label: 'About' },
   { href: '/kavindu-ranathunga-resume.pdf', label: 'Resume', file: true },
 ];
@@ -168,18 +170,17 @@ export const LATEST_ROLE = ROLES[0];
 /**
  * The one-paragraph version of /about, shown on the index card.
  *
- * Shared because the card used to restate these figures in its own words. Two
- * copies of "207 of its 652 commits" is two things to keep true.
+ * Shared because the card used to restate these figures in its own words.
  */
 export const ABOUT_PRECIS =
-  'Largest contributor to a platform in production that twenty developers built, with 207 of its 652 commits — and five projects of my own designed and shipped.';
+  'Core contributor to a platform in production that twenty developers built, rebuilding 27 of its 35 screens across 37 merged pull requests — alongside five projects of my own designed and shipped.';
 
 /**
  * What he is open to. Stored as the object alone and composed into a sentence at
  * each use site, so the footer's "Open to" label and the About page's sentence
  * cannot drift apart.
  */
-export const AVAILABILITY = 'Full-time and freelance work';
+export const AVAILABILITY = 'Full - time and freelance work';
 
 /**
  * Currently being learned, as opposed to shipped.

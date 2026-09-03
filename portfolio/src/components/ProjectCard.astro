@@ -33,90 +33,145 @@ const d = entry.data;
 
 <article
   class:list={[
-    'flex min-w-0 flex-col border-2 border-figure bg-ground p-6 sm:p-8',
-    feature && 'md:col-span-2',
+    'flex h-full min-w-0 flex-col border-2 border-figure bg-ground transition-colors duration-150',
+    feature
+      ? 'md:col-span-2 card-solid p-6 sm:p-8 lg:p-10 hover:border-accent'
+      : 'p-6 sm:p-8 hover:border-figure/70',
   ]}
 >
   <header
-    class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-rule pb-3"
+    class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-rule pb-3"
   >
-    <span class="annotation">{String(index).padStart(2, '0')}</span>
+    <div class="flex items-center gap-2.5">
+      {
+        feature && (
+          <span class="font-sans text-[10px] font-bold px-2 py-0.5 border border-accent bg-accent/10 text-accent tracking-wider uppercase">
+            FLAGSHIP CASE STUDY
+          </span>
+        )
+      }
+      <span class="annotation">Sheet {String(index).padStart(2, '0')}</span>
+    </div>
     <span class="annotation">{STATUS_LABEL[d.status]}</span>
   </header>
 
-  <h3
-    class:list={[
-      'display-title mt-6 leading-[0.88]',
-      feature ? 'text-5xl sm:text-7xl' : 'text-3xl sm:text-4xl',
-    ]}
-  >
-    {d.title}
-  </h3>
-
   {
-    d.tagline && (
-      <p class:list={['mt-4 text-figure-muted', feature ? 'text-lg' : 'text-base']}>
-        {d.tagline}
-      </p>
+    feature ? (
+      <div class="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start">
+        <div class="lg:col-span-7 flex flex-col">
+          <h3 class="display-title text-4xl sm:text-5xl lg:text-6xl leading-[0.9]">
+            {d.title}
+          </h3>
+
+          {d.tagline && (
+            <p class="mt-4 text-base sm:text-lg text-figure-muted leading-relaxed max-w-xl">
+              {d.tagline}
+            </p>
+          )}
+
+          <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 pt-2">
+            <a
+              class="rule-link rule-link--internal rule-link--strong text-sm"
+              href={`/work/${entry.id}`}
+            >
+              Read case study
+            </a>
+
+            {d.liveUrl && (
+              <a class="rule-link text-sm" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
+                Live site
+              </a>
+            )}
+
+            {d.githubUrl && (
+              <a class="rule-link text-sm" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
+                Source
+              </a>
+            )}
+
+            {d.sourcePrivate && (
+              <span class="annotation text-xs">Source private · on request</span>
+            )}
+
+            {d.employment && !d.githubUrl && !d.liveUrl && (
+              <span class="annotation text-xs">Internal platform</span>
+            )}
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 flex flex-col border-t border-rule pt-6 lg:border-t-0 lg:border-l lg:border-rule lg:pl-8 lg:pt-0">
+          <p class="annotation text-figure font-mono text-xs uppercase tracking-wider pb-2 border-b border-rule">
+            Key Highlights
+          </p>
+
+          {d.highlights && (
+            <ul class="mt-4 space-y-2.5">
+              {d.highlights.map((point) => (
+                <li class="flex gap-3 text-sm leading-relaxed">
+                  <span class="mt-[0.6em] h-px w-3 shrink-0 bg-accent" aria-hidden="true" />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div class="mt-6 border-t border-rule/60 pt-4">
+            <TechStack items={d.techStack} />
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div class="flex flex-1 flex-col">
+        <h3 class="display-title mt-6 text-3xl sm:text-4xl leading-[0.88]">
+          {d.title}
+        </h3>
+
+        {d.tagline && (
+          <p class="mt-4 text-base text-figure-muted">
+            {d.tagline}
+          </p>
+        )}
+
+        {d.highlights && (
+          <ul class="mt-6 space-y-2.5">
+            {d.highlights.slice(0, 2).map((point) => (
+              <li class="flex gap-3 text-sm leading-relaxed">
+                <span class="mt-[0.6em] h-px w-3 shrink-0 bg-accent" aria-hidden="true" />
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div class="mt-auto pt-6">
+          <TechStack items={d.techStack} />
+        </div>
+
+        <footer class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-rule pt-4">
+          <a class="rule-link rule-link--internal rule-link--strong" href={`/work/${entry.id}`}>
+            Case study
+          </a>
+
+          {d.liveUrl && (
+            <a class="rule-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
+              Live site
+            </a>
+          )}
+
+          {d.githubUrl && (
+            <a class="rule-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
+              Source
+            </a>
+          )}
+
+          {d.sourcePrivate && <span class="annotation">Source private · on request</span>}
+
+          {d.employment && !d.githubUrl && !d.liveUrl && (
+            <span class="annotation">Internal platform</span>
+          )}
+        </footer>
+      </div>
     )
   }
-
-  {
-    d.highlights && (
-      <ul class="mt-6 space-y-2.5">
-        {d.highlights.map((point) => (
-          <li class="flex gap-3 text-sm leading-relaxed">
-            <span class="mt-[0.6em] h-px w-3 shrink-0 bg-accent" aria-hidden="true" />
-            <span>{point}</span>
-          </li>
-        ))}
-      </ul>
-    )
-  }
-
-  {/* Pushes the stack and links to the card foot so a grid row stays aligned. */}
-  <div class="mt-auto pt-6">
-    <TechStack items={d.techStack} />
-  </div>
-
-  <footer class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-rule pt-4">
-    {/* Primary action. Every entry has a route, generated from this collection. */}
-    <a class="rule-link rule-link--internal rule-link--strong" href={`/work/${entry.id}`}>
-      Case study
-    </a>
-
-    {
-      d.liveUrl && (
-        <a class="rule-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
-          Live site
-        </a>
-      )
-    }
-
-    {
-      d.githubUrl && (
-        <a class="rule-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
-          Source
-        </a>
-      )
-    }
-
-    {/*
-      a private repository must not be linked to github.com. A
-      logged-out visitor gets a 404, which does not read as "private"; it reads
-      as "fabricated". The content schema fails the build if such a link is added.
-    */}
-    {d.sourcePrivate && <span class="annotation">Source private · available on request</span>}
-
-    {/*
-      Employment work with no linkable artifact. Conditioned on the links rather
-      than on `employment` alone, so an employment entry that does have a public
-      deployment cannot announce "no public repository" beside its own link.
-    */}
-    {d.employment && !d.githubUrl && !d.liveUrl && (
-      <span class="annotation">Internal platform · no public repository</span>
-    )}
-  </footer>
-
 </article>
 
