@@ -21,14 +21,16 @@ interface Props {
    * reserving 16:9 for it would misrepresent the shape of the thing missing.
    */
   viewport?: 'desktop' | 'mobile';
+  /** Plate reference, so an unfilled slot is addressable too. */
+  plate?: string;
 }
-const { spec, viewport = 'desktop' } = Astro.props;
+const { spec, viewport = 'desktop', plate } = Astro.props;
 const { token, action } = PLACEHOLDERS.screenshots;
 ---
 
 <figure class="missing-asset" data-placeholder={token} data-viewport={viewport}>
   <div class="missing-asset__body">
-    <p class="missing-asset__token">{token}</p>
+    <p class="missing-asset__token">{plate ? `${token} · PLATE ${plate}` : token}</p>
     <p class="missing-asset__spec">{spec}</p>
     <p class="missing-asset__action">{action}</p>
   </div>

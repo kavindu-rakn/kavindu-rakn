@@ -18,10 +18,8 @@
   /* Cyanotype blues — the blueprint itself */
   --color-blueprint-950: #04101b;
   --color-blueprint-900: #071a2b;
-  --color-blueprint-800: #0c2942;
   --color-blueprint-700: #14405f;
   --color-blueprint-600: #1d5c86;
-  --color-blueprint-500: #2b7fb0;
   --color-blueprint-400: #4ba3d4;
   --color-blueprint-300: #7cc6ec;
   --color-blueprint-200: #b3ddf5;
@@ -29,15 +27,10 @@
   /* Drafting paper + graphite */
   --color-paper-50: #fcfbf8;
   --color-paper-100: #f5f3ec;
-  --color-paper-200: #e8e4d9;
   --color-paper-300: #d5cfc0;
 
   --color-ink-900: #101109;
-  --color-ink-800: #1e2018;
-  --color-ink-700: #33362b;
   --color-ink-500: #5d6152;
-  --color-ink-400: #7d8172;
-  --color-ink-300: #a4a899;
 
   /*
    * Signal red. Reserved exclusively for unresolved placeholders
@@ -45,18 +38,17 @@
    * Do not use this colour decoratively; it would dilute the alarm.
    */
   --color-signal-500: #ff3b1f;
-  --color-signal-600: #d92507;
 
   /*
    * Semantic tokens. These are re-declared under the dark media query below,
    * so `bg-ground` / `text-figure` adapt with no `dark:` class at the callsite.
    */
-  --color-ground: #fcfbf8;
-  --color-ground-raised: #f5f3ec;
-  --color-figure: #101109;
-  --color-figure-muted: #5d6152;
-  --color-rule: #d5cfc0;
-  --color-accent: #1d5c86;
+  --color-ground: var(--color-paper-50);
+  --color-ground-raised: var(--color-paper-100);
+  --color-figure: var(--color-ink-900);
+  --color-figure-muted: var(--color-ink-500);
+  --color-rule: var(--color-paper-300);
+  --color-accent: var(--color-blueprint-600);
 
   /*
    * Typography. Archivo is a grotesque with wide, blunt forms — it holds up at
@@ -75,12 +67,12 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-ground: #04101b;
-    --color-ground-raised: #071a2b;
-    --color-figure: #b3ddf5;
-    --color-figure-muted: #4ba3d4;
-    --color-rule: #14405f;
-    --color-accent: #7cc6ec;
+    --color-ground: var(--color-blueprint-950);
+    --color-ground-raised: var(--color-blueprint-900);
+    --color-figure: var(--color-blueprint-200);
+    --color-figure-muted: var(--color-blueprint-400);
+    --color-rule: var(--color-blueprint-700);
+    --color-accent: var(--color-blueprint-300);
   }
 }
 
@@ -140,6 +132,24 @@
       linear-gradient(to bottom, var(--color-rule) 1px, transparent 1px);
     background-size: 2rem 2rem;
     background-position: center center;
+  }
+
+  /*
+   * The display heading.
+   *
+   * Five places repeated the same declarations as utility strings, and only the
+   * size and leading ever differed. What never varies lives here.
+   *
+   * Line height deliberately does NOT: every Tailwind `text-*` utility sets a
+   * line-height of its own, and utilities sort after components, so a value
+   * here could never win. Leaving it out and stating `leading-*` at each
+   * heading is honest about which layer actually decides.
+   */
+  .display-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
   }
 
   /*
