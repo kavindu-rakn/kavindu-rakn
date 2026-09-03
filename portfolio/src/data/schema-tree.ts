@@ -54,7 +54,7 @@ export const SCHEMA_TREE: readonly SchemaNode[] = [
     note: 'Data models, migrations, correctness held under test.',
     depth: 1,
     parent: 'root',
-    gx: -2,
+    gx: -2.5,
     gy: 0,
     slug: null,
   },
@@ -76,7 +76,7 @@ export const SCHEMA_TREE: readonly SchemaNode[] = [
     note: 'Procedural geometry, audio synthesis, orbital mathematics.',
     depth: 1,
     parent: 'root',
-    gx: 2,
+    gx: 2.5,
     gy: 0,
     slug: null,
   },
@@ -85,9 +85,10 @@ export const SCHEMA_TREE: readonly SchemaNode[] = [
    * ── depth 2 — projects ──────────────────────────────────────────────────
    *
    * Leaves are spaced UNIFORMLY at 1.0 grid unit. Grouping under a branch is
-   * carried by the connectors, not by the spacing: clustering each pair tightly
+   * carried by the connectors, not by the spacing: clustering each group tightly
    * left the cross-branch neighbours closer than the plates are wide, and they
-   * overlapped. Branch gx values (-2, 0, 2) remain the mean of their pair.
+   * overlapped. Each branch sits at the mean of its own children, so the set can
+   * grow without the connectors crossing.
    */
   {
     id: 'schemashift',
@@ -96,7 +97,7 @@ export const SCHEMA_TREE: readonly SchemaNode[] = [
     note: 'Pre-commit impact analysis for schema changes.',
     depth: 2,
     parent: 'systems',
-    gx: -2.5,
+    gx: -3,
     gy: -2,
     slug: 'schemashift',
   },
@@ -107,7 +108,7 @@ export const SCHEMA_TREE: readonly SchemaNode[] = [
     note: 'Internship platform in production at Sri Lanka Telecom Mobitel.',
     depth: 2,
     parent: 'systems',
-    gx: -1.5,
+    gx: -2,
     gy: -2,
     slug: 'talenthub',
   },
@@ -118,9 +119,20 @@ export const SCHEMA_TREE: readonly SchemaNode[] = [
     note: 'Booking platform for a boutique hotel near Yala National Park.',
     depth: 2,
     parent: 'product',
-    gx: -0.5,
+    gx: -1,
     gy: -2,
     slug: 'hotel-tamarind-tree',
+  },
+  {
+    id: 'easyapply',
+    label: 'EasyApply',
+    short: 'EASYAPPLY',
+    note: 'Nine SLT Mobitel application forms, online and trilingual.',
+    depth: 2,
+    parent: 'product',
+    gx: 0,
+    gy: -2,
+    slug: 'easyapply',
   },
   {
     id: 'prompta',
@@ -129,7 +141,7 @@ export const SCHEMA_TREE: readonly SchemaNode[] = [
     note: 'Vault for AI prompts.',
     depth: 2,
     parent: 'product',
-    gx: 0.5,
+    gx: 1,
     gy: -2,
     slug: 'prompta',
   },
@@ -140,7 +152,7 @@ export const SCHEMA_TREE: readonly SchemaNode[] = [
     note: 'Exploded 3D mechanical watch movement, disassembles on scroll.',
     depth: 2,
     parent: 'craft',
-    gx: 1.5,
+    gx: 2,
     gy: -2,
     slug: 'horologia',
   },
@@ -151,7 +163,7 @@ export const SCHEMA_TREE: readonly SchemaNode[] = [
     note: 'Real-time moon phase, orbital position and sky panel.',
     depth: 2,
     parent: 'craft',
-    gx: 2.5,
+    gx: 3,
     gy: -2,
     slug: 'luna',
   },

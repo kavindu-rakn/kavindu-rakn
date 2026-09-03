@@ -94,7 +94,11 @@ const { current, within } = Astro.props;
 
   /* Signals a download rather than a page, without a second type size. */
   a[data-file='true']::after {
-    content: ' PDF';
+    /*
+     * A non-breaking space, because a leading ordinary space in generated
+     * content collapses and the label rendered as "RESUMEPDF".
+     */
+    content: ' PDF';
     opacity: 0.55;
   }
 

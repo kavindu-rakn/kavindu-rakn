@@ -23,7 +23,7 @@ const { class: className = '' } = Astro.props;
 
 // Grid units → SVG user units. The horizontal scale keeps the outermost leaf
 // plates clear of the sheet edge and the corner registration marks.
-const X = (gx: number) => 400 + gx * 124;
+const X = (gx: number) => 460 + gx * 124;
 const Y = (gy: number) => 300 - gy * 90;
 
 // Leaf plates are narrower than the 124-unit leaf pitch, leaving a visible gap.
@@ -51,7 +51,7 @@ const depthLabels = [
 
 <svg
   class={`blueprint-svg ${className}`}
-  viewBox="0 0 800 580"
+  viewBox="0 0 920 580"
   role="img"
   aria-labelledby="blueprint-title blueprint-desc"
   preserveAspectRatio="xMidYMid meet"
@@ -59,30 +59,30 @@ const depthLabels = [
   <title id="blueprint-title">Schema tree — exploded assembly</title>
   <desc id="blueprint-desc">
     An architectural blueprint of a schema tree. A root node inherits downward
-    into three branches — Systems, Product and Craft — which in turn carry six
-    projects: SchemaShift, TalentHub, Hotel Tamarind Tree, Prompta, Horologia
-    and Luna.
+    into three branches — Systems, Product and Craft — which in turn carry seven
+    projects: SchemaShift, TalentHub, Hotel Tamarind Tree, EasyApply, Prompta,
+    Horologia and Luna.
   </desc>
 
   {/* Corner registration marks */}
   <g class="bp-rule">
     <path d="M 12 12 H 44 M 12 12 V 44" />
-    <path d="M 788 12 H 756 M 788 12 V 44" />
+    <path d="M 908 12 H 876 M 908 12 V 44" />
     <path d="M 12 568 H 44 M 12 568 V 536" />
-    <path d="M 788 568 H 756 M 788 568 V 536" />
+    <path d="M 908 568 H 876 M 908 568 V 536" />
   </g>
 
   {/* Depth guide rules */}
   {
     depthLabels.map(({ gy, text }) => (
       <g>
-        <line class="bp-guide" x1="56" y1={Y(gy)} x2="744" y2={Y(gy)} />
+        <line class="bp-guide" x1="34" y1={Y(gy)} x2="886" y2={Y(gy)} />
         {/*
           Lifted clear of the plate band. At depth 2 the outermost plate reaches
           x≈49, so a label sitting on the datum line collides with it and the
           trailing digit disappears behind the plate.
         */}
-        <text class="bp-annotation" x="56" y={Y(gy) - PLATE_H / 2 - 10}>
+        <text class="bp-annotation" x="34" y={Y(gy) - PLATE_H / 2 - 10}>
           {text}
         </text>
       </g>
@@ -119,16 +119,16 @@ const depthLabels = [
 
   {/* Title block, as a drawing sheet carries */}
   <g class="bp-titleblock">
-    <rect x="524" y="510" width="264" height="58" />
-    <line x1="524" y1="534" x2="788" y2="534" />
-    <line x1="656" y1="510" x2="656" y2="568" />
-    <text class="bp-annotation" x="536" y="527">title</text>
-    <text class="bp-annotation" x="668" y="527">sheet</text>
-    <text class="bp-label bp-label--sm" x="536" y="555">SCHEMA TREE</text>
-    <text class="bp-label bp-label--sm" x="668" y="555">01</text>
+    <rect x="644" y="510" width="264" height="58" />
+    <line x1="644" y1="534" x2="908" y2="534" />
+    <line x1="776" y1="510" x2="776" y2="568" />
+    <text class="bp-annotation" x="656" y="527">title</text>
+    <text class="bp-annotation" x="788" y="527">sheet</text>
+    <text class="bp-label bp-label--sm" x="656" y="555">SCHEMA TREE</text>
+    <text class="bp-label bp-label--sm" x="788" y="555">01</text>
   </g>
 
-  <text class="bp-annotation" x="56" y="555">inherits downward</text>
+  <text class="bp-annotation" x="34" y="555">inherits downward</text>
 </svg>
 
 <style>

@@ -2,7 +2,7 @@
 title: Luna
 tagline: Real-time moon phase, orbital position and sky panel.
 description: 'Real-time moon phase and orbital position with a geolocation-aware sky panel, a draggable 3D moon, and custom lunar mathematics.'
-order: 6
+order: 7
 status: live
 githubUrl: https://github.com/kavindu-rakn/Luna
 techStack:

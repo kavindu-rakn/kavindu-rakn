@@ -9,7 +9,7 @@
 export const SITE = {
   name: 'Kavindu Ranathunga',
   legalName: 'R.A.K.N. Ranathunga',
-  role: 'Full-stack Developer',
+  role: 'Product Engineer',
   location: 'Colombo, Sri Lanka',
   email: 'kavindu.rakn@gmail.com',
   github: 'https://github.com/kavindu-rakn',
@@ -20,7 +20,7 @@ export const SITE = {
     'BSc (Hons) Information Technology, Software Engineering specialisation, SLIIT, 2022–2027',
   /** Site-level meta description. Kept under 160 characters for SERP display. */
   description:
-    'Full-stack developer in Colombo, Sri Lanka. Largest contributor to TalentHub, a production platform at Sri Lanka Telecom Mobitel.',
+    'Product engineer in Colombo, Sri Lanka. Largest contributor to TalentHub, a production platform at Sri Lanka Telecom Mobitel.',
   locale: 'en-GB',
   /** Default Open Graph image. Generated into public/og/ by scripts/generate-og.mjs. */
   ogImage: '/og/default.png',

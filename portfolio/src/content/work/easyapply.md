@@ -2,7 +2,7 @@
 title: EasyApply
 tagline: Nine paper forms rebuilt as guided online applications, in three languages.
 description: "Nine of Sri Lanka Telecom Mobitel's paper application forms rebuilt as guided, multi-step online forms, delivered in English, Sinhala and Tamil."
-order: 8
+order: 4
 status: in-production
 employment: true
 ownPublicDeployment: true

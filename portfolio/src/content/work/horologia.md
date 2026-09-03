@@ -2,7 +2,7 @@
 title: Horologia
 tagline: Exploded 3D mechanical watch movement, disassembles on scroll.
 description: 'A procedurally generated mechanical watch movement in the browser: fourteen components, a raycasting materials inspector, and synthesised ticking at 28,800 vph.'
-order: 4
+order: 5
 status: live
 liveUrl: https://horologia-kvn.web.app/
 githubUrl: https://github.com/kavindu-rakn/Horologia
