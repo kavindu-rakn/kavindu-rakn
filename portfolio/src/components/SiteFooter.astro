@@ -20,8 +20,8 @@ const builtAt = new Date().toISOString().replace('T', ' ').slice(0, 16);
   <div class="mx-auto max-w-6xl px-6 py-14">
     <div class="grid gap-10 sm:grid-cols-2">
       <div>
-        <p class="annotation">Contact</p>
-        <ul class="mt-4 space-y-2">
+        <p class="annotation border-b border-rule pb-3 text-figure">Contact</p>
+        <ul class="mt-5 space-y-2">
           <li>
             <a class="footer-link" href={`mailto:${SITE.email}`}>{SITE.email}</a>
           </li>
@@ -44,18 +44,18 @@ const builtAt = new Date().toISOString().replace('T', ' ').slice(0, 16);
       </div>
 
       <div>
-        <p class="annotation">Detail</p>
-        <dl class="mt-4 space-y-2 text-sm text-figure-muted">
+        <p class="annotation border-b border-rule pb-3 text-figure">Detail</p>
+        <dl class="mt-5 space-y-3 text-sm text-figure-muted">
           <div class="flex gap-3">
-            <dt class="annotation w-20 shrink-0 pt-0.5">Based</dt>
+            <dt class="footer-key w-20 shrink-0 pt-0.5">Based</dt>
             <dd>{SITE.location}</dd>
           </div>
           <div class="flex gap-3">
-            <dt class="annotation w-20 shrink-0 pt-0.5">Study</dt>
+            <dt class="footer-key w-20 shrink-0 pt-0.5">Study</dt>
             <dd>{SITE.education}</dd>
           </div>
           <div class="flex gap-3">
-            <dt class="annotation w-20 shrink-0 pt-0.5">Open to</dt>
+            <dt class="footer-key w-20 shrink-0 pt-0.5">Open to</dt>
             <dd>{AVAILABILITY}</dd>
           </div>
         </dl>
@@ -91,6 +91,22 @@ const builtAt = new Date().toISOString().replace('T', ' ').slice(0, 16);
 </footer>
 
 <style>
+  /*
+   * Row keys, not section heads. They used to carry `.annotation`, exactly like
+   * the "Contact" and "Detail" column heads above them, so all five read as one
+   * flat list and the heads looked like a fourth and fifth row. Same voice, one
+   * step quieter and smaller — the heads now hold the rule and the full ink.
+   */
+  .footer-key {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-figure-muted);
+    opacity: 0.75;
+  }
+
   .footer-link {
     font-family: var(--font-mono);
     font-size: 0.8125rem;
