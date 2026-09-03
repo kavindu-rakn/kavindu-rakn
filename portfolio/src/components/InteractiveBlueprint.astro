@@ -89,12 +89,18 @@
 
     function updateTheme() {
       const style = getComputedStyle(document.documentElement);
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const acc = style.getPropertyValue('--color-accent').trim();
 
-      // On solid black drafting console, figure and grid ink are always crisp light paper
-      colFigure = '#fcfbf8';
-      colMuted = 'rgba(252, 251, 248, 0.45)';
-      colRule = 'rgba(252, 251, 248, 0.15)';
+      if (isDark) {
+        colFigure = 'rgba(252, 251, 248, 0.9)';
+        colMuted = 'rgba(252, 251, 248, 0.35)';
+        colRule = 'rgba(252, 251, 248, 0.14)';
+      } else {
+        colFigure = 'rgba(16, 17, 9, 0.9)';
+        colMuted = 'rgba(16, 17, 9, 0.35)';
+        colRule = 'rgba(16, 17, 9, 0.12)';
+      }
       if (acc) colAccent = acc;
     }
 
@@ -504,13 +510,20 @@
     width: 100%;
     height: 320px;
     min-height: 280px;
-    background-color: var(--color-carbon-950, #0a0a0a);
-    border: 1px solid var(--color-carbon-700, #35332e);
+    background-color: var(--color-ground);
+    border: 1px solid var(--color-rule);
     overflow: hidden;
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
     cursor: crosshair;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .blueprint-instrument {
+      background-color: var(--color-carbon-950, #0a0a0a);
+      border-color: var(--color-carbon-700, #35332e);
+    }
   }
 
   @media (min-width: 640px) {
@@ -547,7 +560,7 @@
     line-height: 1;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #fcfbf8;
+    color: var(--color-figure);
     opacity: 0.75;
   }
 
