@@ -35,15 +35,28 @@ const description = `First commit 17 August 2025. ${elapsed} later, core contrib
   <SiteHeader slot="header" current="/about" />
 
   <div class="mx-auto max-w-6xl px-6 py-16 sm:py-24">
-    <p class="annotation">Sheet 00 · About</p>
+    <nav
+      class="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs text-figure-muted"
+      aria-label="Breadcrumb"
+    >
+      <a href="/" class="hover:text-figure transition-colors">Home</a>
+      <span class="opacity-40">/</span>
+      <span class="text-figure font-medium">Sheet 00</span>
+      <span class="opacity-40">·</span>
+      <span>Career & Practice</span>
+    </nav>
 
     <h1
-      class="display-title mt-6 text-5xl leading-[0.88] sm:text-7xl"
+      class="display-title mt-2 text-4xl sm:text-6xl lg:text-7xl leading-[0.9] break-words"
     >
       {elapsed}
     </h1>
 
-    <div class="prose-blueprint mt-14">
+    <p class="mt-5 max-w-2xl text-lg sm:text-xl text-figure-muted leading-relaxed">
+      First commit August 2025. Core contributor to enterprise production systems, builder of schema engines, and WebGL instruments.
+    </p>
+
+    <div class="prose-blueprint mt-12">
       <p>
         My first commit was on <strong>17 August 2025</strong>. Before the internship
         at Sri Lanka Telecom Mobitel I had not used git.
@@ -76,37 +89,82 @@ const description = `First commit 17 August 2025. ${elapsed} later, core contrib
         Each one takes something that normally happens out of sight and puts it on
         screen. That is the kind of problem I look for.
       </p>
+    </div>
 
-      <h2>Now</h2>
+    <!-- Career Milestones & Technical Spec Plate -->
+    <div class="mt-14 border border-rule bg-ground-raised/40 p-6 sm:p-8">
+      <div class="flex items-center justify-between border-b border-rule pb-3">
+        <span class="annotation text-accent">// Current Status & Credentials</span>
+        <span class="annotation font-mono text-xs text-figure-muted">Plate 00-A</span>
+      </div>
 
-      <ul>
-        {
-          held ? (
-            <li>{held.title}, {held.org}, {held.period}</li>
-          ) : (
-            <li>
-              Most recently {LATEST_ROLE.title}, {LATEST_ROLE.org}, {LATEST_ROLE.period}
-            </li>
-          )
-        }
-        <li>{SITE.education}</li>
-        <li>Based in {SITE.location}</li>
-        <li>Open to {AVAILABILITY.toLowerCase()}</li>
-        {LEARNING.length > 0 && <li>Currently working with {LEARNING.join(' and ')}</li>}
-      </ul>
+      <div class="mt-6 grid gap-6 sm:grid-cols-2">
+        <div>
+          <span class="annotation block text-[11px] text-figure-muted">Production Track Record</span>
+          <p class="mt-1 font-display text-base sm:text-lg font-semibold text-figure">
+            {held ? `${held.title}, ${held.org}` : `${LATEST_ROLE.title}, ${LATEST_ROLE.org}`}
+          </p>
+          <span class="annotation font-mono text-xs text-figure-muted mt-1 block">
+            {held ? held.period : LATEST_ROLE.period} · 37 merged PRs
+          </span>
+        </div>
 
+        <div>
+          <span class="annotation block text-[11px] text-figure-muted">Degree & Academic Foundation</span>
+          <p class="mt-1 font-display text-base sm:text-lg font-semibold text-figure">
+            BSc (Hons) Information Technology
+          </p>
+          <span class="annotation font-mono text-xs text-figure-muted mt-1 block">
+            Software Engineering · SLIIT (2022–2027)
+          </span>
+        </div>
+
+        <div>
+          <span class="annotation block text-[11px] text-figure-muted">Location</span>
+          <p class="mt-1 font-display text-base sm:text-lg font-semibold text-figure">
+            {SITE.location}
+          </p>
+          <span class="annotation font-mono text-xs text-figure-muted mt-1 block">
+            Available on-site & remote worldwide
+          </span>
+        </div>
+
+        <div>
+          <span class="annotation block text-[11px] text-figure-muted">Engineering Availability</span>
+          <p class="mt-1 font-display text-base sm:text-lg font-semibold text-accent">
+            {AVAILABILITY}
+          </p>
+          <span class="annotation font-mono text-xs text-figure-muted mt-1 block">
+            Full-time, contract & internship roles
+          </span>
+        </div>
+      </div>
+
+      {LEARNING.length > 0 && (
+        <div class="mt-6 border-t border-rule/60 pt-4 flex flex-wrap items-center gap-2">
+          <span class="annotation text-[11px] text-figure-muted mr-2">Focus Areas:</span>
+          {LEARNING.map((tech) => (
+            <span class="border border-rule px-2 py-0.5 font-mono text-xs text-figure">
+              {tech}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div class="prose-blueprint mt-10">
       <p>
         The fastest way to judge any of this is to read the code or run the projects.
-        Both are on the <a href="/#work">work page</a>; for the two private
+        Both are indexed on the <a class="rule-link rule-link--internal text-sm inline-block" href="/#work">Selected work</a>; for the two private
         repositories, source is available on request.
       </p>
     </div>
 
-    <div class="mt-24">
-      <SkillsMatrix />
+    <div class="mt-20">
+      <SkillsMatrix headingLevel="h2" />
     </div>
 
-    <div class="mt-24">
+    <div class="mt-20">
       <ContactBlock compact />
     </div>
   </div>
