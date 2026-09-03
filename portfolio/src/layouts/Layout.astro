@@ -1,5 +1,6 @@
 ---
 import { Font } from 'astro:assets';
+import GridField from '../components/GridField.astro';
 import SiteNotice from '../components/SiteNotice.astro';
 import { SITE } from '../consts';
 import '../styles/global.css';
@@ -20,7 +21,7 @@ interface Props {
   description?: string;
   /**
    * Absolute-from-root path to a social card image, e.g. `/og/schemashift.png`.
-   * Falls back to SITE.ogImage, which does not exist yet (PLACEHOLDERS.ogDefault).
+   * Falls back to SITE.ogImage, generated into public/og/ by scripts/generate-og.mjs.
    */
   ogImage?: string;
   ogImageAlt?: string;
@@ -44,9 +45,9 @@ const fullTitle =
   title === SITE.name ? `${SITE.name} — ${SITE.role}` : `${title} — ${SITE.name}`;
 
 /*
- * Structured data. Verified facts only (CONTEXT §6).
- * `sameAs` deliberately lists GitHub alone — the LinkedIn profile does not
- * exist yet and must not be invented.
+ * Structured data. Verified facts only.
+ * `sameAs` lists only profiles that exist. Nothing here is invented; a profile
+ * is added to SITE first, then referenced here.
  */
 const personSchema = {
   '@context': 'https://schema.org',
@@ -55,7 +56,7 @@ const personSchema = {
   jobTitle: SITE.role,
   email: `mailto:${SITE.email}`,
   url: canonical.origin,
-  sameAs: [SITE.github],
+  sameAs: [SITE.github, SITE.linkedin],
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Colombo',
@@ -81,6 +82,8 @@ const personSchema = {
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/* iOS ignores an SVG favicon and would otherwise save a screenshot. */}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
     {/* Only the display face preloads — it renders the LCP headline. */}
@@ -89,9 +92,9 @@ const personSchema = {
 
     {/* Both grounds declared so the browser chrome matches the page in either scheme. */}
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fcfbf8" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#04101b" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
 
-    {/* Open Graph — the preview card sells the site before the site loads (BRIEF §2). */}
+    {/* Open Graph — the preview card sells the site before the site loads. */}
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={fullTitle} />
@@ -99,7 +102,10 @@ const personSchema = {
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={socialImage} />
     <meta property="og:image:alt" content={ogImageAlt} />
-    <meta property="og:locale" content="en_GB" />
+    {/* Fixed by scripts/generate-og.mjs; declared so scrapers reserve the slot. */}
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={SITE.locale.replace('-', '_')} />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
@@ -118,6 +124,9 @@ const personSchema = {
 
   <body class="min-h-dvh bg-ground text-figure antialiased">
     <a class="skip-link" href="#main">Skip to content</a>
+
+    <GridField />
+
     <slot name="header" />
     <SiteNotice />
     <main id="main">

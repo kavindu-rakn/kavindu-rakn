@@ -1,0 +1,82 @@
+---
+/*
+ * The ruled field the whole site sits on.
+ *
+ * Every card, rule and annotation on this design is aligned to an implied grid.
+ * This draws it: a fine construction grid and a coarse datum grid over it, the
+ * way a drawing sheet is ruled before anything is drawn on it.
+ *
+ * It does not move, and that is the point. Parallax needs a cursor position, CSS
+ * cannot read one, and reading one costs JavaScript on every page of a site that
+ * otherwise ships none. The static grid was what was actually on screen while
+ * the parallax was silently broken — and it was the static grid that looked
+ * right. It was not worth a script to animate something already working.
+ *
+ * It sits at z-index -1, which puts it above the body background — that
+ * background propagates to the canvas and paints first — and below every piece
+ * of ordinary content, without wrapping the page in anything.
+ *
+ * That last part matters more than it sounds. A wrapper with a z-index makes a
+ * stacking context, and a stacking context traps `mix-blend-mode`: the cover
+ * mark is composited against whatever is behind it, and inside a wrapper the
+ * field is not behind it any more. The artwork's ground reappeared as a white
+ * panel the moment a wrapper existed. No wrapper, no trap, and the grid reads
+ * straight through the mark.
+ *
+ * Cards carry their own ground and occlude it, so the field shows through the
+ * gutters and margins and stops at the edge of anything solid — which is the
+ * correct reading: it is the paper, not a texture laid over the top.
+ */
+---
+
+<div class="grid-field" data-grid-field aria-hidden="true"></div>
+
+<style>
+  .grid-field {
+    position: fixed;
+    /*
+     * Overscanned well past the viewport so the parallax can never drag an edge
+     * of the gradient into view at the extremes of travel.
+     */
+    inset: -8vmax;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .grid-field::before,
+  .grid-field::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        to right,
+        var(--rule-ink) 0 1px,
+        transparent 1px var(--cell)
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        var(--rule-ink) 0 1px,
+        transparent 1px var(--cell)
+      );
+  }
+
+  /* The construction grid: fine and barely there. */
+  .grid-field::before {
+    --cell: 34px;
+    --rule-ink: color-mix(in srgb, var(--color-rule) 42%, transparent);
+  }
+
+  /* The datum grid: coarse, a shade stronger, every fifth rule. */
+  .grid-field::after {
+    --cell: 170px;
+    --rule-ink: color-mix(in srgb, var(--color-rule) 78%, transparent);
+  }
+
+  /* On a phone the fine grid is denser than the type it sits behind. */
+  @media (max-width: 640px) {
+    .grid-field::before {
+      display: none;
+    }
+  }
+</style>

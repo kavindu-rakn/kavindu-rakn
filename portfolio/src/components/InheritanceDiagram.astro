@@ -4,10 +4,10 @@ import { CATALOGUE, EDGES, categoryById, resolveSchema, impactOf } from '../data
 /*
  * The inheritance tree, made operable.
  *
- * BRIEF §3.1: "the inheritance tree is inherently diagrammable. An interactive
- * diagram showing a field defined on Electronics flowing down into Laptops and
- * Smartphones, and the impact panel lighting up as a change is typed, would be
- * the best single visual on the site."
+ * An inheritance tree is inherently diagrammable. A field defined on
+ * Electronics flowing down into Laptops and Smartphones, with the impact panel
+ * lighting up as a change is typed, explains the product faster than the prose
+ * around it can.
  *
  * Server-rendered complete: the tree, and Electronics' resolved schema, are in
  * the HTML. With JavaScript off you get a finished diagram rather than an empty
@@ -199,7 +199,15 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
   [data-enhanced] .tree-node {
     cursor: pointer;
   }
+  /*
+   * Focus is drawn with `stroke`, not `outline`. An outline on an SVG shape is
+   * not reliably painted — WebKit in particular ignores it — so the keyboard
+   * indicator existed on paper and not on screen. The outline is kept as well,
+   * for engines that do honour it.
+   */
   [data-enhanced] .tree-node:focus-visible rect {
+    stroke: var(--color-accent);
+    stroke-width: 3;
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
   }
@@ -280,8 +288,15 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
     font-size: 0.875rem;
   }
 
-  .controls__input:focus {
-    outline: none;
+  /*
+   * A 2px border-colour change is not a focus indicator: it is the same weight
+   * as the resting border and disappears against several backgrounds. This is
+   * the only text input on the site, and it had `outline: none` at a
+   * specificity that beat the global :focus-visible rule.
+   */
+  .controls__input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
     border-color: var(--color-accent);
   }
 
@@ -338,6 +353,14 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
     const impactOut = impactEl;
 
     let selected = root.dataset.selected ?? 'electronics';
+
+    /*
+     * The SVG ships as role="img" with a label, which is correct while it is a
+     * picture. Once these nodes become buttons it stops being one: role="img"
+     * makes its entire subtree presentational, so the controls below were
+     * focusable but never announced. Enhancing it turns it into a group.
+     */
+    tree.setAttribute('role', 'group');
 
     const nodes = new Map<string, SVGGElement>();
     for (const g of tree.querySelectorAll<SVGGElement>('[data-category]')) {

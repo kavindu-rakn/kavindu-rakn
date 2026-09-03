@@ -5,6 +5,9 @@
  * see prose. This does — it reads the built HTML, which is what actually ships,
  * and fails the build on the language and numbers the brief rules out.
  *
+ * It also reads src/ directly, for the one rule that cannot be checked against
+ * output: a hardcoded duration. See DURATION below.
+ *
  *   node scripts/lint-content.mjs            banned content only (runs in build)
  *   node scripts/lint-content.mjs --strict   also fails on unfilled placeholders
  *
@@ -32,9 +35,10 @@ function visibleText(html) {
 }
 
 /*
- * CONTEXT §3 — NUMBERS THAT MUST NOT APPEAR.
- * "Numbers that describe the product are good. Numbers that describe him
- * typing are not."
+ * Numbers that must not appear.
+ *
+ * Numbers describing the product are good. Numbers describing the author typing
+ * are not.
  */
 const BANNED = [
   {
@@ -70,20 +74,12 @@ const REQUIRED = [
     rule: 'working-days module consumers',
     pattern: /five controllers and four services/i,
     where: 'index.html',
-    why: 'CONTEXT §2 requires the corrected consumer count to be stated explicitly.',
+    why: 'The corrected consumer count must to be stated explicitly.',
   },
 ];
 
 /** Tokens that must not survive to production. */
-const PLACEHOLDER_TOKENS = [
-  'LIVE_URL_SCHEMASHIFT',
-  'LIVE_URL_TAMARIND',
-  'LINKEDIN_URL',
-  'TALENTHUB_STACK',
-  'SCREENSHOT_REQUIRED',
-  'OG_IMAGE_DEFAULT',
-  'SITE_DOMAIN',
-];
+const PLACEHOLDER_TOKENS = ['SCREENSHOT_REQUIRED', 'OG_IMAGE_DEFAULT'];
 
 let pages;
 try {
@@ -144,6 +140,114 @@ for (const file of pages) {
   }
 }
 
+/*
+ * Hardcoded durations — checked in SOURCE, not in dist.
+ *
+ * "Twelve months" was typed by hand in four places and was wrong within a year
+ * of being written. It is now derived from FIRST_COMMIT (src/consts.ts), which
+ * means the rendered HTML legitimately contains the phrase and this rule cannot
+ * run against dist. It runs against the templates instead, where a typed
+ * duration is always a latent bug.
+ *
+ * A duration describing a fixed past milestone is legitimate and must stay put.
+ * Mark that line, or the line directly above it, `duration-ok`.
+ */
+const DURATION =
+  /\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|twenty[\s-]?(?:one|two|three|four)|\d{1,3})[\s-]+(month|year)s?\b/gi;
+
+const SRC = join(process.cwd(), 'src');
+let sources;
+try {
+  sources = globSync(['**/*.astro', '**/*.md', '**/*.mdx'], { cwd: SRC }).map((p) =>
+    join(SRC, p),
+  );
+} catch {
+  sources = [];
+}
+
+for (const file of sources) {
+  const lines = readFileSync(file, 'utf8').split(/\r?\n/);
+  lines.forEach((line, i) => {
+    // The marker usually sits above the element wrapping the text, not
+    // immediately above the text itself, so look back a short window.
+    const marked = lines
+      .slice(Math.max(0, i - 3), i + 1)
+      .some((l) => /duration-ok/.test(l));
+    if (marked) return;
+    for (const match of line.matchAll(DURATION)) {
+      failures.push({
+        file: `${file}:${i + 1}`,
+        rule: 'hardcoded duration',
+        why: 'Derive it from FIRST_COMMIT, or mark the line `duration-ok` if it states a fixed past milestone.',
+        found: match[0].trim(),
+        context: line.trim(),
+      });
+    }
+  });
+}
+
+const LINE_RE = /\r?\n/;
+const FIGURES_RE = /^figures:\s*$/;
+const TOPKEY_RE = /^[A-Za-z_]\w*:/;
+const ITEM_RE = /^\s+-\s/;
+const RESOLVED_RE = /(^|\s)(src|video):\s*\S/;
+const SPEC_RE = /spec:\s*(.+)$/;
+
+/*
+ * Unresolved figures, read from frontmatter rather than from the built HTML.
+ *
+ * The hazard slots used to render on every public page, so the
+ * SCREENSHOT_REQUIRED token reached dist/ and this script could simply look for
+ * it. Those slots are now dev-only — a reader should not be shown eleven
+ * pictures of a missing picture — so the token no longer ships and that check
+ * went blind. The source of truth moves to where the figures are declared.
+ *
+ * A figure is resolved once it has `src:` (a still) or `video:` (a recording).
+ */
+const WORK = join(process.cwd(), 'src', 'content', 'work');
+let workFiles;
+try {
+  workFiles = globSync(['**/*.md', '**/*.mdx'], { cwd: WORK }).map((f) => join(WORK, f));
+} catch {
+  workFiles = [];
+}
+
+const unresolvedFigures = [];
+
+for (const file of workFiles) {
+  const text = readFileSync(file, 'utf8');
+  const lines = text.split(LINE_RE);
+  if (lines[0] !== '---') continue;
+  const end = lines.indexOf('---', 1);
+  if (end === -1) continue;
+  const fm = lines.slice(1, end);
+
+  // A draft does not render, so its captures cannot block a deploy.
+  if (fm.some((l) => /^draft:\s*true\s*$/.test(l))) continue;
+
+  const start = fm.findIndex((l) => FIGURES_RE.test(l));
+  if (start === -1) continue;
+
+  let current = null;
+  const items = [];
+  for (const line of fm.slice(start + 1)) {
+    if (TOPKEY_RE.test(line)) break;
+    if (ITEM_RE.test(line)) {
+      current = [line];
+      items.push(current);
+    } else if (current) {
+      current.push(line);
+    }
+  }
+
+  for (const item of items) {
+    const body = item.join(' ');
+    if (RESOLVED_RE.test(body)) continue;
+    const spec = (SPEC_RE.exec(body) || [, ''])[1].trim().slice(0, 60);
+    unresolvedFigures.push({ file, spec });
+  }
+}
+
 for (const { rule, pattern, where, why } of REQUIRED) {
   const target = [...corpus].find(([file]) => file.endsWith(where));
   if (!target || !pattern.test(target[1])) {
@@ -173,19 +277,23 @@ if (failures.length > 0) {
 
 const unfilledTokens = [...new Set(placeholderHits.map((h) => h.token))];
 const unresolvedAssets = [...new Set(missingAssets.map((a) => a.path))];
-const outstanding = unfilledTokens.length + unresolvedAssets.length;
+const outstanding =
+  unfilledTokens.length + unresolvedAssets.length + unresolvedFigures.length;
 
 if (outstanding > 0) {
   if (STRICT) {
     console.error(`\nlint:content --strict — ${outstanding} item(s) unresolved\n`);
     for (const token of unfilledTokens) console.error(`  placeholder  ${token}`);
     for (const path of unresolvedAssets) console.error(`  missing file ${path}`);
+    for (const f of unresolvedFigures)
+      console.error(`  figure       ${rel(f.file)} - ${f.spec}...`);
     console.error('\nSupply these before deploying. See PLACEHOLDERS in src/consts.ts.\n');
     process.exit(1);
   }
   console.log(`lint:content — clean. ${outstanding} item(s) still outstanding:`);
   for (const token of unfilledTokens) console.log(`  placeholder  ${token}`);
   for (const path of unresolvedAssets) console.log(`  missing file ${path}`);
+  for (const f of unresolvedFigures) console.log(`  figure       ${rel(f.file)} - ${f.spec}...`);
 } else {
   console.log('lint:content — clean. Nothing outstanding.');
 }

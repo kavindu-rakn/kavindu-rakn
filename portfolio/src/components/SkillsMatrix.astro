@@ -1,0 +1,50 @@
+---
+import { SKILLS, SKILL_COUNT } from '../data/skills';
+
+/*
+ * The capability index.
+ *
+ * The site could previously only answer "what does he know" by making the reader
+ * open six case studies and assemble the tech badges themselves. This is the
+ * answer stated once, in one place, scannable in a few seconds.
+ *
+ * Set in the sans face, not the mono annotation face. Every other list on the
+ * site is 11px uppercase mono, and at this length that setting stops being a
+ * texture and becomes an obstacle — this is the longest list on the site and the
+ * one most likely to be read in a hurry. Only the group labels keep the mono
+ * treatment, which is enough to place it in the same family as everything else.
+ */
+
+interface Props {
+  /** Rendered as an h2 by default; the About page nests it under one. */
+  headingLevel?: 'h2' | 'h3';
+  id?: string;
+}
+
+const { headingLevel = 'h2', id } = Astro.props;
+const Heading = headingLevel;
+---
+
+<section class="skills" id={id}>
+  <header
+    class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b-2 border-figure pb-4"
+  >
+    <Heading class="font-display text-2xl font-extrabold tracking-[-0.02em] uppercase sm:text-3xl">
+      What I work with
+    </Heading>
+    <p class="annotation">{SKILL_COUNT} entries · grouped, not ranked</p>
+  </header>
+
+  <dl class="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      SKILLS.map((group) => (
+        <div>
+          <dt class="annotation border-b border-rule pb-2">{group.label}</dt>
+          <dd class="mt-3 text-sm leading-relaxed text-figure-muted">
+            {group.items.join(', ')}
+          </dd>
+        </div>
+      ))
+    }
+  </dl>
+</section>

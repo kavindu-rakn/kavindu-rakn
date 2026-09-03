@@ -28,13 +28,55 @@ if (!glyph || !glyphViewBox) {
   throw new Error('Could not read the R glyph out of src/assets/wordmark-r.svg');
 }
 
-/* Cyanotype ground: a dark card stands out in a feed of white preview cards,
- * and reads correctly whether the chat app is in light or dark mode. */
-const GROUND = '#04101b';
-const RULE = '#14405f';
-const FIGURE = '#b3ddf5';
-const MUTED = '#4ba3d4';
-const ACCENT = '#7cc6ec';
+/*
+ * The card palette, read out of the stylesheet rather than restated here.
+ *
+ * These five values used to be a fourth hand-written copy of the site's colours,
+ * and they were still the old cyanotype long after the site itself had gone
+ * black and white — so every shared link showed a blue card for a site that is
+ * not blue. Parsing the source of truth costs a dozen lines and removes the
+ * whole class of drift.
+ *
+ * The dark values are used deliberately: a dark card stands out in a feed of
+ * white preview cards, and reads correctly whether the chat app is light or dark.
+ */
+function readPalette() {
+  const css = readFileSync(join(process.cwd(), 'src', 'styles', 'global.css'), 'utf8');
+
+  // Every literal token: --color-name: #hex;
+  const literals = new Map();
+  for (const m of css.matchAll(/--color-([a-z0-9-]+):\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
+    literals.set(m[1], m[2]);
+  }
+
+  // The dark block's semantic assignments, which point at those literals.
+  const darkBlock = css.match(
+    /@media \(prefers-color-scheme: dark\)\s*{\s*:root\s*{([^}]*)}/,
+  );
+  if (!darkBlock) throw new Error('generate-og: no dark :root block in global.css');
+
+  const semantic = new Map();
+  for (const m of darkBlock[1].matchAll(
+    /--color-([a-z-]+):\s*var\(--color-([a-z0-9-]+)\)\s*;/g,
+  )) {
+    const value = literals.get(m[2]);
+    if (!value) throw new Error(`generate-og: --color-${m[2]} has no literal value`);
+    semantic.set(m[1], value);
+  }
+
+  const need = ['ground', 'ground-raised', 'figure', 'figure-muted', 'rule', 'accent'];
+  for (const key of need) {
+    if (!semantic.has(key)) throw new Error(`generate-og: --color-${key} not resolved`);
+  }
+  return semantic;
+}
+
+const PALETTE = readPalette();
+const GROUND = PALETTE.get('ground');
+const RULE = PALETTE.get('rule');
+const FIGURE = PALETTE.get('figure');
+const MUTED = PALETTE.get('figure-muted');
+const ACCENT = PALETTE.get('accent');
 
 const W = 1200;
 const H = 630;
@@ -134,8 +176,8 @@ written.push([
     card({
       eyebrow: 'KAVINDU-RAKN.XYZ',
       title: 'Kavindu Ranathunga',
-      subtitle: 'Full-stack Developer · Colombo, Sri Lanka',
-      footnote: 'SHEET 01 · SCHEMA TREE · EXPLODED ASSEMBLY',
+      subtitle: 'Product Engineer · Colombo, Sri Lanka',
+      footnote: 'SHEET 01 · COVER',
     }),
   ),
 ]);
@@ -159,6 +201,36 @@ for (const file of readdirSync(WORK_DIR).filter((f) => /\.mdx?$/.test(f))) {
     ),
   ]);
 }
+
+/*
+ * Apple touch icon.
+ *
+ * iOS ignores an SVG favicon: a page saved to the home screen without this falls
+ * back to a screenshot of itself, which is both unrecognisable at that size and
+ * a picture of whatever happened to be on screen. Safari uses it for pinned tabs
+ * and bookmarks too.
+ *
+ * It cannot follow the colour scheme — the file is chosen once, at save time,
+ * and iOS never revisits it. So it takes the dark treatment: a white mark on the
+ * near-black ground, which holds against a light or dark wallpaper, where a
+ * white tile would glare on one and a black mark would vanish on the other.
+ */
+const TOUCH = 180;
+const TOUCH_INSET = 26;
+
+const touchSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${TOUCH}" height="${TOUCH}" viewBox="0 0 ${TOUCH} ${TOUCH}">
+  <rect width="${TOUCH}" height="${TOUCH}" fill="${GROUND}"/>
+  <svg x="${TOUCH_INSET}" y="${TOUCH_INSET}" width="${TOUCH - TOUCH_INSET * 2}" height="${TOUCH - TOUCH_INSET * 2}" viewBox="${glyphViewBox}" fill="${FIGURE}">
+    ${glyph}
+  </svg>
+</svg>`;
+
+const touchBytes = await sharp(Buffer.from(touchSvg))
+  .resize(TOUCH, TOUCH, { fit: 'contain' })
+  .png({ compressionLevel: 9 })
+  .toBuffer();
+writeFileSync(join(ROOT, 'public', 'apple-touch-icon.png'), touchBytes);
+console.log(`  apple-touch-icon.png — ${(touchBytes.length / 1024).toFixed(1)} KiB`);
 
 for (const [name, bytes] of written) {
   console.log(`  og/${name}.png — ${(bytes / 1024).toFixed(1)} KiB`);

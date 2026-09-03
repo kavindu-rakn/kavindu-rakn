@@ -1,0 +1,46 @@
+name: Refresh deployment
+
+# The site states how long its author has been building, derived from
+# FIRST_COMMIT rather than typed by hand (see src/consts.ts). Because the site
+# is statically generated, that figure is frozen at whatever the last build
+# computed — so without a periodic rebuild it would go stale exactly the way the
+# hardcoded "Twelve months" it replaced did.
+#
+# A daily rebuild bounds the error at 24 hours, on a value whose unit is months.
+# It costs one static build a day and removes the whole class of "remember to
+# update the site" chores.
+#
+# Setup, once:
+#   1. Vercel → Project → Settings → Git → Deploy Hooks → create one on `main`.
+#   2. GitHub → Settings → Secrets and variables → Actions → new repository
+#      secret `VERCEL_DEPLOY_HOOK_URL` with that URL.
+#
+# Until the secret exists this workflow no-ops rather than failing, so the repo
+# stays green if the hook is never configured.
+#
+# Note: GitHub only runs `schedule` triggers from the default branch.
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "VERCEL_DEPLOY_HOOK_URL is not set — nothing to do."
+            echo "See the header of this workflow for the one-time setup."
+            exit 0
+          fi
+          code=$(curl -sS -X POST -o /dev/null -w '%{http_code}' "$HOOK")
+          echo "Deploy hook responded $code"
+          case "$code" in
+            2*) echo "Rebuild queued." ;;
+            *)  echo "::error::Deploy hook failed with HTTP $code"; exit 1 ;;
+          esac

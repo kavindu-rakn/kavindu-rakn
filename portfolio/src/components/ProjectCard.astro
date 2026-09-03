@@ -1,8 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import TechStack from './TechStack.astro';
-import Placeholder from './Placeholder.astro';
-import { STATUS_LABEL, LIVE_PLACEHOLDER_KEYS } from '../consts';
+import { STATUS_LABEL } from '../consts';
 
 /*
  * One project, as a drawing sheet: index number and status in the header rule,
@@ -16,36 +15,38 @@ import { STATUS_LABEL, LIVE_PLACEHOLDER_KEYS } from '../consts';
 
 interface Props {
   entry: CollectionEntry<'work'>;
-  index: number;
+  /**
+   * Sheet number. Comes from the entry's own `order`, never from its position
+   * in the grid — a sheet keeps its number for life, the way a drawing does.
+   * Positional numbering silently disagreed with the case-study page, which has
+   * always printed `order`; the two matched only while no entry was drafted or
+   * reordered.
+   */
+  index?: number;
   /** The technical centrepiece spans the grid and sets larger. */
   feature?: boolean;
 }
 
-const { entry, index, feature = false } = Astro.props;
+const { entry, index = entry.data.order, feature = false } = Astro.props;
 const d = entry.data;
-
-type LiveToken = keyof typeof LIVE_PLACEHOLDER_KEYS;
-
-const liveKey =
-  d.liveUrlPlaceholder && d.liveUrlPlaceholder in LIVE_PLACEHOLDER_KEYS
-    ? LIVE_PLACEHOLDER_KEYS[d.liveUrlPlaceholder as LiveToken]
-    : null;
 ---
 
 <article
   class:list={[
-    'flex flex-col border-2 border-figure bg-ground p-6 sm:p-8',
+    'flex min-w-0 flex-col border-2 border-figure bg-ground p-6 sm:p-8',
     feature && 'md:col-span-2',
   ]}
 >
-  <header class="flex items-baseline justify-between gap-4 border-b border-rule pb-3">
+  <header
+    class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-rule pb-3"
+  >
     <span class="annotation">{String(index).padStart(2, '0')}</span>
     <span class="annotation">{STATUS_LABEL[d.status]}</span>
   </header>
 
   <h3
     class:list={[
-      'mt-6 font-display font-extrabold uppercase leading-[0.88] tracking-[-0.025em]',
+      'display-title mt-6 leading-[0.88]',
       feature ? 'text-5xl sm:text-7xl' : 'text-3xl sm:text-4xl',
     ]}
   >
@@ -75,75 +76,47 @@ const liveKey =
 
   {/* Pushes the stack and links to the card foot so a grid row stays aligned. */}
   <div class="mt-auto pt-6">
-    <TechStack items={d.techStack} placeholderToken={d.techStackPlaceholder} />
+    <TechStack items={d.techStack} />
   </div>
 
   <footer class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-rule pt-4">
     {/* Primary action. Every entry has a route, generated from this collection. */}
-    <a class="project-link project-link--primary" href={`/work/${entry.id}`}>
+    <a class="rule-link rule-link--internal rule-link--strong" href={`/work/${entry.id}`}>
       Case study
     </a>
 
     {
       d.liveUrl && (
-        <a class="project-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
+        <a class="rule-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
           Live site
         </a>
       )
     }
 
-    {/* Unfilled Vercel URL — impossible to ship silently. */}
-    {liveKey && !d.liveUrl && <Placeholder of={liveKey} token={d.liveUrlPlaceholder} />}
-
     {
       d.githubUrl && (
-        <a class="project-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
+        <a class="rule-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
           Source
         </a>
       )
     }
 
     {/*
-      CONTEXT §1.1 — a private repository must not be linked to github.com. A
+      a private repository must not be linked to github.com. A
       logged-out visitor gets a 404, which does not read as "private"; it reads
       as "fabricated". The content schema fails the build if such a link is added.
     */}
     {d.sourcePrivate && <span class="annotation">Source private · available on request</span>}
 
-    {/* CONTEXT §3.3 — employment, not a personal repo. No link exists. */}
-    {d.employment && <span class="annotation">Internal platform · no public repository</span>}
+    {/*
+      Employment work with no linkable artifact. Conditioned on the links rather
+      than on `employment` alone, so an employment entry that does have a public
+      deployment cannot announce "no public repository" beside its own link.
+    */}
+    {d.employment && !d.githubUrl && !d.liveUrl && (
+      <span class="annotation">Internal platform · no public repository</span>
+    )}
   </footer>
 
 </article>
 
-<style>
-  .project-link {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-figure);
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--color-accent);
-  }
-
-  .project-link::after {
-    content: ' ↗';
-    text-decoration: none;
-  }
-
-  /* Internal navigation, so it does not carry the external-link mark. */
-  .project-link--primary {
-    font-weight: 500;
-  }
-
-  .project-link--primary::after {
-    content: ' →';
-  }
-
-  .project-link:hover {
-    color: var(--color-accent);
-  }
-</style>

@@ -1,19 +1,30 @@
 ---
-import { getCollection } from 'astro:content';
+import { getWork } from '../lib/work';
 import Layout from '../layouts/Layout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import BlueprintHero from '../components/BlueprintHero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import { SITE } from '../consts';
+import SkillsMatrix from '../components/SkillsMatrix.astro';
+import ContactBlock from '../components/ContactBlock.astro';
+import { SITE, ABOUT_PRECIS, elapsedPhrase } from '../consts';
 
 /*
  * The six entries here are the same six leaves as the hero's schema tree, in
  * the same order. That is deliberate: the hero is a diagram of this grid.
  */
-const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
-  (a, b) => a.data.order - b.data.order,
-);
+const work = await getWork();
+
+const elapsed = elapsedPhrase();
+
+/*
+ * The feature card occupies two cells, the rest one each. When that total is
+ * even the cards fill whole rows and the About aside would start a row on its
+ * own, leaving a hole beside it; when it is odd the aside fills the gap the
+ * cards leave. Deriving it means adding a seventh case study stays "writing a
+ * file", which is what the README promises and what a hardcoded span broke.
+ */
+const asideFillsRow = (work.length + 1) % 2 === 0;
 ---
 
 <Layout title={SITE.name}>
@@ -31,76 +42,72 @@ const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
         >
           Selected work
         </h2>
-        <p class="annotation">
-          {work.length} sheets · ordered by weight, not by date
-        </p>
+        <p class="annotation">{work.length} sheets</p>
       </header>
 
-      <div class="mt-10 grid gap-6 md:grid-cols-2">
+      {/*
+        `items-start` rather than the default stretch. Stretching made every card
+        in a row as tall as the tallest, and the `mt-auto` footers then left a
+        void above the tech stack on any entry with fewer highlights — Luna's was
+        a chasm. Sizing each card to its own content removes it without dropping
+        any content from the shorter ones.
+      */}
+      <div class="mt-10 grid items-start gap-6 md:grid-cols-2">
         {
           work.map((entry, i) => (
-            <ProjectCard entry={entry} index={i + 1} feature={i === 0} />
+            <ProjectCard entry={entry} feature={i === 0} />
           ))
         }
 
-        {/*
-          Sits in the cell the six cards leave empty. The alternative was letting
-          the last project span the full width, which would visually promote it
-          to feature status for a layout reason rather than a real one.
+{/*
+          Not a project card. It carried a sheet number and the same header rule
+          as the six beside it, so it read as a seventh project called "Twelve
+          months". The number is gone, the ground is raised, and the heading sets
+          smaller than a project title.
         */}
-        <aside class="flex flex-col border-2 border-accent p-6 sm:p-8">
-          <header
-            class="flex items-baseline justify-between gap-4 border-b border-rule pb-3"
-          >
-            <span class="annotation">00</span>
-            <span class="annotation">About</span>
-          </header>
+        <aside
+          class:list={[
+            'flex min-w-0 flex-col border-2 border-accent bg-ground-raised p-6 sm:p-8',
+            asideFillsRow && 'md:col-span-2',
+          ]}
+        >
+          <p class="annotation">About</p>
 
-          <h3
-            class="mt-6 font-display text-3xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-4xl"
-          >
-            Twelve months
+          <h3 class="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">
+            {elapsed} of it
           </h3>
 
           <p class="mt-4 text-figure-muted">
             My first commit was on 17 August 2025.
           </p>
 
-          <p class="mt-4 text-sm leading-relaxed">
-            Twelve months later: largest contributor to a platform in production
-            that twenty developers built, with 207 of its 652 commits — and five
-            projects of my own designed and shipped.
-          </p>
+          <p class="mt-4 text-sm leading-relaxed">{ABOUT_PRECIS}</p>
 
-          <footer class="mt-auto border-t border-rule pt-4">
-            <a class="about-link" href="/about">Read the rest</a>
+          <footer class="mt-6 border-t border-rule pt-4">
+            <a class="rule-link rule-link--internal" href="/about">Read the rest</a>
           </footer>
         </aside>
       </div>
     </div>
   </section>
 
+  {/*
+    Capabilities and the ask both sit AFTER the work, not before it. The work is
+    the argument; pushing it further down the page to make room for a skills
+    list would trade the strong thing for the summary of it.
+  */}
+  <section class="border-t-2 border-figure">
+    <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+      <SkillsMatrix />
+    </div>
+  </section>
+
+  <section class="border-t-2 border-figure">
+    <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+      <ContactBlock />
+    </div>
+  </section>
+
   <SiteFooter slot="footer" />
 </Layout>
 
-<style>
-  .about-link {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-figure);
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--color-accent);
-  }
-  .about-link::after {
-    content: ' →';
-    text-decoration: none;
-  }
-  .about-link:hover {
-    color: var(--color-accent);
-  }
-</style>

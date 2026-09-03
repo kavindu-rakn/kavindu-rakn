@@ -5,14 +5,14 @@ import { z } from 'astro/zod';
 
 /**
  * Case studies. One file per project — adding work later is writing a file,
- * not editing a component (BRIEF §2, "Routing and content").
+ * not editing a component.
  *
  * The `superRefine` block at the bottom is not decoration. It turns the two
  * hard constraints that would most damage the deliverable into build errors:
  *   1. A private repository linked to github.com renders a 404 to logged-out
  *      visitors, which does not read as "private" — it reads as "fabricated".
- *      (CONTEXT §1.1)
- *   2. An unfilled live URL shipping silently. (BRIEF §5)
+ *     
+ *   2. An unfilled live URL shipping silently.
  */
 const work = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/work' }),
@@ -31,18 +31,15 @@ const work = defineCollection({
         order: z.number().int().positive(),
 
         /**
-         * Ordered exactly as CONTEXT §4 specifies — by centrality to the work,
-         * never alphabetically. Do not reorder. Do not add a technology he does
-         * not use; there is no mobile development anywhere in this stack.
+         * Ordered by centrality to the work, never alphabetically. Do not
+         * reorder, and do not add a technology that was not used.
          *
-         * Optional because CONTEXT specifies a stack for five of the six
-         * projects but NOT for TalentHub. Rather than infer one, that entry
-         * carries `techStackPlaceholder` and renders as an unfilled placeholder.
+         * Required. It was optional while TalentHub's stack was unverified and
+         * that entry carried a placeholder token instead. The stack has been
+         * verified since, so optionality only left room for an entry to ship
+         * with no stack at all.
          */
-        techStack: z.array(z.string()).nonempty().optional(),
-
-        /** Token shown when the real stack has not been verified yet. */
-        techStackPlaceholder: z.string().optional(),
+        techStack: z.array(z.string()).nonempty(),
 
         liveUrl: z.url().optional(),
 
@@ -64,7 +61,7 @@ const work = defineCollection({
         /**
          * Deployment reality, as a closed vocabulary. Hotel Tamarind Tree is
          * `deployed-in-development` and must never be described as launched,
-         * paid, or client work (BRIEF §6). Only TalentHub is `in-production`,
+         * paid, or client work. Only TalentHub is `in-production`,
          * and that is verified by the repository README.
          */
         status: z.enum(['in-production', 'deployed-in-development', 'live']),
@@ -72,10 +69,22 @@ const work = defineCollection({
         /**
          * True for TalentHub only. It is employment, not a personal repo —
          * there is no public link and one must not be fabricated
-         * (CONTEXT §3.3). Orthogonal to `status`: TalentHub is simultaneously
+         *. Orthogonal to `status`: TalentHub is simultaneously
          * in production and unlinkable.
          */
         employment: z.boolean().default(false),
+
+        /**
+         * Employment work that ALSO has a public artifact the author owns and
+         * can link — EasyApply runs on his own GitHub Pages, and SLT run a
+         * mirror of it on their servers.
+         *
+         * This exists so a link on an employment entry is always a deliberate,
+         * verified act. The blanket ban it replaces was written when TalentHub
+         * was the only employment entry, and generalised from it: it made an
+         * invented link impossible, but a real one impossible too.
+         */
+        ownPublicDeployment: z.boolean().default(false),
 
         /** Short factual bullets for the grid card. Product facts only. */
         highlights: z.array(z.string()).optional(),
@@ -86,7 +95,7 @@ const work = defineCollection({
          * Case-study imagery, as a list of required captures.
          *
          * While `src` is absent the figure renders as a visible missing-asset
-         * slot naming exactly what to shoot (BRIEF §5.1 — he currently has
+         * slot naming exactly what to shoot (he currently has
          * almost none). Add `src` and `alt` and the same slot becomes the real
          * image, so filling a gap is editing one file, not touching a template.
          *
@@ -96,7 +105,41 @@ const work = defineCollection({
           .array(
             z.object({
               spec: z.string(),
+
+              /**
+               * Drives the slot's aspect ratio. A phone recording is 9:16 and
+               * has nowhere correct to live in a 16:9 frame — it either letterboxes
+               * into a strip or gets cropped, and both misrepresent the work.
+               */
+              viewport: z.enum(['desktop', 'mobile']).default('desktop'),
+
+              /** Still image, resolved relative to this markdown file. */
               src: image().optional(),
+
+              /**
+               * Screen recording, as a path under public/media/.
+               *
+               * Not `image()`: astro:assets processes images only, and would
+               * reject an .mp4 outright. Videos are served from public/ as-is,
+               * so lint-content.mjs checks the file actually exists in dist —
+               * a typo here would otherwise ship as a silently broken player.
+               */
+              video: z
+                .string()
+                .regex(
+                  /^\/media\/[A-Za-z0-9._-]+\.(mp4|webm)$/,
+                  'Must be a path under /media/ ending in .mp4 or .webm.',
+                )
+                .optional(),
+
+              /**
+               * Poster frame. Required with `video`: it is what a visitor sees
+               * before playback, on a slow connection, and — because the player
+               * never autoplays without JS confirming motion is welcome — it is
+               * the whole experience under prefers-reduced-motion.
+               */
+              poster: image().optional(),
+
               alt: z.string().optional(),
             }),
           )
@@ -110,18 +153,39 @@ const work = defineCollection({
             code: 'custom',
             path: ['githubUrl'],
             message:
-              'CONTEXT §1.1: this repository is private. A github.com link renders a 404 to ' +
+              'this repository is private. A github.com link renders a 404 to ' +
               'logged-out visitors and reads as fabricated. Remove githubUrl, or make the repo public.',
           });
         }
 
-        if (data.employment && (data.githubUrl || data.liveUrl)) {
+        if (data.employment && (data.githubUrl || data.liveUrl) && !data.ownPublicDeployment) {
           ctx.addIssue({
             code: 'custom',
             path: ['githubUrl'],
             message:
-              'CONTEXT §3.3: TalentHub is employment, not a personal repo. There is no public ' +
-              'link and one must not be fabricated.',
+              'Employment work must not carry an invented link. TalentHub is internal and has ' +
+              'none. If this project genuinely has a public artifact you own and can link, set ' +
+              '`ownPublicDeployment: true` to say so deliberately.',
+          });
+        }
+
+        if (data.ownPublicDeployment && !data.employment) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['ownPublicDeployment'],
+            message:
+              '`ownPublicDeployment` qualifies `employment`. On a personal project it says ' +
+              'nothing — remove it.',
+          });
+        }
+
+        if (data.ownPublicDeployment && !data.githubUrl && !data.liveUrl && !data.draft) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['liveUrl'],
+            message:
+              '`ownPublicDeployment` claims a linkable public artifact, so supply the link. ' +
+              'Drafts are exempt while the URL is still being gathered.',
           });
         }
 
@@ -135,32 +199,34 @@ const work = defineCollection({
           });
         }
 
-        if (!data.techStack && !data.techStackPlaceholder) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['techStack'],
-            message:
-              'Every entry needs either a verified `techStack` ordered as CONTEXT §4 specifies, ' +
-              'or a `techStackPlaceholder` token. Never infer a stack the context file does not state.',
-          });
-        }
-
-        if (data.techStack && data.techStackPlaceholder) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['techStackPlaceholder'],
-            message:
-              'Remove `techStackPlaceholder` once a verified `techStack` is present.',
-          });
-        }
-
         data.figures?.forEach((figure, i) => {
-          if (figure.src && !figure.alt) {
+          if (figure.src && figure.video) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['figures', i, 'video'],
+              message:
+                'A figure is one thing: a still (`src`) or a recording (`video`). For both, ' +
+                'write two figures.',
+            });
+          }
+
+          if (figure.video && !figure.poster) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['figures', i, 'poster'],
+              message:
+                'A recording needs a `poster`. It is what shows before playback and under ' +
+                'prefers-reduced-motion, where the video never plays at all.',
+            });
+          }
+
+          if ((figure.src || figure.video) && !figure.alt) {
             ctx.addIssue({
               code: 'custom',
               path: ['figures', i, 'alt'],
               message:
-                'A figure with `src` needs `alt`. Every published image describes itself.',
+                'A figure with `src` or `video` needs `alt`. Every published asset describes ' +
+                'itself.',
             });
           }
         });
