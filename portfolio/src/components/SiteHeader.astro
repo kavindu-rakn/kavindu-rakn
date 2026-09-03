@@ -21,40 +21,37 @@ const resumeItem = NAV.find((item) => item.file);
 
 <header class="sticky top-0 z-50 border-b border-rule bg-ground">
   <nav
-    class="mx-auto flex max-w-6xl items-center justify-between gap-x-4 px-6 py-3.5"
+    class="mx-auto flex max-w-6xl items-center justify-between gap-x-3 px-4 py-3.5 sm:px-6"
     aria-label="Primary"
   >
     <a href="/" class="brand" aria-label={SITE.name}>
       <span class="brand__mark" aria-hidden="true"><RGlyph /></span>
-      <span class="annotation hidden min-[440px]:inline" aria-hidden="true">{SITE.name}</span>
-      <span class="annotation inline min-[440px]:hidden" aria-hidden="true">K. Ranathunga</span>
+      <span class="annotation hidden min-[540px]:inline" aria-hidden="true">{SITE.name}</span>
+      <span class="annotation inline min-[540px]:hidden" aria-hidden="true">K. Ranathunga</span>
     </a>
 
-    <div class="flex items-center gap-x-5 sm:gap-x-8">
-      <ul class="flex items-center gap-x-4 sm:gap-x-6" role="list">
+    <div class="flex items-center gap-x-3 sm:gap-x-6 lg:gap-x-8">
+      <ul class="flex items-center gap-x-2.5 min-[380px]:gap-x-3.5 sm:gap-x-5 lg:gap-x-6" role="list">
         {
-          pageLinks.map((item) => (
-            <li>
-              <a
-                href={item.href}
-                class="annotation nav-link"
-                aria-current={
-                  current === item.href
-                    ? 'page'
-                    : within === item.href
-                      ? 'true'
-                      : undefined
-                }
-                data-active={
-                  current === item.href || within === item.href
-                    ? 'true'
-                    : undefined
-                }
-              >
-                {item.label}
-              </a>
-            </li>
-          ))
+          pageLinks.map((item) => {
+            const sectionId = item.href.includes('#') ? item.href.split('#')[1] : undefined;
+            const isAboutPage = item.href === '/about' && current === '/about';
+            const isWorkSubPage = item.href.includes('work') && within === '/#work';
+
+            return (
+              <li>
+                <a
+                  href={item.href}
+                  class="annotation nav-link"
+                  data-section={sectionId}
+                  aria-current={current === item.href ? 'page' : isWorkSubPage ? 'true' : undefined}
+                  data-active={isAboutPage || isWorkSubPage ? 'true' : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
         }
       </ul>
 
@@ -87,37 +84,44 @@ const resumeItem = NAV.find((item) => item.file);
 
 <script>
   function initNavScrollspy() {
-    const isHome = window.location.pathname === '/' || window.location.pathname === '';
-    if (!isHome) return;
+    const hasHomeSections = document.getElementById('index') && document.getElementById('work');
+    if (!hasHomeSections) return;
+
+    const sectionIds = ['index', 'work', 'tech', 'contact'];
+    const navLinks = document.querySelectorAll<HTMLAnchorElement>('nav a[data-section]');
 
     let ticking = false;
+
+    function updateActive() {
+      const scrollPos = window.scrollY + 140;
+      let activeId = 'index';
+
+      // Check if scrolled near bottom of page
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60) {
+        activeId = 'contact';
+      } else {
+        for (const id of sectionIds) {
+          const el = document.getElementById(id);
+          if (el && scrollPos >= el.offsetTop) {
+            activeId = id;
+          }
+        }
+      }
+
+      navLinks.forEach((link) => {
+        const sec = link.getAttribute('data-section');
+        if (sec === activeId) {
+          link.setAttribute('data-active', 'true');
+        } else {
+          link.removeAttribute('data-active');
+        }
+      });
+    }
 
     function onScroll() {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const idxEl = document.querySelector<HTMLAnchorElement>('nav a[href="/"]');
-          const wrkEl = document.querySelector<HTMLAnchorElement>('nav a[href="/#work"]');
-          const secEl = document.getElementById('work');
-
-          if (idxEl && wrkEl && secEl) {
-            const rect = secEl.getBoundingClientRect();
-            // Header height offset (sticky navbar + threshold)
-            if (rect.top <= 100) {
-              if (idxEl.getAttribute('data-active') === 'true') {
-                idxEl.removeAttribute('data-active');
-              }
-              if (wrkEl.getAttribute('data-active') !== 'true') {
-                wrkEl.setAttribute('data-active', 'true');
-              }
-            } else {
-              if (wrkEl.getAttribute('data-active') === 'true') {
-                wrkEl.removeAttribute('data-active');
-              }
-              if (idxEl.getAttribute('data-active') !== 'true') {
-                idxEl.setAttribute('data-active', 'true');
-              }
-            }
-          }
+          updateActive();
           ticking = false;
         });
         ticking = true;
@@ -125,7 +129,8 @@ const resumeItem = NAV.find((item) => item.file);
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+    window.addEventListener('resize', onScroll, { passive: true });
+    updateActive();
   }
 
   if (document.readyState === 'loading') {
@@ -187,6 +192,9 @@ const resumeItem = NAV.find((item) => item.file);
     pointer-events: none;
   }
 
+  /*
+   * Active indicator styling
+   */
   .nav-link[data-active='true'] {
     color: var(--color-figure);
   }
@@ -198,27 +206,6 @@ const resumeItem = NAV.find((item) => item.file);
 
   .nav-link:hover {
     color: var(--color-figure);
-  }
-
-  /*
-   * Target fallback
-   */
-  :global(html:has(#work:target)) a[href='/#work'] {
-    color: var(--color-figure);
-  }
-
-  :global(html:has(#work:target)) a[href='/#work']::after {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-
-  :global(html:has(#work:target)) a[href='/'] {
-    color: var(--color-figure-muted);
-  }
-
-  :global(html:has(#work:target)) a[href='/']::after {
-    transform: scaleX(0);
-    opacity: 0;
   }
 
   /*
