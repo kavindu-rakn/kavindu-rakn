@@ -332,10 +332,22 @@
       };
     }
 
+    container.addEventListener('pointerenter', (e) => {
+      if (e.pointerType === 'mouse') {
+        clearTimeout(touchTimeout);
+        const { x, y } = getCanvasCoords(e);
+        targetX = x;
+        targetY = y;
+        isHovered = true;
+      }
+    });
+
     container.addEventListener('pointerdown', (e) => {
-      try {
-        container.setPointerCapture(e.pointerId);
-      } catch {}
+      if (e.pointerType === 'touch') {
+        try {
+          container.setPointerCapture(e.pointerId);
+        } catch {}
+      }
       isDragging = true;
       isHovered = true;
       clearTimeout(touchTimeout);
@@ -376,8 +388,17 @@
         touchTimeout = window.setTimeout(() => {
           isHovered = false;
         }, 1500);
-      } else {
-        isHovered = false;
+      } else if (container) {
+        // For mouse, only exit hover if the cursor is outside container bounds
+        const rect = container.getBoundingClientRect();
+        const inside =
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom;
+        if (!inside) {
+          isHovered = false;
+        }
       }
     }
 
