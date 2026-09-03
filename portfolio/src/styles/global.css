@@ -15,48 +15,59 @@
  */
 
 @theme {
-  /* Cyanotype blues — the blueprint itself */
-  --color-blueprint-950: #04101b;
-  --color-blueprint-900: #071a2b;
-  --color-blueprint-800: #0c2942;
-  --color-blueprint-700: #14405f;
-  --color-blueprint-600: #1d5c86;
-  --color-blueprint-500: #2b7fb0;
-  --color-blueprint-400: #4ba3d4;
-  --color-blueprint-300: #7cc6ec;
-  --color-blueprint-200: #b3ddf5;
+  /*
+   * Carbon — the dark ground and its rules.
+   *
+   * Dark mode used to be a cyanotype: a blue-black ground with pale blue ink,
+   * left over from the blueprint conceit the hero used to carry. The mark is
+   * black on white and the treatment is brutalist, so the dark theme is now the
+   * light theme inverted rather than a different idea wearing the same layout.
+   */
+  --color-carbon-950: #0a0a0a;
+  --color-carbon-900: #151513;
+  --color-carbon-700: #35332e;
+  --color-carbon-300: #a5a29b;
+
+  /*
+   * The accents, one per colour scheme, each chosen against the thing it has to
+   * be told apart from.
+   *
+   * Light is gold: 6.5:1 against the near-black ink. Every colour rejected on
+   * the way here scored between 1.6 and 2.7, and below roughly 3:1 hue stops
+   * mattering — the eye reads tone first and calls it black.
+   *
+   * Dark is lime, 13.9:1 against the near-black ground. Note the risk inverts in
+   * dark mode: the ink is white, so an accent fails by being too bright rather
+   * than too dark. Lime sits 1.38:1 from the text, which is the live question.
+   */
+  --color-gold-600: #ca8a04;
+  --color-lime-400: #c3e640;
 
   /* Drafting paper + graphite */
   --color-paper-50: #fcfbf8;
   --color-paper-100: #f5f3ec;
-  --color-paper-200: #e8e4d9;
   --color-paper-300: #d5cfc0;
 
   --color-ink-900: #101109;
-  --color-ink-800: #1e2018;
-  --color-ink-700: #33362b;
   --color-ink-500: #5d6152;
-  --color-ink-400: #7d8172;
-  --color-ink-300: #a4a899;
 
   /*
    * Signal red. Reserved exclusively for unresolved placeholders
-   * (BRIEF §5 — they must be impossible to ship unfilled).
+   * (they must be impossible to ship unfilled).
    * Do not use this colour decoratively; it would dilute the alarm.
    */
   --color-signal-500: #ff3b1f;
-  --color-signal-600: #d92507;
 
   /*
    * Semantic tokens. These are re-declared under the dark media query below,
    * so `bg-ground` / `text-figure` adapt with no `dark:` class at the callsite.
    */
-  --color-ground: #fcfbf8;
-  --color-ground-raised: #f5f3ec;
-  --color-figure: #101109;
-  --color-figure-muted: #5d6152;
-  --color-rule: #d5cfc0;
-  --color-accent: #1d5c86;
+  --color-ground: var(--color-paper-50);
+  --color-ground-raised: var(--color-paper-100);
+  --color-figure: var(--color-ink-900);
+  --color-figure-muted: var(--color-ink-500);
+  --color-rule: var(--color-paper-300);
+  --color-accent: var(--color-gold-600);
 
   /*
    * Typography. Archivo is a grotesque with wide, blunt forms — it holds up at
@@ -75,12 +86,12 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-ground: #04101b;
-    --color-ground-raised: #071a2b;
-    --color-figure: #b3ddf5;
-    --color-figure-muted: #4ba3d4;
-    --color-rule: #14405f;
-    --color-accent: #7cc6ec;
+    --color-ground: var(--color-carbon-950);
+    --color-ground-raised: var(--color-carbon-900);
+    --color-figure: var(--color-paper-50);
+    --color-figure-muted: var(--color-carbon-300);
+    --color-rule: var(--color-carbon-700);
+    --color-accent: var(--color-lime-400);
   }
 }
 
@@ -140,6 +151,63 @@
       linear-gradient(to bottom, var(--color-rule) 1px, transparent 1px);
     background-size: 2rem 2rem;
     background-position: center center;
+  }
+
+  /*
+   * The display heading.
+   *
+   * Five places repeated the same declarations as utility strings, and only the
+   * size and leading ever differed. What never varies lives here.
+   *
+   * Line height deliberately does NOT: every Tailwind `text-*` utility sets a
+   * line-height of its own, and utilities sort after components, so a value
+   * here could never win. Leaving it out and stating `leading-*` at each
+   * heading is honest about which layer actually decides.
+   */
+  .display-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+
+  /*
+   * The underlined mono link.
+   *
+   * Four files carried their own copy of this — .about-link, .recover--plain,
+   * .study-link and .project-link — identical down to the 0.35em underline
+   * offset and differing only in which arrow they appended. One definition, two
+   * modifiers.
+   */
+  .rule-link {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+
+  /* Leaves the site. */
+  .rule-link::after {
+    content: ' ↗';
+    text-decoration: none;
+  }
+
+  /* Stays on it. */
+  .rule-link--internal::after {
+    content: ' →';
+  }
+
+  .rule-link--strong {
+    font-weight: 500;
+  }
+
+  .rule-link:hover {
+    color: var(--color-accent);
   }
 
   /* Monospace construction annotation, as used on the blueprint labels. */
@@ -253,11 +321,11 @@
 }
 
 /*
- * BRIEF §2: "Respect prefers-reduced-motion: reduce. Same static fallback, no
- * exceptions, no 'reduced but still moving' compromise."
+ * prefers-reduced-motion: reduce, honoured with no exceptions and no "reduced
+ * but still moving" compromise.
  *
- * This is the site-wide CSS guard. The 3D island enforces the same preference
- * independently in JS (Phase 2) and never boots the render loop at all.
+ * This is the site-wide CSS guard. The hero enforces the same preference
+ * independently in JS and never fetches its renderer at all.
  */
 @media (prefers-reduced-motion: reduce) {
   *,

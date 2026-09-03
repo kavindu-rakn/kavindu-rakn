@@ -1,25 +1,22 @@
 ---
-import { getCollection, render } from 'astro:content';
-import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import { getWork } from '../../lib/work';
+import Figure from '../../components/Figure.astro';
 import Layout from '../../layouts/Layout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import TechStack from '../../components/TechStack.astro';
-import Placeholder from '../../components/Placeholder.astro';
-import MissingAsset from '../../components/MissingAsset.astro';
-import { STATUS_LABEL, LIVE_PLACEHOLDER_KEYS } from '../../consts';
+
+import { STATUS_LABEL } from '../../consts';
 
 /*
  * One route per entry in the `work` collection.
  *
- * Because the routes and the hero's clickable set are both derived from this
- * same collection, a node in the 3D tree can never link to a page that does not
- * exist — the two cannot drift.
+ * Routes come from the same helper the grid and the 404 recovery list use, so
+ * a link in either can never point at a page that was not generated.
  */
 export async function getStaticPaths() {
-  const entries = (await getCollection('work', ({ data }) => !data.draft)).sort(
-    (a, b) => a.data.order - b.data.order,
-  );
+  const entries = await getWork();
   return entries.map((entry, i) => ({
     params: { slug: entry.id },
     props: {
@@ -32,15 +29,47 @@ export async function getStaticPaths() {
 
 // No `interface Props` here: on a dynamic route Astro infers the prop types
 // from getStaticPaths, and declaring them again is dead code.
+/*
+ * Imagery renders when at least one figure resolves, and in dev regardless — so
+ * the hazard slots stay loud while the captures are being produced, and a public
+ * page never shows a reader eleven pictures of a missing picture.
+ *
+ * Suppressing them in production removed what the strict linter used to detect,
+ * because it looked for the SCREENSHOT_REQUIRED token in the built HTML. That
+ * check now reads the frontmatter instead (scripts/lint-content.mjs), so the
+ * deploy gate is unchanged by this and the outstanding count in the build strip
+ * still comes from the same content.
+ */
 const { entry, prev, next } = Astro.props;
 const { Content } = await render(entry);
+
+/*
+ * Only pages that actually carry a recording get the player script, and it is
+ * `is:inline` so it is emitted where it is written rather than hoisted into a
+ * module every case study would then have to fetch. Pages without video keep
+ * shipping zero JavaScript.
+ */
+const hasVideo = entry.data.figures?.some((f) => f.video) ?? false;
+
+/*
+ * Imagery is grouped by viewport, not left in author order: three desktop
+ * captures stacked at full width, then the three phone captures side by side
+ * beneath them. A 9:16 capture at full width is a column of screen taller than
+ * the viewport, and three of them stacked would be most of a page of scrolling;
+ * in a row they read as one comparison and balance the block above.
+ *
+ * Plate letters are assigned over the whole set in this display order, so
+ * "Plate 04-D" always means the first phone capture on Sheet 04.
+ */
+const shown = (entry.data.figures ?? []).filter(
+  (f) => f.src || f.video || import.meta.env.DEV,
+);
+const desktopFigures = shown.filter((f) => f.viewport !== 'mobile');
+const mobileFigures = shown.filter((f) => f.viewport === 'mobile');
+const plateFor = (i: number) =>
+  `${String(entry.data.order).padStart(2, '0')}-${String.fromCharCode(65 + i)}`;
 const d = entry.data;
 
-type LiveToken = keyof typeof LIVE_PLACEHOLDER_KEYS;
-const liveKey =
-  d.liveUrlPlaceholder && d.liveUrlPlaceholder in LIVE_PLACEHOLDER_KEYS
-    ? LIVE_PLACEHOLDER_KEYS[d.liveUrlPlaceholder as LiveToken]
-    : null;
 ---
 
 <Layout
@@ -50,7 +79,8 @@ const liveKey =
   ogImage={d.ogImage?.src ?? `/og/${entry.id}.png`}
   ogImageAlt={`${d.title} — ${d.tagline ?? 'case study'}`}
 >
-  <SiteHeader slot="header" current="/#work" />
+  {/* Under Work, not Work itself — see the `within` prop. */}
+  <SiteHeader slot="header" within="/#work" />
 
   <article class="mx-auto max-w-6xl px-6 py-16 sm:py-24">
     <p class="annotation">
@@ -58,7 +88,7 @@ const liveKey =
     </p>
 
     <h1
-      class="mt-6 font-display text-5xl leading-[0.88] font-extrabold tracking-[-0.025em] uppercase sm:text-7xl"
+      class="display-title mt-6 text-5xl leading-[0.88] sm:text-7xl"
     >
       {d.title}
     </h1>
@@ -70,58 +100,50 @@ const liveKey =
     }
 
     <div class="mt-10">
-      <TechStack items={d.techStack} placeholderToken={d.techStackPlaceholder} />
+      <TechStack items={d.techStack} />
     </div>
 
     <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
       {
         d.liveUrl && (
-          <a class="study-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
+          <a class="rule-link" href={d.liveUrl} rel="noopener noreferrer" target="_blank">
             Live site
           </a>
         )
       }
-      {liveKey && !d.liveUrl && <Placeholder of={liveKey} token={d.liveUrlPlaceholder} />}
       {
         d.githubUrl && (
-          <a class="study-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
+          <a class="rule-link" href={d.githubUrl} rel="noopener noreferrer" target="_blank">
             Source
           </a>
         )
       }
       {d.sourcePrivate && <span class="annotation">Source private · available on request</span>}
-      {d.employment && <span class="annotation">Internal platform · no public repository</span>}
+      {d.employment && !d.githubUrl && !d.liveUrl && (
+        <span class="annotation">Internal platform · no public repository</span>
+      )}
     </div>
 
     {
-      d.figures && d.figures.length > 0 && (
+      shown.length > 0 && (
         <section class="mt-16">
           <p class="annotation border-b border-rule pb-3">Imagery</p>
-          <div class="mt-6 space-y-8">
-            {d.figures.map((figure) =>
-              /*
-               * A figure carries its own capture brief. Until the image exists
-               * the brief is what renders, as a hazard-marked slot; supplying
-               * `src` turns that same slot into the picture.
-               */
-              figure.src && figure.alt ? (
-                <figure>
-                  <Image
-                    src={figure.src}
-                    alt={figure.alt}
-                    widths={[640, 960, 1280]}
-                    sizes="(min-width: 72rem) 68rem, 100vw"
-                    class="w-full border-2 border-figure"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <figcaption class="annotation mt-3">{figure.alt}</figcaption>
-                </figure>
-              ) : (
-                <MissingAsset spec={figure.spec} />
-              ),
-            )}
-          </div>
+
+          {desktopFigures.length > 0 && (
+            <div class="mt-6 space-y-8">
+              {desktopFigures.map((figure, i) => (
+                <Figure figure={figure} plate={plateFor(i)} />
+              ))}
+            </div>
+          )}
+
+          {mobileFigures.length > 0 && (
+            <div class="mt-8 grid grid-cols-3 gap-3 sm:gap-6">
+              {mobileFigures.map((figure, i) => (
+                <Figure figure={figure} plate={plateFor(desktopFigures.length + i)} />
+              ))}
+            </div>
+          )}
         </section>
       )
     }
@@ -157,36 +179,36 @@ const liveKey =
     </nav>
 
     <p class="mt-10">
-      <a class="study-link study-link--internal" href="/#work">All work</a>
+      <a class="rule-link rule-link--internal" href="/#work">All work</a>
     </p>
   </article>
+
+  {
+    hasVideo && (
+      <script is:inline>
+      // Autoplay is added here, never in the markup: HTML cannot express
+      // "loop unless the visitor asked for less motion". No permission, no
+      // JS, or a failed play() all leave the poster and its play button.
+      if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.play().catch(function () {}); }
+            else { e.target.pause(); }
+          });
+        }, { threshold: 0.25 });
+        document.querySelectorAll('video[data-autoplay]').forEach(function (v) {
+          v.autoplay = true;
+          io.observe(v);
+        });
+      }
+      </script>
+    )
+  }
 
   <SiteFooter slot="footer" />
 </Layout>
 
 <style>
-  .study-link {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-figure);
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--color-accent);
-  }
-  .study-link::after {
-    content: ' ↗';
-    text-decoration: none;
-  }
-  .study-link--internal::after {
-    content: ' →';
-  }
-  .study-link:hover {
-    color: var(--color-accent);
-  }
-
   .sibling {
     display: block;
   }

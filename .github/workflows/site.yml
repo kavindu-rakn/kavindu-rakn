@@ -1,0 +1,52 @@
+name: Site
+
+# The portfolio's build gate. Before this existed, Vercel was the only thing that
+# built the site, and it runs `npm run build` — which ends in the NON-strict
+# content linter. Nothing checked types or content on a pull request, and nothing
+# reported unresolved placeholders.
+#
+# Two levels, deliberately:
+#   - `npm run build` is a hard gate. It runs `astro check` and the banned-content
+#     rules, both of which must pass today and every day.
+#   - `--strict` is advisory until the case-study media lands. It cannot be
+#     required yet: it fails on any unfilled placeholder, and the site is
+#     currently, knowingly, shipping eleven of them.
+#
+# Flip the advisory step to a hard gate (drop `continue-on-error`) once the
+# screenshots and recordings are in. That is the moment the site can honestly
+# claim a deploy gate.
+
+on:
+  push:
+    branches: [main]
+    paths: ['portfolio/**', '.github/workflows/site.yml']
+  pull_request:
+    paths: ['portfolio/**', '.github/workflows/site.yml']
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: portfolio
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: portfolio/package.json
+          cache: npm
+          cache-dependency-path: portfolio/package-lock.json
+
+      - run: npm ci
+
+      # astro check + astro build + banned-content rules. Must pass.
+      - name: Build and check
+        run: npm run build
+
+      # Reports what is still outstanding without failing the run.
+      - name: Ship readiness (advisory)
+        continue-on-error: true
+        run: node scripts/lint-content.mjs --strict

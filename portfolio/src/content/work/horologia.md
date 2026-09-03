@@ -2,7 +2,7 @@
 title: Horologia
 tagline: Exploded 3D mechanical watch movement, disassembles on scroll.
 description: 'A procedurally generated mechanical watch movement in the browser: fourteen components, a raycasting materials inspector, and synthesised ticking at 28,800 vph.'
-order: 4
+order: 5
 status: live
 liveUrl: https://horologia-kvn.web.app/
 githubUrl: https://github.com/kavindu-rakn/Horologia
@@ -19,8 +19,15 @@ highlights:
   - Synthesised Web Audio ticking at 28,800 vph with alternating pallet clicks
   - Live PBR material lab with 5 presets; Firestore gallery with a LocalStorage fallback
 figures:
-  - spec: A silent, autoplaying 10–20 second loop of the movement disassembling on scroll. This case study should be mostly video.
+  - spec: The movement mid-disassembly, caught partway through the scroll so the exploded state is visible rather than the assembled one.
   - spec: The raycasting inspector open on one component, showing its material hardness, friction coefficient and horological function.
+  - spec: The PBR material lab with a preset applied, next to the Firestore gallery of saved states.
+  - spec: The movement on a phone, mid-disassembly, showing it holds its frame rate on a touch device.
+    viewport: mobile
+  - spec: The inspector on a phone, open on one component.
+    viewport: mobile
+  - spec: The saved gallery on a phone.
+    viewport: mobile
 draft: false
 ---
 

@@ -1,36 +1,27 @@
 ---
-import Placeholder from './Placeholder.astro';
-
 /*
  * Technology badges.
  *
- * ORDER IS LOAD-BEARING. CONTEXT §5: "Ordered by how central it is to his
- * actual work, not alphabetically." The array is rendered exactly as authored —
+ * ORDER IS LOAD-BEARING. Entries are ordered by how central the technology is
+ * to the work, never alphabetically. The array renders exactly as authored —
  * this component must never sort, dedupe or reorder.
  *
- * There is no mobile development anywhere in this stack. No React Native, no
- * Flutter, no Swift, no Kotlin. That gap is stated openly and is not to be
- * papered over with a badge.
+ * A badge here means the technology was used in the project being described. It
+ * is not a capability claim — SKILLS in src/data/skills.ts is where those live,
+ * and LEARNING in src/consts.ts is where in-progress ones do.
  */
 
 interface Props {
-  items?: readonly string[];
-  placeholderToken?: string;
+  items: readonly string[];
 }
 
-const { items, placeholderToken } = Astro.props;
+const { items } = Astro.props;
 ---
 
-{
-  items ? (
-    <ul class="flex flex-wrap gap-x-2 gap-y-2">
-      {items.map((tech) => (
-        <li class="border border-rule px-2 py-1 font-mono text-[0.6875rem] tracking-[0.12em] text-figure-muted uppercase">
-          {tech}
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <Placeholder of="talenthubStack" token={placeholderToken} />
-  )
-}
+<ul class="flex flex-wrap gap-x-2 gap-y-2">
+  {
+    items.map((tech) => (
+      <li class="border border-rule px-2.5 py-1 text-xs text-figure-muted">{tech}</li>
+    ))
+  }
+</ul>

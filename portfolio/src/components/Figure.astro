@@ -1,0 +1,108 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import MissingAsset from './MissingAsset.astro';
+
+/*
+ * One case-study figure: a still, a screen recording, or the hazard slot naming
+ * what still has to be captured.
+ *
+ * The three states share a component so a figure's shape is decided in one
+ * place. Supplying `src` (or `video` plus `poster`) turns the slot into the real
+ * asset; nothing in the page template changes.
+ *
+ * The player never carries `autoplay` in the markup. A short muted loop is the
+ * right default when motion is welcome and exactly wrong when it is not, and
+ * HTML has no way to say "autoplay unless prefers-reduced-motion". So the
+ * attribute is added at runtime by the guarded script in the case-study page,
+ * and every visitor without that permission — or without JS — gets the poster
+ * and a play button instead.
+ */
+
+type WorkFigure = NonNullable<CollectionEntry<'work'>['data']['figures']>[number];
+
+interface Props {
+  figure: WorkFigure;
+  /**
+   * Plate reference, e.g. "04-B" — the sheet number, then this figure's letter
+   * within it. Given rather than derived because only the page knows the
+   * figure's position among its siblings.
+   */
+  plate: string;
+}
+
+const { figure, plate } = Astro.props;
+
+const mimeFor = (path: string) => (path.endsWith('.webm') ? 'video/webm' : 'video/mp4');
+---
+
+{
+  figure.video && figure.poster && figure.alt ? (
+    <figure data-viewport={figure.viewport}>
+      <video
+        class="figure__media"
+        poster={figure.poster.src}
+        preload="metadata"
+        muted
+        loop
+        playsinline
+        controls
+        data-autoplay
+        aria-label={figure.alt}
+      >
+        <source src={figure.video} type={mimeFor(figure.video)} />
+      </video>
+      <figcaption class="mt-3 text-sm text-figure-muted">
+        <span class="annotation figure__plate">Plate {plate}</span>
+        {figure.alt}
+      </figcaption>
+    </figure>
+  ) : figure.src && figure.alt ? (
+    <figure data-viewport={figure.viewport}>
+      <Image
+        src={figure.src}
+        alt={figure.alt}
+        widths={[640, 960, 1280]}
+        sizes="(min-width: 72rem) 68rem, 100vw"
+        class="figure__media"
+        loading="lazy"
+        decoding="async"
+      />
+      <figcaption class="mt-3 text-sm text-figure-muted">
+        <span class="annotation figure__plate">Plate {plate}</span>
+        {figure.alt}
+      </figcaption>
+    </figure>
+  ) : (
+    <MissingAsset spec={figure.spec} viewport={figure.viewport} plate={plate} />
+  )
+}
+
+<style>
+  /*
+   * The plate reference sits on the caption's own line, so a figure can be
+   * pointed at from the prose the way a drawing set does — "Plate 04-B" is a
+   * stable address, unlike "the second screenshot".
+   */
+  .figure__plate {
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  .figure__media {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 2px solid var(--color-figure);
+  }
+
+  /*
+   * Phone captures are laid out three to a row by the case-study page, so the
+   * grid cell sets their width. They used to cap themselves at a phone measure,
+   * which was right when they stacked and wrong now — it left each one floating
+   * in a third of the row.
+   */
+  figure[data-viewport='mobile'] {
+    width: 100%;
+  }
+</style>

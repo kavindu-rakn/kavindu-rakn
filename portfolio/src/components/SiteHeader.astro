@@ -3,13 +3,20 @@ import RGlyph from '../assets/wordmark-r.svg';
 import { SITE, NAV } from '../consts';
 
 interface Props {
-  /** Marks the current page in the nav. */
+  /** The nav href matching this exact page. Gets `aria-current="page"`. */
   current?: string;
+  /**
+   * The nav href this page sits *under* rather than *is* — a case study lives
+   * under Work but is not the Work anchor. It gets the active styling and
+   * `aria-current="true"`, because claiming `page` on a page that is not that
+   * page tells a screen reader something false.
+   */
+  within?: string;
 }
-const { current } = Astro.props;
+const { current, within } = Astro.props;
 ---
 
-<header class="border-b border-rule">
+<header class="sticky top-0 z-50 border-b border-rule bg-ground">
   <nav
     class="mx-auto flex max-w-6xl flex-wrap items-baseline justify-between gap-x-6 gap-y-2 px-6 py-4"
     aria-label="Primary"
@@ -24,9 +31,22 @@ const { current } = Astro.props;
           <li>
             <a
               href={item.href}
-              class="annotation hover:text-figure"
-              aria-current={current === item.href ? 'page' : undefined}
-              data-active={current === item.href ? 'true' : undefined}
+              class="annotation nav-link hover:text-figure"
+              aria-current={
+                item.file
+                  ? undefined
+                  : current === item.href
+                    ? 'page'
+                    : within === item.href
+                      ? 'true'
+                      : undefined
+              }
+              data-active={
+                !item.file && (current === item.href || within === item.href)
+                  ? 'true'
+                  : undefined
+              }
+              data-file={item.file ? 'true' : undefined}
             >
               {item.label}
             </a>
@@ -38,10 +58,27 @@ const { current } = Astro.props;
 </header>
 
 <style>
+  /*
+   * 11px mono with no padding is a target well under the 24x24 minimum, and
+   * these are the only navigation controls on the site. Padding gives them a
+   * real hit area; the negative margin keeps the header the height it was.
+   */
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-block: -0.75rem;
+    padding-block: 0.75rem;
+  }
+
   .brand {
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
+    /* Same target floor as the nav items — it is a link to the index. */
+    min-height: 44px;
+    margin-block: -0.75rem;
+    padding-block: 0.75rem;
   }
 
   .brand:hover .annotation {
@@ -53,6 +90,36 @@ const { current } = Astro.props;
     display: block;
     height: 1.1rem;
     width: auto;
+  }
+
+  /*
+   * The Work item, marked while its section is the target.
+   *
+   * "Work" points at #work on the index — a section, not a page — so `current`
+   * can never mark it: on the index the current page IS the index, and clicking
+   * Work left nothing highlighted. `:target` knows, and `:has()` lets the header
+   * act on it with no JavaScript.
+   *
+   * These live here rather than in global.css because the rule they have to beat
+   * is this component's own, and component styles are unlayered: anything inside
+   * `@layer components` loses to them no matter how specific it is. That is a
+   * cascade-layer rule, not a specificity one, and it cost a debugging round.
+   *
+   * `aria-current` deliberately stays on Index — that is still the page being
+   * viewed. This is a "you are looking at this section" mark, a different claim.
+   */
+  :global(html:has(#work:target)) a[href='/#work'] {
+    color: var(--color-figure);
+    text-decoration: underline;
+    text-underline-offset: 0.35em;
+    text-decoration-thickness: 2px;
+    text-decoration-color: var(--color-accent);
+  }
+
+  /* Only one item carries the mark at a time. */
+  :global(html:has(#work:target)) a[data-active='true'] {
+    color: var(--color-figure-muted);
+    text-decoration: none;
   }
 
   a[data-active='true'] {

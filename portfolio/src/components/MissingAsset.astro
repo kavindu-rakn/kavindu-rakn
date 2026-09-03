@@ -4,23 +4,33 @@ import { PLACEHOLDERS } from '../consts';
 /*
  * A screenshot or recording that does not exist yet.
  *
- * BRIEF §5.1: "Screenshots and screen recordings of every project. He currently
- * has almost none — SchemaShift's own README says 'Screenshots: not yet
- * captured.'" This is the critical path, and no amount of code substitutes for
- * it, so the slot is rendered at full size rather than quietly omitted.
+ * Every project needs stills and a screen recording, and almost none exist yet.
+ * No amount of code substitutes for them, so during development the slot is
+ * rendered at full size rather than quietly omitted.
+ *
+ * It is dev-only: a public page should not show a reader a picture of a missing
+ * picture. The outstanding count in the build strip is the public disclosure,
+ * and scripts/lint-content.mjs enforces it from the frontmatter.
  */
 
 interface Props {
   /** What specifically needs capturing, per project. */
   spec: string;
+  /**
+   * Which frame the eventual capture fills. A phone recording is 9:16, and
+   * reserving 16:9 for it would misrepresent the shape of the thing missing.
+   */
+  viewport?: 'desktop' | 'mobile';
+  /** Plate reference, so an unfilled slot is addressable too. */
+  plate?: string;
 }
-const { spec } = Astro.props;
+const { spec, viewport = 'desktop', plate } = Astro.props;
 const { token, action } = PLACEHOLDERS.screenshots;
 ---
 
-<figure class="missing-asset" data-placeholder={token}>
+<figure class="missing-asset" data-placeholder={token} data-viewport={viewport}>
   <div class="missing-asset__body">
-    <p class="missing-asset__token">{token}</p>
+    <p class="missing-asset__token">{plate ? `${token} · PLATE ${plate}` : token}</p>
     <p class="missing-asset__spec">{spec}</p>
     <p class="missing-asset__action">{action}</p>
   </div>
@@ -40,6 +50,17 @@ const { token, action } = PLACEHOLDERS.screenshots;
       transparent 0 10px,
       rgba(255, 59, 31, 0.1) 10px 20px
     );
+  }
+
+  /*
+   * A phone capture, standing in a column sized for a desktop one. Capped so a
+   * 9:16 slot does not become a two-screen-tall red wall on a narrow viewport.
+   */
+  .missing-asset[data-viewport='mobile'] {
+    aspect-ratio: 9 / 16;
+    max-height: 34rem;
+    margin-inline: auto;
+    max-width: 19rem;
   }
 
   .missing-asset__body {

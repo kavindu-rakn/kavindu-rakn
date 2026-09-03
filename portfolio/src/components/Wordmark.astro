@@ -13,17 +13,29 @@ import RGlyph from '../assets/wordmark-r.svg';
  * — which is what lets the mark invert on the dark cyanotype ground instead of
  * disappearing into it.
  *
+ * The surname is wrapped and held together. The glyph is an inline-block, which
+ * is an atomic inline, and browsers take an atomic inline as a legitimate place
+ * to break a line — so at narrow widths the headline split into "Kavindu R" and
+ * "anathunga". Nothing in the markup separated them; the break opportunity came
+ * from the box type itself. `nowrap` on the surname removes it, while "Kavindu"
+ * is still free to take its own line.
+ *
  * Size and vertical position are exposed as custom properties because the
  * source viewBox is tight to the ink: where the baseline falls inside it is not
  * recoverable from the file, so it is set by eye rather than computed.
  */
 ---
 
-Kavindu <span class="wordmark-r" aria-hidden="true"><RGlyph /></span><span
-  class="sr-only">R</span
->anathunga
+Kavindu <span class="wordmark-surname"><span
+    class="wordmark-r"
+    aria-hidden="true"><RGlyph /></span><span class="sr-only">R</span>anathunga</span
+>
 
 <style>
+  .wordmark-surname {
+    white-space: nowrap;
+  }
+
   /*
    * `:global` because the glyph is rendered by the imported SVG component and
    * therefore does not carry this component's scope attribute. A plain scoped
