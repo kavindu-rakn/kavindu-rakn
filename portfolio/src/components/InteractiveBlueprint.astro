@@ -250,10 +250,15 @@
         ctx.fill();
       }
 
-      // Smooth pointer interpolation with responsive drag kinematics
-      const lerpSpeed = isDragging ? 0.22 : 0.08;
-      mouseX += (targetX - mouseX) * lerpSpeed;
-      mouseY += (targetY - mouseY) * lerpSpeed;
+      // Direct 1:1 tracking when hovered/interacting (eliminates laggy tail), smooth return when idle
+      if (isHovered) {
+        mouseX = targetX;
+        mouseY = targetY;
+      } else {
+        const lerpSpeed = 0.06;
+        mouseX += (targetX - mouseX) * lerpSpeed;
+        mouseY += (targetY - mouseY) * lerpSpeed;
+      }
 
       // Update coordinate readout
       if (coordsEl) {
@@ -390,6 +395,8 @@
         const { x, y } = getCanvasCoords(e);
         targetX = x;
         targetY = y;
+        mouseX = x;
+        mouseY = y;
         isHovered = true;
       }
     });
@@ -407,6 +414,8 @@
       const { x, y } = getCanvasCoords(e);
       targetX = x;
       targetY = y;
+      mouseX = x;
+      mouseY = y;
 
       pulses.push({
         x,
@@ -423,6 +432,8 @@
         const { x, y } = getCanvasCoords(e);
         targetX = x;
         targetY = y;
+        mouseX = x;
+        mouseY = y;
         isHovered = true;
       }
     });
@@ -516,7 +527,7 @@
     touch-action: none;
     user-select: none;
     -webkit-user-select: none;
-    cursor: crosshair;
+    cursor: none;
   }
 
   @media (prefers-color-scheme: dark) {
