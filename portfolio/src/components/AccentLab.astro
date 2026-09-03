@@ -1,0 +1,122 @@
+---
+/*
+ * TEMPORARY — a switch for trying accent pairs against the real site.
+ *
+ * Rendered only when `import.meta.env.DEV` is true, so it cannot reach a build.
+ * Delete this file and its one line in Layout.astro once a pair is chosen.
+ *
+ * No JavaScript. Four radios and `html:has(...)` re-point `--color-accent`, and
+ * because every accent on the site resolves through that one token, the whole
+ * page follows — links, focus rings, the active nav mark, the In-progress flag
+ * and the Contact border all change together.
+ *
+ * `is:global` is required: the selector targets <html>, which never carries a
+ * component's scope attribute, so a scoped rule would silently never match.
+ *
+ * The choice resets on navigation, because nothing remembers it — that is the
+ * whole reason the real theme toggle was not worth building. Here it does not
+ * matter: flip it, look, flip it again.
+ */
+---
+
+<form class="accent-lab" aria-label="Accent pair preview (development only)">
+  <p class="accent-lab__title">Accent lab · dev only</p>
+
+  <label class="accent-lab__row">
+    <input type="radio" name="accent" id="accent-now" checked />
+    <span class="accent-lab__swatches"><i style="background:#1d5c86"></i><i
+        style="background:#7cc6ec"></i></span>
+    <span>Current blue</span>
+  </label>
+
+  <label class="accent-lab__row">
+    <input type="radio" name="accent" id="accent-a" />
+    <span class="accent-lab__swatches"><i style="background:#1b4332"></i><i
+        style="background:#d4a537"></i></span>
+    <span>Pine · Brass</span>
+  </label>
+
+  <label class="accent-lab__row">
+    <input type="radio" name="accent" id="accent-b" />
+    <span class="accent-lab__swatches"><i style="background:#26408b"></i><i
+        style="background:#f0b429"></i></span>
+    <span>Ultramarine · Amber</span>
+  </label>
+
+  <label class="accent-lab__row">
+    <input type="radio" name="accent" id="accent-c" />
+    <span class="accent-lab__swatches"><i style="background:#452b52"></i><i
+        style="background:#7fe0b8"></i></span>
+    <span>Aubergine · Mint</span>
+  </label>
+</form>
+
+<style is:global>
+  /* Light-mode accent per pair. */
+  html:has(#accent-a:checked) {
+    --color-accent: #1b4332;
+  }
+  html:has(#accent-b:checked) {
+    --color-accent: #26408b;
+  }
+  html:has(#accent-c:checked) {
+    --color-accent: #452b52;
+  }
+
+  /* Dark-mode accent per pair — a different hue, not a lighter shade. */
+  @media (prefers-color-scheme: dark) {
+    html:has(#accent-a:checked) {
+      --color-accent: #d4a537;
+    }
+    html:has(#accent-b:checked) {
+      --color-accent: #f0b429;
+    }
+    html:has(#accent-c:checked) {
+      --color-accent: #7fe0b8;
+    }
+  }
+</style>
+
+<style>
+  .accent-lab {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.75rem 0.9rem;
+    background-color: var(--color-ground);
+    border: 2px solid var(--color-figure);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-figure);
+  }
+
+  .accent-lab__title {
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-figure-muted);
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  .accent-lab__row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+
+  .accent-lab__swatches {
+    display: inline-flex;
+    border: 1px solid var(--color-rule);
+  }
+
+  .accent-lab__swatches i {
+    display: block;
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+</style>

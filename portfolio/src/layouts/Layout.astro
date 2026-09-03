@@ -1,5 +1,6 @@
 ---
 import { Font } from 'astro:assets';
+import AccentLab from '../components/AccentLab.astro';
 import GridField from '../components/GridField.astro';
 import SiteNotice from '../components/SiteNotice.astro';
 import { SITE } from '../consts';
@@ -131,5 +132,8 @@ const personSchema = {
       <slot />
     </main>
     <slot name="footer" />
+
+    {/* TEMPORARY. Dev only; delete with src/components/AccentLab.astro. */}
+    {import.meta.env.DEV && <AccentLab />}
   </body>
 </html>
