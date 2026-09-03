@@ -2,7 +2,7 @@
 title: TalentHub
 tagline: Internship platform in production at Sri Lanka Telecom Mobitel.
 description: 'The platform Sri Lanka Telecom Mobitel runs its trainee programme on, built by twenty developers over a year. Core contributor: rebuilt 27 of 35 screens and merged 37 PRs to main.'
-order: 3
+order: 2
 status: in-production
 employment: true
 techStack:
