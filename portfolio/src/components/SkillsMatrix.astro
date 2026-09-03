@@ -41,7 +41,7 @@ const Heading = headingLevel;
   <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
     {
       SKILLS.map((group, idx) => (
-        <div class="skills-card flex flex-col border border-rule bg-ground-raised p-5 sm:p-6 transition-colors duration-150 hover:border-figure/50">
+        <div class="skills-card card-dark flex flex-col border border-rule p-5 sm:p-6 transition-colors duration-150 hover:border-figure/50">
           <div class="flex items-center justify-between border-b border-rule pb-3">
             <h3 class="font-sans text-xs font-semibold uppercase tracking-wider text-figure">
               {group.label}
@@ -53,7 +53,7 @@ const Heading = headingLevel;
 
           <ul class="mt-4 flex flex-wrap gap-2" role="list">
             {group.items.map((item) => (
-              <li class="skill-pill inline-flex items-center border border-rule/80 bg-ground px-2.5 py-1 font-mono text-[0.75rem] text-figure transition-all duration-150 hover:border-accent hover:text-figure hover:bg-ground-raised">
+              <li class="skill-pill inline-flex items-center border border-rule/80 bg-carbon-900 px-2.5 py-1 font-mono text-[0.75rem] text-figure transition-all duration-150 hover:border-accent hover:text-figure">
                 {item}
               </li>
             ))}
