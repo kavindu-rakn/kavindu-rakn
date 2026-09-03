@@ -1,0 +1,105 @@
+---
+/*
+ * The ruled field the whole site sits on.
+ *
+ * Every card, rule and annotation on this design is aligned to an implied grid.
+ * This draws it. Two layers at different pitches move by different amounts as
+ * the cursor crosses the page, which is what makes it read as depth rather than
+ * as wallpaper — the coarse rule is nearer, so it travels further.
+ *
+ * Deliberately not a canvas. The whole thing is two repeating gradients and a
+ * transform, which the compositor handles on its own; a canvas would mean a
+ * render loop, a resize path and a device-pixel-ratio problem, to draw straight
+ * lines that CSS already draws. The only script is the twenty lines that turn a
+ * pointer position into two custom properties.
+ *
+ * It sits at z-index -1, which puts it above the body background — that
+ * background propagates to the canvas and paints first — and below every piece
+ * of ordinary content, without wrapping the page in anything.
+ *
+ * That last part matters more than it sounds. A wrapper with a z-index makes a
+ * stacking context, and a stacking context traps `mix-blend-mode`: the cover
+ * mark is composited against whatever is behind it, and inside a wrapper the
+ * field is not behind it any more. The artwork's ground reappeared as a white
+ * panel the moment a wrapper existed. No wrapper, no trap, and the grid reads
+ * straight through the mark.
+ *
+ * Cards carry their own ground and occlude it, so the field shows through the
+ * gutters and margins and stops at the edge of anything solid — which is the
+ * correct reading: it is the paper, not a texture laid over the top.
+ */
+---
+
+<div class="grid-field" data-grid-field aria-hidden="true"></div>
+
+<style>
+  .grid-field {
+    position: fixed;
+    /*
+     * Overscanned well past the viewport so the parallax can never drag an edge
+     * of the gradient into view at the extremes of travel.
+     */
+    inset: -8vmax;
+    z-index: -1;
+    pointer-events: none;
+
+    /* Written by the pointer script; -1 to 1 on each axis, already eased. */
+    --px: 0;
+    --py: 0;
+  }
+
+  .grid-field::before,
+  .grid-field::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        to right,
+        var(--rule-ink) 0 1px,
+        transparent 1px var(--cell)
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        var(--rule-ink) 0 1px,
+        transparent 1px var(--cell)
+      );
+    will-change: transform;
+  }
+
+  /* The construction grid: fine, far, barely there, and it moves least. */
+  .grid-field::before {
+    --cell: 34px;
+    --rule-ink: color-mix(in srgb, var(--color-rule) 42%, transparent);
+    transform: translate3d(calc(var(--px) * 7px), calc(var(--py) * 7px), 0);
+  }
+
+  /* The datum grid: coarse, nearer, a shade stronger, and it travels further. */
+  .grid-field::after {
+    --cell: 170px;
+    --rule-ink: color-mix(in srgb, var(--color-rule) 78%, transparent);
+    transform: translate3d(calc(var(--px) * 20px), calc(var(--py) * 20px), 0);
+  }
+
+  /*
+   * Without a pointer there is no parallax to offer, and a permanently static
+   * grid behind every line of body text is a texture nobody asked for. Coarse
+   * layer only, and fainter.
+   */
+  @media (hover: none) {
+    .grid-field::before {
+      display: none;
+    }
+    .grid-field::after {
+      --rule-ink: color-mix(in srgb, var(--color-rule) 45%, transparent);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .grid-field::before,
+    .grid-field::after {
+      transform: none;
+      will-change: auto;
+    }
+  }
+</style>
