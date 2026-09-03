@@ -50,6 +50,24 @@ const { Content } = await render(entry);
  * shipping zero JavaScript.
  */
 const hasVideo = entry.data.figures?.some((f) => f.video) ?? false;
+
+/*
+ * Imagery is grouped by viewport, not left in author order: three desktop
+ * captures stacked at full width, then the three phone captures side by side
+ * beneath them. A 9:16 capture at full width is a column of screen taller than
+ * the viewport, and three of them stacked would be most of a page of scrolling;
+ * in a row they read as one comparison and balance the block above.
+ *
+ * Plate letters are assigned over the whole set in this display order, so
+ * "Plate 04-D" always means the first phone capture on Sheet 04.
+ */
+const shown = (entry.data.figures ?? []).filter(
+  (f) => f.src || f.video || import.meta.env.DEV,
+);
+const desktopFigures = shown.filter((f) => f.viewport !== 'mobile');
+const mobileFigures = shown.filter((f) => f.viewport === 'mobile');
+const plateFor = (i: number) =>
+  `${String(entry.data.order).padStart(2, '0')}-${String.fromCharCode(65 + i)}`;
 const d = entry.data;
 
 ---
@@ -107,19 +125,25 @@ const d = entry.data;
     </div>
 
     {
-      d.figures && d.figures.some((f) => f.src || f.video || import.meta.env.DEV) && (
+      shown.length > 0 && (
         <section class="mt-16">
           <p class="annotation border-b border-rule pb-3">Imagery</p>
-          <div class="mt-6 space-y-8">
-            {d.figures
-              .filter((figure) => figure.src || figure.video || import.meta.env.DEV)
-              .map((figure, i) => (
-                <Figure
-                  figure={figure}
-                  plate={`${String(d.order).padStart(2, '0')}-${String.fromCharCode(65 + i)}`}
-                />
+
+          {desktopFigures.length > 0 && (
+            <div class="mt-6 space-y-8">
+              {desktopFigures.map((figure, i) => (
+                <Figure figure={figure} plate={plateFor(i)} />
               ))}
-          </div>
+            </div>
+          )}
+
+          {mobileFigures.length > 0 && (
+            <div class="mt-8 grid grid-cols-3 gap-3 sm:gap-6">
+              {mobileFigures.map((figure, i) => (
+                <Figure figure={figure} plate={plateFor(desktopFigures.length + i)} />
+              ))}
+            </div>
+          )}
         </section>
       )
     }

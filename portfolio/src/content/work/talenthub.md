@@ -27,9 +27,15 @@ highlights:
   - Compliance logic consolidated into a shared working-days and holiday module, imported by five controllers and four services
   - Seven animated seasonal login themes with a backend switch
 figures:
-  - spec: The 96-seat reservation map on a phone, mid pan-and-zoom, as a silent 10-20 second recording. Every trainee name, face and identity number must be blurred or replaced before this is published.
+  - spec: The 96-seat reservation map mid pan-and-zoom. Every trainee name, face and identity number must be blurred or replaced before this is published.
+  - spec: A seasonal login theme — Vesak, or Sinhala and Tamil New Year. Check with SLT what may be shown before publishing anything from this platform.
+  - spec: AI logbook validation on a scored entry, showing the local heuristic result beside the model's. Replace the logbook text with fictional content.
+  - spec: The seat map on a phone, mid pan-and-zoom — the case the previous implementation could not handle. Blur or replace all identities.
     viewport: mobile
-  - spec: A seasonal login theme — Vesak or Sinhala and Tamil New Year. Check with SLT what may be shown before publishing anything from this platform.
+  - spec: The logbook on a phone, mid entry. Fictional content only.
+    viewport: mobile
+  - spec: Attendance on a phone, showing QR and facial recognition in the one interface. No real faces.
+    viewport: mobile
 draft: false
 ---
 

@@ -21,7 +21,12 @@ highlights:
 figures:
   - spec: One application form mid-flow, showing the step indicator and progress bar on a partially completed step. Every field must hold fictional values before this is published — no real customer data.
   - spec: The same step rendered in Sinhala and Tamil beside the English, showing the layout holding under all three scripts.
-  - spec: A full form completed on a phone, as a silent 10-20 second recording, from OTP verification through to the status tracker. Fictional values only.
+  - spec: The status tracker after submission, showing a submitted application and where it has got to.
+  - spec: A form step on a phone, which is where most of these are actually filled in. Fictional values only.
+    viewport: mobile
+  - spec: OTP verification on a phone, at the point where a phone number is entered rather than an account created.
+    viewport: mobile
+  - spec: The status tracker on a phone.
     viewport: mobile
 draft: false
 ---

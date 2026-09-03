@@ -97,12 +97,12 @@ const mimeFor = (path: string) => (path.endsWith('.webm') ? 'video/webm' : 'vide
   }
 
   /*
-   * A phone capture is 9:16. Left full-width it becomes a column of screen
-   * taller than the viewport, so it is held to a phone-sized measure and
-   * centred, which is also how it was actually seen.
+   * Phone captures are laid out three to a row by the case-study page, so the
+   * grid cell sets their width. They used to cap themselves at a phone measure,
+   * which was right when they stacked and wrong now — it left each one floating
+   * in a third of the row.
    */
   figure[data-viewport='mobile'] {
-    max-width: 19rem;
-    margin-inline: auto;
+    width: 100%;
   }
 </style>
