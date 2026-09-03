@@ -11,9 +11,7 @@ import { CATALOGUE, EDGES, categoryById, resolveSchema, impactOf } from '../data
  *
  * Server-rendered complete: the tree, and Electronics' resolved schema, are in
  * the HTML. With JavaScript off you get a finished diagram rather than an empty
- * frame — the same principle as the hero's static blueprint. The island only
- * adds selection and the live impact readout, and the controls stay hidden
- * until it boots so no dead inputs are ever shown.
+ * frame. The island adds interactive node selection and the live impact readout.
  */
 
 const DEFAULT_ID = 'electronics';
@@ -21,68 +19,142 @@ const initial = categoryById(DEFAULT_ID)!;
 const initialSchema = resolveSchema(DEFAULT_ID);
 const initialImpact = impactOf(DEFAULT_ID);
 
-const X = (gx: number) => 190 + gx * 90;
-const Y = (gy: number) => 34 + -gy * 106;
-const NODE_W = 150;
-const NODE_H = 36;
+/*
+ * Vector coordinates for the schematic tree:
+ * Electronics (root) sits top-center.
+ * Laptops and Smartphones branch out symmetrically.
+ * Gaming laptops extends downward from Laptops.
+ */
+const X = (id: string) => {
+  switch (id) {
+    case 'electronics': return 210;
+    case 'laptops': return 105;
+    case 'smartphones': return 315;
+    case 'gaming-laptops': return 105;
+    default: return 210;
+  }
+};
+
+const Y = (id: string) => {
+  switch (id) {
+    case 'electronics': return 46;
+    case 'laptops': return 160;
+    case 'smartphones': return 160;
+    case 'gaming-laptops': return 270;
+    default: return 46;
+  }
+};
+
+const NODE_W = (id: string) => (id === 'electronics' ? 168 : 148);
+const NODE_H = 50;
 
 const edgePaths = EDGES.map(([parentId, childId]) => {
-  const p = categoryById(parentId)!;
-  const c = categoryById(childId)!;
-  const y0 = Y(p.gy) + NODE_H / 2;
-  const y1 = Y(c.gy) - NODE_H / 2;
-  const bus = (y0 + y1) / 2;
-  return `M ${X(p.gx)} ${y0} V ${bus} H ${X(c.gx)} V ${y1}`;
+  const px = X(parentId);
+  const py = Y(parentId) + NODE_H / 2;
+  const cx = X(childId);
+  const cy = Y(childId) - NODE_H / 2 - 3;
+  if (px === cx) {
+    return { id: `${parentId}-${childId}`, d: `M ${px} ${py} V ${cy}` };
+  }
+  const bus = py + 30;
+  return { id: `${parentId}-${childId}`, d: `M ${px} ${py} V ${bus} H ${cx} V ${cy}` };
 });
 ---
 
 <figure class="diagram" data-diagram data-selected={DEFAULT_ID}>
-  <figcaption class="diagram__caption">
-    <span class="annotation">Worked example · illustrative fixture data</span>
+  <figcaption class="diagram__caption flex items-center justify-between">
+    <span class="annotation">Worked example · Schema inheritance engine</span>
+    <span class="annotation text-accent font-mono text-[10px]">SVG // VECTOR SCHEMATIC</span>
   </figcaption>
 
   <div class="diagram__body">
-    <svg
-      class="diagram__tree"
-      viewBox="0 0 380 300"
-      role="img"
-      aria-label="Category tree. Electronics inherits downward into Laptops and Smartphones; Laptops inherits downward into Gaming laptops."
-      data-tree
-    >
-      <g class="tree-edge">{edgePaths.map((d) => <path d={d} />)}</g>
-
-      {
-        CATALOGUE.map((node) => (
-          <g
-            class="tree-node"
-            data-category={node.id}
-            data-state={node.id === DEFAULT_ID ? 'selected' : 'idle'}
+    <div class="diagram__tree-wrap">
+      <svg
+        class="diagram__tree"
+        viewBox="0 0 420 320"
+        role="img"
+        aria-label="Category tree. Electronics inherits downward into Laptops and Smartphones; Laptops inherits downward into Gaming laptops."
+        data-tree
+      >
+        <defs>
+          <marker
+            id="tree-arrow"
+            viewBox="0 0 8 8"
+            refX="4"
+            refY="4"
+            markerWidth="5"
+            markerHeight="5"
+            orient="auto-start-reverse"
           >
-            <rect
-              x={X(node.gx) - NODE_W / 2}
-              y={Y(node.gy) - NODE_H / 2}
-              width={NODE_W}
-              height={NODE_H}
-            />
-            <text x={X(node.gx)} y={Y(node.gy) + 4}>
-              {node.label}
-            </text>
-          </g>
-        ))
-      }
-    </svg>
+            <path d="M 0 1.5 L 6.5 4 L 0 6.5 z" fill="var(--color-accent)" />
+          </marker>
+        </defs>
+
+        <g class="tree-edge">
+          {edgePaths.map(({ d, id }) => (
+            <path d={d} data-edge={id} marker-end="url(#tree-arrow)" />
+          ))}
+        </g>
+
+        {
+          CATALOGUE.map((node) => {
+            const w = NODE_W(node.id);
+            const h = NODE_H;
+            const left = X(node.id) - w / 2;
+            const top = Y(node.id) - h / 2;
+            return (
+              <g
+                class="tree-node"
+                data-category={node.id}
+                data-state={node.id === DEFAULT_ID ? 'selected' : 'idle'}
+              >
+                <rect
+                  class="tree-node__bg"
+                  x={left}
+                  y={top}
+                  width={w}
+                  height={h}
+                  rx="6"
+                />
+                <circle
+                  class="tree-node__dot"
+                  cx={left + 16}
+                  cy={top + h / 2}
+                  r="3.5"
+                />
+                <text class="tree-node__title" x={left + 28} y={top + 21}>
+                  {node.label}
+                </text>
+                <text class="tree-node__meta" x={left + 28} y={top + 36}>
+                  {node.declares.length} {node.declares.length === 1 ? 'decl' : 'decls'} · {node.items > 0 ? `${node.items} items` : 'root model'}
+                </text>
+              </g>
+            );
+          })
+        }
+      </svg>
+      <p class="mt-2 text-center text-[10px] font-mono text-figure-muted opacity-60">
+        Click any category node to inspect its inheritance composition
+      </p>
+    </div>
 
     <div class="diagram__panel">
-      <p class="annotation diagram__panel-head">
-        Resolved schema · <span data-selected-label>{initial.label}</span>
-      </p>
+      <div class="diagram__panel-head flex items-center justify-between pb-3">
+        <span class="annotation">Resolved Schema</span>
+        <span class="schema-badge font-mono text-xs font-semibold px-2 py-0.5 border border-accent bg-accent/10 text-accent" data-selected-label>
+          {initial.label}
+        </span>
+      </div>
 
       <ul class="fields" data-fields>
         {
           initialSchema.map(({ field, origin, inherited }) => (
             <li class="field" data-inherited={String(inherited)}>
-              <code class="field__key">{field.key}</code>
-              <span class="field__type">{field.type}</span>
+              <div class="field__decl">
+                <code class="field__key">{field.key}</code>
+                <span class="field__colon">:</span>
+                <span class="field__type">{field.type}</span>
+              </div>
               <span class="field__origin">
                 {inherited ? `inherited · ${origin.label}` : 'declared here'}
               </span>
@@ -92,29 +164,34 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
       </ul>
 
       <p class="diagram__rule annotation">
-        Inherited fields may be relabelled here. They may not be deleted or
-        retyped — those are the two operations that invalidate data an ancestor
-        owns.
+        Inherited fields may be relabelled locally. They cannot be deleted or
+        retyped without breaking ancestor contracts.
       </p>
 
       <div class="controls" data-controls hidden>
-        <label class="annotation" for="new-field">
-          Declare a field on <span data-selected-label>{initial.label}</span>
+        <label class="annotation flex items-center justify-between" for="new-field">
+          <span>Test Schema Mutation</span>
+          <span class="text-accent">// Live Preview</span>
         </label>
-        <input
-          class="controls__input"
-          id="new-field"
-          type="text"
-          autocomplete="off"
-          spellcheck="false"
-          placeholder="energy_rating"
-          data-field-input
-        />
-        <p class="controls__impact" data-impact aria-live="polite">
-          <span class="controls__impact-idle"
-            >Type a field name to see the blast radius.</span
-          >
-        </p>
+        <div class="controls__input-wrap">
+          <span class="controls__input-prefix font-mono">+</span>
+          <input
+            class="controls__input"
+            id="new-field"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="e.g. energy_rating"
+            data-field-input
+          />
+        </div>
+        <div class="controls__impact-box mt-3" data-impact-box>
+          <p class="controls__impact" data-impact aria-live="polite">
+            <span class="controls__impact-idle"
+              >Type a field name to calculate downstream blast radius.</span
+            >
+          </p>
+        </div>
       </div>
 
       <p class="controls__static annotation" data-static-note>
@@ -129,25 +206,32 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
   .diagram {
     margin: 3rem 0;
     border: 2px solid var(--color-figure);
+    background-color: var(--color-ground);
   }
 
   .diagram__caption {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1.25rem;
     border-bottom: 1px solid var(--color-rule);
+    background-color: var(--color-ground-raised);
   }
 
   .diagram__body {
     display: grid;
     gap: 1.5rem;
-    padding: 1.5rem 1rem;
+    padding: 1.5rem;
   }
 
   @media (min-width: 52rem) {
     .diagram__body {
-      grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 24rem) minmax(0, 1fr);
       align-items: start;
-      padding: 1.75rem;
+      padding: 2rem;
     }
+  }
+
+  .diagram__tree-wrap {
+    display: flex;
+    flex-direction: column;
   }
 
   .diagram__tree {
@@ -158,67 +242,108 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
   .tree-edge path {
     fill: none;
     stroke: var(--color-accent);
-    stroke-width: 1.25;
-    opacity: 0.7;
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+    opacity: 0.8;
+    transition: all 200ms ease;
   }
 
-  .tree-node rect {
-    fill: var(--color-ground);
-    stroke: var(--color-accent);
-    stroke-width: 1.25;
-    transition: fill 160ms ease, stroke-width 160ms ease;
+  .tree-node {
+    user-select: none;
   }
 
-  .tree-node text {
+  .tree-node .tree-node__bg {
+    fill: var(--color-ground-raised);
+    stroke: var(--color-rule);
+    stroke-width: 1.25;
+    transition: all 180ms ease;
+  }
+
+  .tree-node .tree-node__dot {
+    fill: var(--color-figure-muted);
+    opacity: 0.4;
+    transition: all 180ms ease;
+  }
+
+  .tree-node .tree-node__title {
     font-family: var(--font-mono);
     font-size: 11px;
-    letter-spacing: 0.08em;
-    text-anchor: middle;
-    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     fill: var(--color-figure);
+    transition: fill 180ms ease;
   }
 
-  .tree-node[data-state='selected'] rect {
+  .tree-node .tree-node__meta {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.02em;
+    fill: var(--color-figure-muted);
+    opacity: 0.75;
+    transition: fill 180ms ease;
+  }
+
+  /* Selected state */
+  .tree-node[data-state='selected'] .tree-node__bg {
+    stroke: var(--color-accent);
+    stroke-width: 2;
+    fill: var(--color-ground-raised);
+  }
+
+  .tree-node[data-state='selected'] .tree-node__dot {
     fill: var(--color-accent);
-    stroke-width: 2;
-  }
-  .tree-node[data-state='selected'] text {
-    fill: var(--color-ground);
+    opacity: 1;
   }
 
-  /* Everything the pending change would reach. */
-  .tree-node[data-state='impacted'] rect {
-    fill: var(--color-signal-500);
-    stroke: #0a0a0a;
-    stroke-width: 2;
+  .tree-node[data-state='selected'] .tree-node__title {
+    fill: var(--color-accent);
   }
-  .tree-node[data-state='impacted'] text {
-    fill: #0a0a0a;
+
+  /* Impacted state */
+  .tree-node[data-state='impacted'] .tree-node__bg {
+    stroke: var(--color-signal-500, #f59e0b);
+    stroke-width: 2;
+    fill: var(--color-ground-raised);
+  }
+
+  .tree-node[data-state='impacted'] .tree-node__dot {
+    fill: var(--color-signal-500, #f59e0b);
+    opacity: 1;
+  }
+
+  .tree-node[data-state='impacted'] .tree-node__title,
+  .tree-node[data-state='impacted'] .tree-node__meta {
+    fill: var(--color-signal-500, #f59e0b);
   }
 
   [data-enhanced] .tree-node {
     cursor: pointer;
   }
-  /*
-   * Focus is drawn with `stroke`, not `outline`. An outline on an SVG shape is
-   * not reliably painted — WebKit in particular ignores it — so the keyboard
-   * indicator existed on paper and not on screen. The outline is kept as well,
-   * for engines that do honour it.
-   */
-  [data-enhanced] .tree-node:focus-visible rect {
+
+  [data-enhanced] .tree-node:hover .tree-node__bg {
+    border-color: var(--color-figure);
+    stroke: var(--color-figure);
+  }
+
+  [data-enhanced] .tree-node:focus-visible .tree-node__bg {
     stroke: var(--color-accent);
-    stroke-width: 3;
+    stroke-width: 2.5;
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
   }
 
+  .diagram__panel {
+    border: 1px solid var(--color-rule);
+    background-color: var(--color-ground-raised);
+    padding: 1.25rem 1.5rem;
+  }
+
   .diagram__panel-head {
-    padding-bottom: 0.6rem;
     border-bottom: 1px solid var(--color-rule);
   }
 
   .fields {
-    margin-top: 0.9rem;
+    margin-top: 1rem;
     list-style: none;
     padding: 0;
   }
@@ -226,39 +351,57 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
   .field {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.5rem 0.85rem;
-    padding: 0.45rem 0;
-    padding-left: 0.75rem;
-    border-left: 2px solid var(--color-rule);
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    background: var(--color-ground);
+    border: 1px solid var(--color-rule);
+    margin-bottom: 0.4rem;
+    border-left: 3px solid var(--color-rule);
+    transition: border-color 150ms ease;
   }
 
   .field[data-inherited='false'] {
     border-left-color: var(--color-accent);
   }
 
-  /* A field the pending change would add. */
   .field[data-pending='true'] {
-    border-left-color: var(--color-signal-500);
+    border-left-color: var(--color-signal-500, #f59e0b);
+    background-color: var(--color-ground-raised);
+  }
+
+  .field__decl {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
   }
 
   .field__key {
     font-family: var(--font-mono);
     font-size: 0.8125rem;
+    font-weight: 600;
     color: var(--color-figure);
   }
 
-  .field__type,
-  .field__origin {
+  .field__colon {
     font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
     color: var(--color-figure-muted);
   }
 
+  .field__type {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-accent);
+  }
+
   .field__origin {
-    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-figure-muted);
   }
 
   .diagram__rule {
@@ -276,32 +419,45 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
     border-top: 1px solid var(--color-rule);
   }
 
-  .controls__input {
-    display: block;
-    width: 100%;
+  .controls__input-wrap {
+    display: flex;
+    align-items: center;
     margin-top: 0.6rem;
-    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--color-rule);
     background-color: var(--color-ground);
-    border: 2px solid var(--color-rule);
-    color: var(--color-figure);
-    font-family: var(--font-mono);
+    transition: border-color 150ms ease;
+  }
+
+  .controls__input-wrap:focus-within {
+    border-color: var(--color-accent);
+    outline: 1px solid var(--color-accent);
+  }
+
+  .controls__input-prefix {
+    padding-left: 0.75rem;
+    color: var(--color-accent);
     font-size: 0.875rem;
   }
 
-  /*
-   * A 2px border-colour change is not a focus indicator: it is the same weight
-   * as the resting border and disappears against several backgrounds. This is
-   * the only text input on the site, and it had `outline: none` at a
-   * specificity that beat the global :focus-visible rule.
-   */
-  .controls__input:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-    border-color: var(--color-accent);
+  .controls__input {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-figure);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+
+  .controls__impact-box {
+    border: 1px dashed var(--color-rule);
+    padding: 0.65rem 0.85rem;
+    background-color: var(--color-ground);
   }
 
   .controls__impact {
-    margin-top: 0.75rem;
     font-family: var(--font-mono);
     font-size: 0.75rem;
     line-height: 1.6;
@@ -318,7 +474,6 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
     letter-spacing: 0.02em;
   }
 
-  /* The static summary is only the no-JS story; the live readout replaces it. */
   [data-enhanced] .controls__static {
     display: none;
   }
@@ -340,11 +495,6 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
   const impactEl = rootEl?.querySelector<HTMLElement>('[data-impact]');
 
   if (rootEl && treeEl && fieldsEl && controlsEl && inputEl && impactEl) {
-    /*
-     * Re-bound as consts inside the guard. The functions below outlive the
-     * `if`, so TypeScript widens the outer bindings back to nullable when they
-     * are captured; these aliases stay narrowed.
-     */
     const root = rootEl;
     const tree = treeEl;
     const fields = fieldsEl;
@@ -354,12 +504,6 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
 
     let selected = root.dataset.selected ?? 'electronics';
 
-    /*
-     * The SVG ships as role="img" with a label, which is correct while it is a
-     * picture. Once these nodes become buttons it stops being one: role="img"
-     * makes its entire subtree presentational, so the controls below were
-     * focusable but never announced. Enhancing it turns it into a group.
-     */
     tree.setAttribute('role', 'group');
 
     const nodes = new Map<string, SVGGElement>();
@@ -367,7 +511,6 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
       const id = g.dataset.category;
       if (!id) continue;
       nodes.set(id, g);
-      // Only advertise controls once they actually work.
       g.setAttribute('role', 'button');
       g.setAttribute('tabindex', '0');
       g.setAttribute('aria-label', `Select ${categoryById(id)?.label ?? id}`);
@@ -376,7 +519,6 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
     const escapeHtml = (s: string) =>
       s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-    /** A plausible attribute key, so the readout does not react to noise. */
     const normalise = (raw: string) =>
       raw
         .trim()
@@ -389,8 +531,11 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
       const rows = resolved.map(
         ({ field, origin, inherited }) => `
           <li class="field" data-inherited="${inherited}">
-            <code class="field__key">${escapeHtml(field.key)}</code>
-            <span class="field__type">${field.type}</span>
+            <div class="field__decl">
+              <code class="field__key">${escapeHtml(field.key)}</code>
+              <span class="field__colon">:</span>
+              <span class="field__type">${field.type}</span>
+            </div>
             <span class="field__origin">${
               inherited ? `inherited · ${escapeHtml(origin.label)}` : 'declared here'
             }</span>
@@ -399,9 +544,12 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
 
       if (pending) {
         rows.push(`
-          <li class="field" data-inherited="false" data-pending="true">
-            <code class="field__key">${escapeHtml(pending)}</code>
-            <span class="field__type">pending</span>
+          <li class="field field--pending" data-inherited="false" data-pending="true">
+            <div class="field__decl">
+              <code class="field__key">${escapeHtml(pending)}</code>
+              <span class="field__colon">:</span>
+              <span class="field__type">pending</span>
+            </div>
             <span class="field__origin">would be declared here</span>
           </li>`);
       }
@@ -424,7 +572,7 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
 
       if (!pending) {
         impactOut.dataset.live = 'false';
-        impactOut.textContent = 'Type a field name to see the blast radius.';
+        impactOut.textContent = 'Type a field name to calculate downstream blast radius.';
         return;
       }
 
@@ -469,7 +617,6 @@ const edgePaths = EDGES.map(([parentId, childId]) => {
     root.dataset.enhanced = 'true';
     update();
 
-    // Referenced so the import is not shaken out; also a cheap sanity check.
     if (CATALOGUE.length === 0) controls.hidden = true;
   }
 </script>
