@@ -1,7 +1,6 @@
 ---
 import { Font } from 'astro:assets';
 import GridField from '../components/GridField.astro';
-import SiteNotice from '../components/SiteNotice.astro';
 import { SITE } from '../consts';
 import '../styles/global.css';
 
@@ -128,7 +127,6 @@ const personSchema = {
     <GridField />
 
     <slot name="header" />
-    <SiteNotice />
     <main id="main">
       <slot />
     </main>
