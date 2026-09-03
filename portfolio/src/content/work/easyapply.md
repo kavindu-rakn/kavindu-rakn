@@ -23,26 +23,8 @@ figures:
   - spec: The same step rendered in Sinhala and Tamil beside the English, showing the layout holding under all three scripts.
   - spec: A full form completed on a phone, as a silent 10-20 second recording, from OTP verification through to the status tracker. Fictional values only.
     viewport: mobile
-draft: true
+draft: false
 ---
-
-<!--
-  DRAFT — not rendered, no route, absent from the grid and sitemap.
-
-  ONE thing is outstanding: confirm the "What I would do differently" section
-  below. It is the only part written from inference rather than from a stated
-  fact — see the note directly above it. Everything else is verified.
-
-  Links and the form list were checked against the live deployment and the
-  repository, both public. The nine forms are named as the site names them.
-
-  When flipping to `draft: false`, note:
-    - `order` is parked at 8 so nothing had to be renumbered while drafted.
-      Decide its real weight then; the grid and the case-study sheet numbers
-      both read it.
-    - The schema-tree drawing is gone; the hero is the cover mark now, so there
-      is no diagram left that could omit this entry.
--->
 
 ## What it is
 
@@ -110,15 +92,6 @@ Submitting a form and hearing nothing is the paper experience with extra steps.
 The tracker lets an applicant check where a submission has got to without
 telephoning anyone, which is the part of the old process that cost the most time
 on both sides of the counter.
-
-<!--
-  NOTE — the section below is inferred, not reported, and needs confirming.
-
-  The first paragraph assumes the layout was built in English first and asked to
-  hold Sinhala and Tamil afterwards. That is the usual order with i18next and it
-  follows from "trilingual layout was the hardest part", but it was not stated.
-  If the build was script-first from the start, cut that paragraph.
--->
 
 ## What I would do differently
 
