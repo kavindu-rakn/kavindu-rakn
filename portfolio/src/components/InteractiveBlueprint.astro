@@ -1,0 +1,451 @@
+---
+/*
+ * Interactive Blueprint Instrument.
+ *
+ * Replaces the static ASCII cover image with a compact, interactive drafting canvas.
+ * - Ships zero external dependencies (pure Canvas2D vector math).
+ * - High-DPI Retina resolution support.
+ * - Pauses requestAnimationFrame when out of viewport via IntersectionObserver.
+ * - Respects prefers-reduced-motion with an instant static technical render.
+ * - Reactive to light and dark theme CSS variables automatically.
+ */
+---
+
+<div class="blueprint-instrument" aria-hidden="true">
+  <div class="blueprint-instrument__hud">
+    <span class="hud-item hud-top-left">FIG 01 // KINEMATIC DRAFTING INSTRUMENT</span>
+    <span class="hud-item hud-top-right" id="bp-coords">X: 000.0 · Y: 000.0</span>
+    <span class="hud-item hud-bottom-left">CALIBRATED // REAL-TIME</span>
+    <span class="hud-item hud-bottom-right">INTERACTIVE · CLICK TO PULSE</span>
+  </div>
+  <canvas class="blueprint-instrument__canvas" id="blueprint-canvas"></canvas>
+</div>
+
+<script>
+  function initBlueprint() {
+    const canvas = document.getElementById('blueprint-canvas') as HTMLCanvasElement | null;
+    const coordsEl = document.getElementById('bp-coords');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const container = canvas.parentElement;
+    if (!container) return;
+
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let isVisible = true;
+    let animId = 0;
+
+    // Pointer state
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let isHovered = false;
+    let time = 0;
+
+    // Pulse ripples on click
+    interface Pulse {
+      x: number;
+      y: number;
+      radius: number;
+      maxRadius: number;
+      alpha: number;
+    }
+    const pulses: Pulse[] = [];
+
+    // Theme colors extracted from computed styles
+    let colFigure = 'rgba(255, 255, 255, 0.85)';
+    let colMuted = 'rgba(255, 255, 255, 0.25)';
+    let colAccent = '#a3e635';
+    let colRule = 'rgba(255, 255, 255, 0.1)';
+
+    function updateTheme() {
+      const style = getComputedStyle(document.documentElement);
+      const fig = style.getPropertyValue('--color-figure').trim();
+      const muted = style.getPropertyValue('--color-figure-muted').trim();
+      const acc = style.getPropertyValue('--color-accent').trim();
+      const rule = style.getPropertyValue('--color-rule').trim();
+
+      if (fig) colFigure = fig;
+      if (muted) colMuted = muted;
+      if (acc) colAccent = acc;
+      if (rule) colRule = rule;
+    }
+
+    function resize() {
+      if (!container || !canvas) return;
+      const rect = container.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+
+      if (!isHovered) {
+        targetX = width * 0.65;
+        targetY = height * 0.5;
+        mouseX = targetX;
+        mouseY = targetY;
+      }
+      updateTheme();
+      draw();
+    }
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function drawStatic() {
+      if (!ctx) return;
+      updateTheme();
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2;
+
+      // Center crosshair
+      ctx.strokeStyle = colRule;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, cy);
+      ctx.lineTo(width, cy);
+      ctx.moveTo(cx, 0);
+      ctx.lineTo(cx, height);
+      ctx.stroke();
+
+      // Static rings
+      ctx.strokeStyle = colMuted;
+      ctx.setLineDash([2, 4]);
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.min(width, height) * 0.35, 0, Math.PI * 2);
+      ctx.arc(cx, cy, Math.min(width, height) * 0.2, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function draw() {
+      if (!ctx) return;
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width * 0.35;
+      const cy = height * 0.5;
+
+      // Subtle background grid ticks
+      ctx.strokeStyle = colRule;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 8]);
+      ctx.beginPath();
+      ctx.moveTo(0, cy);
+      ctx.lineTo(width, cy);
+      ctx.moveTo(cx, 0);
+      ctx.lineTo(cx, height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Rotating mechanical dials around origin
+      ctx.save();
+      ctx.translate(cx, cy);
+      const rot = time * 0.2;
+      ctx.rotate(rot);
+
+      const radius1 = Math.min(width, height) * 0.32;
+      ctx.strokeStyle = colRule;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius1, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Radial ticks
+      ctx.strokeStyle = colMuted;
+      for (let i = 0; i < 12; i++) {
+        const angle = (i * Math.PI * 2) / 12;
+        const x1 = Math.cos(angle) * (radius1 - 4);
+        const y1 = Math.sin(angle) * (radius1 - 4);
+        const x2 = Math.cos(angle) * (radius1 + 4);
+        const y2 = Math.sin(angle) * (radius1 + 4);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Satellite orbital nodes
+      const numNodes = 3;
+      const nodes: { x: number; y: number }[] = [];
+      for (let i = 0; i < numNodes; i++) {
+        const orbitR = radius1 * (0.65 + i * 0.35);
+        const speed = (0.25 / (i + 1)) * (i % 2 === 0 ? 1 : -1);
+        const theta = time * speed + (i * Math.PI * 2) / numNodes;
+        const nx = cx + Math.cos(theta) * orbitR;
+        const ny = cy + Math.sin(theta) * orbitR * 0.6;
+        nodes.push({ x: nx, y: ny });
+
+        // Node circle
+        ctx.fillStyle = colMuted;
+        ctx.beginPath();
+        ctx.arc(nx, ny, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Smooth pointer interpolation
+      mouseX += (targetX - mouseX) * 0.08;
+      mouseY += (targetY - mouseY) * 0.08;
+
+      // Update coordinate readout
+      if (coordsEl) {
+        coordsEl.textContent = `X: ${mouseX.toFixed(1)} · Y: ${mouseY.toFixed(1)}`;
+      }
+
+      // Dynamic dimension line from center to cursor
+      const dx = mouseX - cx;
+      const dy = mouseY - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const angleDeg = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 360;
+
+      ctx.strokeStyle = colAccent;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(mouseX, mouseY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Dimension label along line
+      const midX = (cx + mouseX) / 2;
+      const midY = (cy + mouseY) / 2;
+      ctx.font = '9px monospace';
+      ctx.fillStyle = colAccent;
+      ctx.fillText(`R: ${dist.toFixed(0)}px  θ: ${angleDeg.toFixed(0)}°`, midX + 8, midY - 6);
+
+      // Connect nodes to mouse if in proximity
+      for (const node of nodes) {
+        const ndx = mouseX - node.x;
+        const ndy = mouseY - node.y;
+        const nDist = Math.sqrt(ndx * ndx + ndy * ndy);
+        if (nDist < 160) {
+          const alpha = 1 - nDist / 160;
+          ctx.strokeStyle = `rgba(163, 230, 53, ${alpha * 0.6})`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([2, 4]);
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(mouseX, mouseY);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+
+      // Target Reticle with brackets
+      ctx.strokeStyle = colFigure;
+      ctx.lineWidth = 1.25;
+
+      const reticleSize = isHovered ? 14 : 10;
+      // Crosshair
+      ctx.beginPath();
+      ctx.moveTo(mouseX - reticleSize, mouseY);
+      ctx.lineTo(mouseX + reticleSize, mouseY);
+      ctx.moveTo(mouseX, mouseY - reticleSize);
+      ctx.lineTo(mouseX, mouseY + reticleSize);
+      ctx.stroke();
+
+      // Corner brackets
+      const bLen = 4;
+      const bOffset = reticleSize + 3;
+      ctx.beginPath();
+      // Top-left
+      ctx.moveTo(mouseX - bOffset, mouseY - bOffset + bLen);
+      ctx.lineTo(mouseX - bOffset, mouseY - bOffset);
+      ctx.lineTo(mouseX - bOffset + bLen, mouseY - bOffset);
+      // Top-right
+      ctx.moveTo(mouseX + bOffset - bLen, mouseY - bOffset);
+      ctx.lineTo(mouseX + bOffset, mouseY - bOffset);
+      ctx.lineTo(mouseX + bOffset, mouseY - bOffset + bLen);
+      // Bottom-left
+      ctx.moveTo(mouseX - bOffset, mouseY + bOffset - bLen);
+      ctx.lineTo(mouseX - bOffset, mouseY + bOffset);
+      ctx.lineTo(mouseX - bOffset + bLen, mouseY + bOffset);
+      // Bottom-right
+      ctx.moveTo(mouseX + bOffset - bLen, mouseY + bOffset);
+      ctx.lineTo(mouseX + bOffset, mouseY + bOffset);
+      ctx.lineTo(mouseX + bOffset, mouseY + bOffset - bLen);
+      ctx.stroke();
+
+      // Click / Tap Pulses
+      for (let i = pulses.length - 1; i >= 0; i--) {
+        const p = pulses[i];
+        p.radius += 3;
+        p.alpha = Math.max(0, 1 - p.radius / p.maxRadius);
+
+        ctx.strokeStyle = `rgba(163, 230, 53, ${p.alpha * 0.8})`;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (p.radius >= p.maxRadius) {
+          pulses.splice(i, 1);
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function loop(timestamp: number) {
+      if (!isVisible) return;
+      time = timestamp * 0.001;
+
+      // Idle float when not hovered
+      if (!isHovered) {
+        const cx = width * 0.65;
+        const cy = height * 0.5;
+        targetX = cx + Math.sin(time * 0.9) * (width * 0.18);
+        targetY = cy + Math.cos(time * 1.4) * (height * 0.22);
+      }
+
+      draw();
+      animId = requestAnimationFrame(loop);
+    }
+
+    // Pointer events
+    container.addEventListener('pointermove', (e) => {
+      const rect = container.getBoundingClientRect();
+      targetX = e.clientX - rect.left;
+      targetY = e.clientY - rect.top;
+      isHovered = true;
+    });
+
+    container.addEventListener('pointerleave', () => {
+      isHovered = false;
+    });
+
+    container.addEventListener('pointerdown', (e) => {
+      const rect = container.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      pulses.push({
+        x: px,
+        y: py,
+        radius: 8,
+        maxRadius: Math.max(width, height) * 0.6,
+        alpha: 1,
+      });
+    });
+
+    // Lifecycle: IntersectionObserver
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isVisible = entry.isIntersecting;
+          if (isVisible && !prefersReducedMotion) {
+            cancelAnimationFrame(animId);
+            animId = requestAnimationFrame(loop);
+          } else {
+            cancelAnimationFrame(animId);
+          }
+        });
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(container);
+
+    // Watch for system color-scheme changes
+    const darkModeMatcher = window.matchMedia('(prefers-color-scheme: dark)');
+    darkModeMatcher.addEventListener('change', () => {
+      updateTheme();
+      if (prefersReducedMotion) drawStatic();
+    });
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    if (prefersReducedMotion) {
+      drawStatic();
+    } else {
+      animId = requestAnimationFrame(loop);
+    }
+  }
+
+  // Run on initial load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBlueprint);
+  } else {
+    initBlueprint();
+  }
+</script>
+
+<style>
+  .blueprint-instrument {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    background-color: var(--color-ground-raised);
+    border: 1px solid var(--color-rule);
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+
+  @media (min-width: 640px) {
+    .blueprint-instrument {
+      height: 190px;
+    }
+  }
+
+  .blueprint-instrument__canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .blueprint-instrument__hud {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    padding: 0.75rem 1rem;
+  }
+
+  .hud-item {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.5625rem;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-figure-muted);
+    opacity: 0.6;
+  }
+
+  .hud-top-left {
+    top: 0.75rem;
+    left: 1rem;
+  }
+
+  .hud-top-right {
+    top: 0.75rem;
+    right: 1rem;
+  }
+
+  .hud-bottom-left {
+    bottom: 0.75rem;
+    left: 1rem;
+    color: var(--color-accent);
+    opacity: 0.9;
+  }
+
+  .hud-bottom-right {
+    bottom: 0.75rem;
+    right: 1rem;
+  }
+</style>
