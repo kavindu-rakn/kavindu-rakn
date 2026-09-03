@@ -6,13 +6,15 @@ order: 8
 status: in-production
 employment: true
 ownPublicDeployment: true
+liveUrl: https://kavindu-rakn.github.io/Paperless/
+githubUrl: https://github.com/kavindu-rakn/Paperless
 techStack:
   - React
   - Vite
   - i18next
 highlights:
-  - Solo build — nine paper application forms converted to guided, multi-step online forms
-  - Covers new connections, relocations, ownership transfers, refunds and service changes
+  - Nine paper application forms converted to guided, multi-step online forms
+  - New connection, re-connection, relocation, termination, transfer of ownership, package migration, service vacation, refund and general request
   - Complete interface delivered in English, Sinhala and Tamil
   - Access gated by phone-verified OTP rather than accounts, so the forms stay public
   - Status tracker so an applicant can check a submission without calling anyone
@@ -27,33 +29,32 @@ draft: true
 <!--
   DRAFT — not rendered, no route, absent from the grid and sitemap.
 
-  Outstanding before `draft: false`:
-    1. `liveUrl` — the GitHub Pages URL. Not added because it was described but
-       not supplied, and a URL must never be guessed.
-    2. `githubUrl` — only if that repository is public. Omit it if not; the
-       schema rejects a github.com link to a private repo, because it 404s to
-       logged-out visitors and reads as fabricated rather than private.
-    3. Confirm the "What I would do differently" section below. It is the one
-       part written from inference rather than from a stated fact — see the
-       note directly above it.
+  ONE thing is outstanding: confirm the "What I would do differently" section
+  below. It is the only part written from inference rather than from a stated
+  fact — see the note directly above it. Everything else is verified.
 
-  Flipping draft to false also needs:
-    - The index grid: the About aside fills the cell six cards leave empty, so a
-      seventh entry leaves a hole. It needs to span both columns.
-    - `order`: parked at 8 to avoid renumbering while drafted. Decide its real
-      weight when it ships.
-    - src/data/schema-tree.ts: six hand-placed leaves, which would silently omit
-      this one. Being replaced with the raymarched hero, so not re-laid-out yet.
+  Links and the form list were checked against the live deployment and the
+  repository, both public. The nine forms are named as the site names them.
+
+  When flipping to `draft: false`, note:
+    - `order` is parked at 8 so nothing had to be renumbered while drafted.
+      Decide its real weight then; the grid and the case-study sheet numbers
+      both read it.
+    - src/data/schema-tree.ts still holds six hand-placed leaves and would
+      silently omit this one. It now drives only the static fallback drawing,
+      not the hero, so the omission is cosmetic — but it is an omission.
 -->
 
 ## What it is
 
 Nine of Sri Lanka Telecom Mobitel's paper application forms, rebuilt as guided,
-multi-step online forms: new connections, relocations, ownership transfers,
-refunds and service changes.
+multi-step online forms: new connection, re-connection, relocation, termination,
+transfer of ownership, package migration, service vacation, refund, and the
+general customer request that covers everything else.
 
 The brief arrived as nine PDFs — the same forms a customer picks up at a
-teleshop, in the same layout.
+teleshop, in the same layout. They are still in the repository, beside the
+thing that replaced them.
 
 Built solo, alongside TalentHub, during the same internship. The scope was the
 frontend, and the frontend is what shipped.
