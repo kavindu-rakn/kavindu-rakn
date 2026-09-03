@@ -16,6 +16,15 @@ import { SITE, ABOUT_PRECIS, elapsedPhrase } from '../consts';
 const work = await getWork();
 
 const elapsed = elapsedPhrase();
+
+/*
+ * The feature card occupies two cells, the rest one each. When that total is
+ * even the cards fill whole rows and the About aside would start a row on its
+ * own, leaving a hole beside it; when it is odd the aside fills the gap the
+ * cards leave. Deriving it means adding a seventh case study stays "writing a
+ * file", which is what the README promises and what a hardcoded span broke.
+ */
+const asideFillsRow = (work.length + 1) % 2 === 0;
 ---
 
 <Layout title={SITE.name}>
@@ -57,7 +66,10 @@ const elapsed = elapsedPhrase();
           smaller than a project title.
         */}
         <aside
-          class="flex min-w-0 flex-col border-2 border-accent bg-ground-raised p-6 sm:p-8"
+          class:list={[
+            'flex min-w-0 flex-col border-2 border-accent bg-ground-raised p-6 sm:p-8',
+            asideFillsRow && 'md:col-span-2',
+          ]}
         >
           <p class="annotation">About</p>
 
