@@ -41,7 +41,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = new URL(ogImage, Astro.site);
 
 const fullTitle =
-  title === SITE.name ? `${SITE.name} — ${SITE.role}` : `${title} — ${SITE.name}`;
+  title === SITE.name ? SITE.name : `${title} — ${SITE.name}`;
 
 /*
  * Structured data. Verified facts only.
