@@ -29,15 +29,19 @@
   --color-carbon-300: #a5a29b;
 
   /*
-   * The accents, one per colour scheme.
+   * The accents, one per colour scheme, each chosen against the thing it has to
+   * be told apart from.
    *
-   * Dark is lime, chosen because it clears roughly 14:1 against the near-black
-   * ground — the separation is what makes it read as a colour rather than as
-   * another grey. The light accent is still being chosen against the same
-   * measure: anything under about 3:1 against the ink simply reads as black.
+   * Light is gold: 6.5:1 against the near-black ink. Every colour rejected on
+   * the way here scored between 1.6 and 2.7, and below roughly 3:1 hue stops
+   * mattering — the eye reads tone first and calls it black.
+   *
+   * Dark is lime, 13.9:1 against the near-black ground. Note the risk inverts in
+   * dark mode: the ink is white, so an accent fails by being too bright rather
+   * than too dark. Lime sits 1.38:1 from the text, which is the live question.
    */
+  --color-gold-600: #ca8a04;
   --color-lime-400: #c3e640;
-  --color-blueprint-600: #1d5c86;
 
   /* Drafting paper + graphite */
   --color-paper-50: #fcfbf8;
@@ -63,7 +67,7 @@
   --color-figure: var(--color-ink-900);
   --color-figure-muted: var(--color-ink-500);
   --color-rule: var(--color-paper-300);
-  --color-accent: var(--color-blueprint-600);
+  --color-accent: var(--color-gold-600);
 
   /*
    * Typography. Archivo is a grotesque with wide, blunt forms — it holds up at
