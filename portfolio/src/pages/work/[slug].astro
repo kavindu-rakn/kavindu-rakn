@@ -94,7 +94,7 @@ const d = entry.data;
       <span>{STATUS_LABEL[d.status]}</span>
       {
         (entry.id === 'schemashift' || entry.id === 'talenthub') && (
-          <span class="ml-2 font-mono text-[10px] font-bold px-2 py-0.5 border border-accent bg-accent/10 text-accent tracking-wider">
+          <span class="ml-2 font-sans text-[10px] font-bold px-2 py-0.5 border border-accent bg-accent/10 text-accent tracking-wider uppercase">
             FLAGSHIP CASE STUDY
           </span>
         )
@@ -121,26 +121,24 @@ const d = entry.data;
       {
         d.liveUrl && (
           <a
-            class="rule-link rule-link--strong inline-flex items-center gap-1.5"
+            class="rule-link rule-link--strong text-sm"
             href={d.liveUrl}
             rel="noopener noreferrer"
             target="_blank"
           >
-            <span>Live deployment</span>
-            <span class="text-accent font-mono" aria-hidden="true">&nearr;</span>
+            Live deployment
           </a>
         )
       }
       {
         d.githubUrl && (
           <a
-            class="rule-link inline-flex items-center gap-1.5"
+            class="rule-link text-sm"
             href={d.githubUrl}
             rel="noopener noreferrer"
             target="_blank"
           >
-            <span>GitHub repository</span>
-            <span class="text-accent font-mono" aria-hidden="true">&nearr;</span>
+            GitHub repository
           </a>
         )
       }
@@ -214,8 +212,8 @@ const d = entry.data;
       </div>
 
       <div class="mt-8 flex items-center justify-between border-t border-rule pt-4">
-        <a class="rule-link rule-link--internal text-sm inline-flex items-center gap-1.5" href="/#work">
-          <span>&uarr; Back to Selected Work</span>
+        <a class="rule-link rule-link--internal text-sm" href="/#work">
+          All work
         </a>
         <span class="annotation font-mono text-[11px] text-figure-muted">
           Sheet {String(d.order).padStart(2, '0')} of 07
