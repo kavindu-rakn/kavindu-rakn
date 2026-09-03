@@ -20,7 +20,7 @@ export const SITE = {
     'BSc (Hons) Information Technology, Software Engineering specialisation, SLIIT, 2022–2027',
   /** Site-level meta description. Kept under 160 characters for SERP display. */
   description:
-    'Product engineer in Colombo, Sri Lanka. Largest contributor to TalentHub, a production platform at Sri Lanka Telecom Mobitel.',
+    'Product engineer in Colombo, Sri Lanka. Core contributor to TalentHub, an enterprise production platform at Sri Lanka Telecom Mobitel.',
   locale: 'en-GB',
   /** Default Open Graph image. Generated into public/og/ by scripts/generate-og.mjs. */
   ogImage: '/og/default.png',
