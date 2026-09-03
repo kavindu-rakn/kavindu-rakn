@@ -83,6 +83,8 @@ const personSchema = {
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/* iOS ignores an SVG favicon and would otherwise save a screenshot. */}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
     {/* Only the display face preloads — it renders the LCP headline. */}

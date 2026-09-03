@@ -5,42 +5,34 @@
  * Rendered only when `import.meta.env.DEV` is true, so it cannot reach a build.
  * Delete this file and its one line in Layout.astro once a pair is chosen.
  *
- * Light and dark are chosen INDEPENDENTLY now, rather than as fixed pairs. The
- * first round showed why: every light candidate failed for the same reason —
- * they were all dark colours, and a dark colour next to near-black ink reads as
- * black, whatever its hue. The light options here are all mid-tone and high
- * chroma, so hue does the separating rather than lightness. Meanwhile the dark
- * options were fine, and brass and amber were the same colour twice.
+ * Dark is settled — lime, which clears about 14:1 against the near-black
+ * ground. Only the light accent is still open, and the number beside each swatch
+ * is its contrast against the ink. That column is the whole point: every colour
+ * rejected so far sat between 1.6 and 2.7, which is why they all read as black
+ * whatever their hue. Nothing here is below 4.8.
+ *
+ * The trade is fixed by the two grounds: ratio-to-ink times ratio-to-cream is
+ * roughly constant, so separating harder from black necessarily means sitting
+ * lighter on the paper. Higher up this list is bolder against the text and
+ * fainter against the page.
  *
  * No JavaScript. `html:has(:checked)` re-points --color-accent, and every accent
  * on the site resolves through that one token, so the whole page follows.
  *
- * Order matters: the light rules are written first and the dark ones after,
- * inside the dark media query. In dark mode both match and the later one wins;
- * in light mode only the light rules apply. That is what keeps the two groups
- * from bleeding into each other.
+ * Only light rules are emitted now, unwrapped, so they apply in light mode and
+ * are simply overridden by the stylesheet's own dark block in dark mode.
  */
 
 const LIGHT = [
-  ['now', '#1d5c86', 'Current blue'],
-  ['cobalt', '#2c5fe8', 'Cobalt'],
-  ['teal', '#0b8a87', 'Teal'],
-  ['emerald', '#0a8f4e', 'Emerald'],
-  ['violet', '#6b3be8', 'Violet'],
-  ['magenta', '#b01e82', 'Magenta'],
-  ['pine', '#1b4332', 'Pine (dark)'],
-  ['aubergine', '#452b52', 'Aubergine (dark)'],
-] as const;
-
-const DARK = [
-  ['now', '#7cc6ec', 'Current blue'],
-  ['mint', '#7fe0b8', 'Mint'],
-  ['amber', '#f0b429', 'Amber'],
-  ['lavender', '#b9a3f5', 'Lavender'],
-  ['lime', '#c3e640', 'Lime'],
-  ['rose', '#f5a3c7', 'Rose'],
-  ['sky', '#4d8dff', 'Electric blue'],
-  ['ice', '#8fe3d8', 'Ice'],
+  ['now', '#1d5c86', 'Current blue', '2.6'],
+  ['cyan', '#00a3a3', 'Cyan', '6.1'],
+  ['azure', '#0ea5e9', 'Azure', '6.9'],
+  ['green', '#00a651', 'Green', '5.9'],
+  ['olive', '#7cb518', 'Olive', '7.7'],
+  ['gold', '#ca8a04', 'Gold', '6.5'],
+  ['fuchsia', '#d946ef', 'Fuchsia', '5.5'],
+  ['blue', '#3b82f6', 'Blue', '5.2'],
+  ['violet', '#a855f7', 'Violet', '4.8'],
 ] as const;
 ---
 
@@ -48,30 +40,19 @@ const DARK = [
   <p class="accent-lab__title">Accent lab · dev only</p>
 
   <fieldset class="accent-lab__group">
-    <legend>Light mode</legend>
+    <legend>Light accent · x:1 vs ink</legend>
     {
-      LIGHT.map(([id, hex, label], i) => (
+      LIGHT.map(([id, hex, label, sep], i) => (
         <label class="accent-lab__row">
           <input type="radio" name="accent-light" id={`lt-${id}`} checked={i === 0} />
           <i class="accent-lab__chip" style={`background:${hex}`} />
           <span>{label}</span>
+          <b class="accent-lab__sep">{sep}</b>
         </label>
       ))
     }
   </fieldset>
 
-  <fieldset class="accent-lab__group">
-    <legend>Dark mode</legend>
-    {
-      DARK.map(([id, hex, label], i) => (
-        <label class="accent-lab__row">
-          <input type="radio" name="accent-dark" id={`dk-${id}`} checked={i === 0} />
-          <i class="accent-lab__chip" style={`background:${hex}`} />
-          <span>{label}</span>
-        </label>
-      ))
-    }
-  </fieldset>
 </form>
 
 {/*
@@ -81,12 +62,7 @@ const DARK = [
 */}
 <style
   is:global
-  set:html={`
-    ${LIGHT.map(([id, hex]) => `html:has(#lt-${id}:checked){--color-accent:${hex};}`).join('\n')}
-    @media (prefers-color-scheme: dark) {
-      ${DARK.map(([id, hex]) => `html:has(#dk-${id}:checked){--color-accent:${hex};}`).join('\n')}
-    }
-  `}
+  set:html={LIGHT.map(([id, hex]) => `html:has(#lt-${id}:checked){--color-accent:${hex};}`).join('\n')}
 />
 
 <style>
@@ -137,6 +113,12 @@ const DARK = [
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
+  }
+
+  .accent-lab__sep {
+    margin-left: auto;
+    font-weight: 400;
+    color: var(--color-figure-muted);
   }
 
   .accent-lab__chip {

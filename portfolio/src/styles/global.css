@@ -29,12 +29,15 @@
   --color-carbon-300: #a5a29b;
 
   /*
-   * The accent, and nothing else. Seven cyanotype shades used to build the whole
-   * dark theme; now that the dark theme is black, only these two are referenced
-   * — one per colour scheme — and the other five went with the blueprint idea.
+   * The accents, one per colour scheme.
+   *
+   * Dark is lime, chosen because it clears roughly 14:1 against the near-black
+   * ground — the separation is what makes it read as a colour rather than as
+   * another grey. The light accent is still being chosen against the same
+   * measure: anything under about 3:1 against the ink simply reads as black.
    */
+  --color-lime-400: #c3e640;
   --color-blueprint-600: #1d5c86;
-  --color-blueprint-300: #7cc6ec;
 
   /* Drafting paper + graphite */
   --color-paper-50: #fcfbf8;
@@ -84,7 +87,7 @@
     --color-figure: var(--color-paper-50);
     --color-figure-muted: var(--color-carbon-300);
     --color-rule: var(--color-carbon-700);
-    --color-accent: var(--color-blueprint-300);
+    --color-accent: var(--color-lime-400);
   }
 }
 
