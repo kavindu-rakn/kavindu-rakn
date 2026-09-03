@@ -40,9 +40,8 @@ draft: true
     - `order` is parked at 8 so nothing had to be renumbered while drafted.
       Decide its real weight then; the grid and the case-study sheet numbers
       both read it.
-    - src/data/schema-tree.ts still holds six hand-placed leaves and would
-      silently omit this one. It now drives only the static fallback drawing,
-      not the hero, so the omission is cosmetic — but it is an omission.
+    - The schema-tree drawing is gone; the hero is the cover mark now, so there
+      is no diagram left that could omit this entry.
 -->
 
 ## What it is
