@@ -3,15 +3,14 @@
  * The ruled field the whole site sits on.
  *
  * Every card, rule and annotation on this design is aligned to an implied grid.
- * This draws it. Two layers at different pitches move by different amounts as
- * the cursor crosses the page, which is what makes it read as depth rather than
- * as wallpaper — the coarse rule is nearer, so it travels further.
+ * This draws it: a fine construction grid and a coarse datum grid over it, the
+ * way a drawing sheet is ruled before anything is drawn on it.
  *
- * Deliberately not a canvas. The whole thing is two repeating gradients and a
- * transform, which the compositor handles on its own; a canvas would mean a
- * render loop, a resize path and a device-pixel-ratio problem, to draw straight
- * lines that CSS already draws. The only script is the twenty lines that turn a
- * pointer position into two custom properties.
+ * It does not move, and that is the point. Parallax needs a cursor position, CSS
+ * cannot read one, and reading one costs JavaScript on every page of a site that
+ * otherwise ships none. The static grid was what was actually on screen while
+ * the parallax was silently broken — and it was the static grid that looked
+ * right. It was not worth a script to animate something already working.
  *
  * It sits at z-index -1, which puts it above the body background — that
  * background propagates to the canvas and paints first — and below every piece
@@ -42,10 +41,6 @@
     inset: -8vmax;
     z-index: -1;
     pointer-events: none;
-
-    /* Written by the pointer script; -1 to 1 on each axis, already eased. */
-    --px: 0;
-    --py: 0;
   }
 
   .grid-field::before,
@@ -64,42 +59,24 @@
         var(--rule-ink) 0 1px,
         transparent 1px var(--cell)
       );
-    will-change: transform;
   }
 
-  /* The construction grid: fine, far, barely there, and it moves least. */
+  /* The construction grid: fine and barely there. */
   .grid-field::before {
     --cell: 34px;
     --rule-ink: color-mix(in srgb, var(--color-rule) 42%, transparent);
-    transform: translate3d(calc(var(--px) * 7px), calc(var(--py) * 7px), 0);
   }
 
-  /* The datum grid: coarse, nearer, a shade stronger, and it travels further. */
+  /* The datum grid: coarse, a shade stronger, every fifth rule. */
   .grid-field::after {
     --cell: 170px;
     --rule-ink: color-mix(in srgb, var(--color-rule) 78%, transparent);
-    transform: translate3d(calc(var(--px) * 20px), calc(var(--py) * 20px), 0);
   }
 
-  /*
-   * Without a pointer there is no parallax to offer, and a permanently static
-   * grid behind every line of body text is a texture nobody asked for. Coarse
-   * layer only, and fainter.
-   */
-  @media (hover: none) {
+  /* On a phone the fine grid is denser than the type it sits behind. */
+  @media (max-width: 640px) {
     .grid-field::before {
       display: none;
-    }
-    .grid-field::after {
-      --rule-ink: color-mix(in srgb, var(--color-rule) 45%, transparent);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .grid-field::before,
-    .grid-field::after {
-      transform: none;
-      will-change: auto;
     }
   }
 </style>
