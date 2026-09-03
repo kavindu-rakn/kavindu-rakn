@@ -43,7 +43,7 @@ frontend, and the frontend is what shipped.
 ## Why it exists
 
 To apply for anything, you first had to get the form, and the form lived at a
-teleshop. That is a journey before the application has even started, and it is
+teleshop. That is a trip across town before the application has even started, and it is
 paid by the person least able to schedule it — the customer, during working
 hours, in person.
 
