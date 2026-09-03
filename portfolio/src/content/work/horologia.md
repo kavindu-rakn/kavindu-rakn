@@ -19,9 +19,14 @@ highlights:
   - Synthesised Web Audio ticking at 28,800 vph with alternating pallet clicks
   - Live PBR material lab with 5 presets; Firestore gallery with a LocalStorage fallback
 figures:
-  - spec: A silent, autoplaying 10–20 second loop of the movement disassembling on scroll. This case study should be mostly video.
+  - spec: The movement mid-disassembly, caught partway through the scroll so the exploded state is visible rather than the assembled one.
   - spec: The raycasting inspector open on one component, showing its material hardness, friction coefficient and horological function.
-  - spec: The scroll disassembly on a phone, as a silent 10-20 second recording, showing the movement holding its frame rate on a touch device.
+  - spec: The PBR material lab with a preset applied, next to the Firestore gallery of saved states.
+  - spec: The movement on a phone, mid-disassembly, showing it holds its frame rate on a touch device.
+    viewport: mobile
+  - spec: The inspector on a phone, open on one component.
+    viewport: mobile
+  - spec: The saved gallery on a phone.
     viewport: mobile
 draft: false
 ---

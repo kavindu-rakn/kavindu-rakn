@@ -16,8 +16,13 @@ highlights:
   - Draggable 3D moon, custom lunar mathematics, comet cursor trail
 figures:
   - spec: The sky panel showing the moon at its real current phase, next to the draggable 3D moon.
-  - spec: The 3D moon being dragged, with the comet cursor trail following, as a silent 10-20 second recording.
-  - spec: The sky panel on a phone, as a silent 10-20 second recording, showing the geolocation-aware panel on a real device.
+  - spec: The moon mid-drag, with the comet cursor trail following it.
+  - spec: The orbital data panel, showing illuminated fraction and phase angle as computed values rather than a chosen picture.
+  - spec: The sky panel on a phone, showing the geolocation-aware panel on a real device.
+    viewport: mobile
+  - spec: The 3D moon on a phone, mid-drag.
+    viewport: mobile
+  - spec: The orbital data panel on a phone.
     viewport: mobile
 draft: false
 ---

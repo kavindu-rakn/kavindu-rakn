@@ -17,9 +17,14 @@ highlights:
   - Framer Motion `layoutId` card-to-fullscreen morphs
   - Plain CSS, no utility framework; left-aligned scrollbar via an RTL trick
 figures:
-  - spec: The card-to-fullscreen morph as a short loop, showing the shared element travelling rather than cross-fading.
-  - spec: A folder containing an encrypted attachment, and the one-click launch menu open.
-  - spec: The card-to-fullscreen morph on a phone, as a silent 10-20 second recording.
+  - spec: The card-to-fullscreen morph caught mid-transition, showing the shared element travelling rather than cross-fading.
+  - spec: A folder containing an encrypted attachment, with the one-click launch menu open.
+  - spec: The prompt library with search active, showing how a vault of prompts is actually navigated.
+  - spec: The library on a phone.
+    viewport: mobile
+  - spec: A prompt open fullscreen on a phone.
+    viewport: mobile
+  - spec: The launch menu open on a phone, showing the cross-LLM shortcuts.
     viewport: mobile
 draft: false
 ---
