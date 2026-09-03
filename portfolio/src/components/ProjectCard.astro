@@ -45,7 +45,7 @@ const d = entry.data;
     <div class="flex items-center gap-2.5">
       {
         feature && (
-          <span class="annotation font-mono text-[10px] font-bold px-2 py-0.5 border border-accent bg-accent/10 text-accent tracking-wider">
+          <span class="font-sans text-[10px] font-bold px-2 py-0.5 border border-accent bg-accent/10 text-accent tracking-wider uppercase">
             FLAGSHIP CASE STUDY
           </span>
         )
@@ -71,10 +71,10 @@ const d = entry.data;
 
           <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3 pt-2">
             <a
-              class="rule-link rule-link--internal rule-link--strong inline-flex items-center gap-2 font-mono text-sm font-semibold border-b-2 border-accent text-accent hover:text-figure"
+              class="rule-link rule-link--internal rule-link--strong text-sm"
               href={`/work/${entry.id}`}
             >
-              Read case study &rarr;
+              Read case study
             </a>
 
             {d.liveUrl && (
