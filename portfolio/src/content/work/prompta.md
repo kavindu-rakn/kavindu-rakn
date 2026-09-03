@@ -2,7 +2,7 @@
 title: Prompta
 tagline: Vault for AI prompts.
 description: 'A vault for AI prompts: folders, encrypted attachments, user-to-user delivery by email, and one-click launch into five different LLM providers.'
-order: 5
+order: 6
 status: live
 githubUrl: https://github.com/kavindu-rakn/Prompta
 techStack:
