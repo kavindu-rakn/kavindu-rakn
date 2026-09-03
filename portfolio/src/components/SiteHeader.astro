@@ -16,7 +16,7 @@ interface Props {
 const { current, within } = Astro.props;
 ---
 
-<header class="border-b border-rule">
+<header class="sticky top-0 z-50 border-b border-rule bg-ground">
   <nav
     class="mx-auto flex max-w-6xl flex-wrap items-baseline justify-between gap-x-6 gap-y-2 px-6 py-4"
     aria-label="Primary"
@@ -90,16 +90,6 @@ const { current, within } = Astro.props;
     display: block;
     height: 1.1rem;
     width: auto;
-  }
-
-  /* Signals a download rather than a page, without a second type size. */
-  a[data-file='true']::after {
-    /*
-     * A non-breaking space, because a leading ordinary space in generated
-     * content collapses and the label rendered as "RESUMEPDF".
-     */
-    content: ' PDF';
-    opacity: 0.55;
   }
 
   a[data-active='true'] {

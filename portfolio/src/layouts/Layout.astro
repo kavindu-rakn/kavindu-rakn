@@ -131,50 +131,5 @@ const personSchema = {
       <slot />
     </main>
     <slot name="footer" />
-
-    {/*
-      The only script on the site, and the smallest thing that can turn a
-      pointer into parallax: CSS cannot read a cursor position.
-
-      `is:inline` so it is emitted here rather than bundled into a module every
-      page then has to fetch. It eases toward the target and stops the loop as
-      soon as it arrives, so an idle pointer costs nothing, and it never
-      attaches at all under reduced motion or where there is no pointer.
-    */}
-    <script is:inline>
-    (function () {
-      var field = document.querySelector('[data-grid-field]');
-      if (!field) return;
-      if (!window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
-      if (!window.matchMedia('(hover: hover)').matches) return;
-
-      var tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
-
-      function tick() {
-        raf = 0;
-        cx += (tx - cx) * 0.08;
-        cy += (ty - cy) * 0.08;
-        field.style.setProperty('--px', cx.toFixed(4));
-        field.style.setProperty('--py', cy.toFixed(4));
-        if (Math.abs(tx - cx) > 0.0005 || Math.abs(ty - cy) > 0.0005) {
-          raf = requestAnimationFrame(tick);
-        }
-      }
-
-      // Marks in the DOM that the enhancement attached and the guards passed,
-      // which is otherwise invisible until the first frame is drawn.
-      field.dataset.parallax = 'on';
-
-      window.addEventListener(
-        'pointermove',
-        function (e) {
-          tx = (e.clientX / window.innerWidth) * 2 - 1;
-          ty = (e.clientY / window.innerHeight) * 2 - 1;
-          if (!raf) raf = requestAnimationFrame(tick);
-        },
-        { passive: true }
-      );
-    })();
-    </script>
   </body>
 </html>
