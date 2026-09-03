@@ -1,6 +1,16 @@
 ---
 import { SITE, AVAILABILITY } from '../consts';
 
+interface Props {
+  /**
+   * When true, omits the Contact and Detail columns because a ContactBlock
+   * is already present on the page, avoiding duplicate contact links.
+   */
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+
 /*
  * Build stamp. Vercel exposes the commit it built from as an environment
  * variable, so the deployed page can say exactly which revision produced it and
@@ -17,8 +27,10 @@ const builtAt = new Date().toISOString().replace('T', ' ').slice(0, 16);
 ---
 
 <footer class="border-t-2 border-figure">
-  <div class="mx-auto max-w-6xl px-6 py-14">
-    <div class="grid gap-10 sm:grid-cols-2">
+  <div class:list={['mx-auto max-w-6xl px-6', compact ? 'py-8' : 'py-14']}>
+    {
+      !compact && (
+        <div class="grid gap-10 sm:grid-cols-2">
       <div>
         <p class="annotation border-b border-rule pb-3 text-figure">Contact</p>
         <ul class="mt-5 space-y-2">
@@ -70,9 +82,14 @@ const builtAt = new Date().toISOString().replace('T', ' ').slice(0, 16);
         </dl>
       </div>
     </div>
+      )
+    }
 
     <div
-      class="mt-12 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-t border-rule pt-6"
+      class:list={[
+        'flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2',
+        !compact && 'mt-12 border-t border-rule pt-6',
+      ]}
     >
       <p class="annotation">No analytics · No cookies · Theme follows your system</p>
 
