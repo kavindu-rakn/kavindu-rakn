@@ -15,8 +15,17 @@ interface Props {
 }
 const { current, within } = Astro.props;
 
-const pageLinks = NAV.filter((item) => !item.file);
+const desktopLinks = NAV.filter((item) => !item.file);
 const resumeItem = NAV.find((item) => item.file);
+
+// On mobile dock, About is centered: Index, Work, About, Tech, Contact
+const mobileLinks = [
+  desktopLinks.find((i) => i.label === 'Index')!,
+  desktopLinks.find((i) => i.label === 'Work')!,
+  desktopLinks.find((i) => i.label === 'About')!,
+  desktopLinks.find((i) => i.label === 'Tech')!,
+  desktopLinks.find((i) => i.label === 'Contact')!,
+];
 ---
 
 <header class="sticky top-0 z-50 border-b border-rule bg-ground">
@@ -29,55 +38,57 @@ const resumeItem = NAV.find((item) => item.file);
       <span class="annotation" aria-hidden="true">{SITE.name}</span>
     </a>
 
-    <!-- Desktop Navigation Links -->
-    <ul class="hidden md:flex items-center gap-x-5 lg:gap-x-7" role="list">
+    <!-- Right-Indented Navigation Controls (Desktop Navlinks + Resume Button) -->
+    <div class="flex items-center gap-x-5 lg:gap-x-7">
+      <ul class="hidden md:flex items-center gap-x-5 lg:gap-x-6" role="list">
+        {
+          desktopLinks.map((item) => {
+            const sectionId = item.href.includes('#') ? item.href.split('#')[1] : undefined;
+            const isAboutPage = item.href === '/about' && current === '/about';
+            const isWorkSubPage = item.href.includes('work') && within === '/#work';
+
+            return (
+              <li>
+                <a
+                  href={item.href}
+                  class="annotation nav-link"
+                  data-section={sectionId}
+                  aria-current={current === item.href ? 'page' : isWorkSubPage ? 'true' : undefined}
+                  data-active={isAboutPage || isWorkSubPage ? 'true' : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      <!-- Resume Action Button (always pinned to the far right corner) -->
       {
-        pageLinks.map((item) => {
-          const sectionId = item.href.includes('#') ? item.href.split('#')[1] : undefined;
-          const isAboutPage = item.href === '/about' && current === '/about';
-          const isWorkSubPage = item.href.includes('work') && within === '/#work';
-
-          return (
-            <li>
-              <a
-                href={item.href}
-                class="annotation nav-link"
-                data-section={sectionId}
-                aria-current={current === item.href ? 'page' : isWorkSubPage ? 'true' : undefined}
-                data-active={isAboutPage || isWorkSubPage ? 'true' : undefined}
-              >
-                {item.label}
-              </a>
-            </li>
-          );
-        })
-      }
-    </ul>
-
-    <!-- Resume Action Button (always pinned to the far right) -->
-    {
-      resumeItem && (
-        <a
-          href={resumeItem.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="nav-resume group"
-          aria-label="Resume (PDF)"
-        >
-          <span>{resumeItem.label}</span>
-          <svg
-            class="h-2.5 w-2.5 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.75"
-            aria-hidden="true"
+        resumeItem && (
+          <a
+            href={resumeItem.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="nav-resume group"
+            aria-label="Resume (PDF)"
           >
-            <path d="M2.5 9.5L9.5 2.5M9.5 2.5H4.5M9.5 2.5V7.5" />
-          </svg>
-        </a>
-      )
-    }
+            <span>{resumeItem.label}</span>
+            <svg
+              class="h-2.5 w-2.5 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              aria-hidden="true"
+            >
+              <path d="M2.5 9.5L9.5 2.5M9.5 2.5H4.5M9.5 2.5V7.5" />
+            </svg>
+          </a>
+        )
+      }
+    </div>
   </nav>
 </header>
 
@@ -88,7 +99,7 @@ const resumeItem = NAV.find((item) => item.file);
 >
   <ul class="mx-auto flex max-w-md items-center justify-between px-4 py-1" role="list">
     {
-      pageLinks.map((item) => {
+      mobileLinks.map((item) => {
         const sectionId = item.href.includes('#') ? item.href.split('#')[1] : undefined;
         const isAboutPage = item.href === '/about' && current === '/about';
         const isWorkSubPage = item.href.includes('work') && within === '/#work';
