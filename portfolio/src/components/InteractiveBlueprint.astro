@@ -13,7 +13,10 @@
 
 <div class="blueprint-instrument" aria-hidden="true">
   <div class="blueprint-instrument__hud">
-    <span class="hud-item hud-top-left">FIG 01 // KINEMATIC DRAFTING INSTRUMENT</span>
+    <span class="hud-item hud-top-left">
+      <span class="hidden sm:inline">FIG 01 // KINEMATIC DRAFTING INSTRUMENT</span>
+      <span class="inline sm:hidden">FIG 01 // INSTRUMENT</span>
+    </span>
     <span class="hud-item hud-top-right" id="bp-coords">X: 000.0 · Y: 000.0</span>
     <span class="hud-item hud-bottom-left">CALIBRATED // REAL-TIME</span>
     <span class="hud-item hud-bottom-right">INTERACTIVE · DRAG / TAP</span>
@@ -595,5 +598,24 @@
   .hud-bottom-right {
     bottom: 0.875rem;
     right: 1.25rem;
+  }
+
+  @media (max-width: 639px) {
+    .hud-top-left {
+      top: 0.65rem;
+      left: 0.75rem;
+    }
+    .hud-top-right {
+      top: 0.65rem;
+      right: 0.75rem;
+    }
+    .hud-bottom-left {
+      bottom: 0.65rem;
+      left: 0.75rem;
+    }
+    .hud-bottom-right {
+      bottom: 0.65rem;
+      right: 0.75rem;
+    }
   }
 </style>
