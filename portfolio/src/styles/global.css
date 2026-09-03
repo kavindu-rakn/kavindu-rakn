@@ -117,12 +117,16 @@
     /* Native form controls, scrollbars and UA surfaces follow the ground. */
     color-scheme: light dark;
     -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   body {
     background-color: var(--color-ground);
     color: var(--color-figure);
     font-family: var(--font-sans);
+    overflow-x: hidden;
+    max-width: 100vw;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
