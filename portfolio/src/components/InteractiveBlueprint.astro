@@ -16,7 +16,7 @@
     <span class="hud-item hud-top-left">FIG 01 // KINEMATIC DRAFTING INSTRUMENT</span>
     <span class="hud-item hud-top-right" id="bp-coords">X: 000.0 · Y: 000.0</span>
     <span class="hud-item hud-bottom-left">CALIBRATED // REAL-TIME</span>
-    <span class="hud-item hud-bottom-right">INTERACTIVE · CLICK TO PULSE</span>
+    <span class="hud-item hud-bottom-right">INTERACTIVE · DRAG / TAP</span>
   </div>
   <canvas class="blueprint-instrument__canvas" id="blueprint-canvas"></canvas>
 </div>
@@ -45,6 +45,8 @@
     let targetX = 0;
     let targetY = 0;
     let isHovered = false;
+    let isDragging = false;
+    let touchTimeout: number | undefined;
     let time = 0;
 
     // Pulse ripples on click
@@ -197,9 +199,10 @@
         ctx.fill();
       }
 
-      // Smooth pointer interpolation
-      mouseX += (targetX - mouseX) * 0.08;
-      mouseY += (targetY - mouseY) * 0.08;
+      // Smooth pointer interpolation with responsive drag kinematics
+      const lerpSpeed = isDragging ? 0.22 : 0.08;
+      mouseX += (targetX - mouseX) * lerpSpeed;
+      mouseY += (targetY - mouseY) * lerpSpeed;
 
       // Update coordinate readout
       if (coordsEl) {
@@ -250,7 +253,7 @@
       ctx.strokeStyle = colFigure;
       ctx.lineWidth = 1.25;
 
-      const reticleSize = isHovered ? 14 : 10;
+      const reticleSize = isDragging ? 16 : isHovered ? 13 : 10;
       // Crosshair
       ctx.beginPath();
       ctx.moveTo(mouseX - reticleSize, mouseY);
@@ -319,29 +322,71 @@
       animId = requestAnimationFrame(loop);
     }
 
-    // Pointer events
-    container.addEventListener('pointermove', (e) => {
+    // Pointer and touch interaction
+    function getCanvasCoords(e: PointerEvent) {
+      if (!container) return { x: 0, y: 0 };
       const rect = container.getBoundingClientRect();
-      targetX = e.clientX - rect.left;
-      targetY = e.clientY - rect.top;
-      isHovered = true;
-    });
-
-    container.addEventListener('pointerleave', () => {
-      isHovered = false;
-    });
+      return {
+        x: Math.max(0, Math.min(width, e.clientX - rect.left)),
+        y: Math.max(0, Math.min(height, e.clientY - rect.top)),
+      };
+    }
 
     container.addEventListener('pointerdown', (e) => {
-      const rect = container.getBoundingClientRect();
-      const px = e.clientX - rect.left;
-      const py = e.clientY - rect.top;
+      try {
+        container.setPointerCapture(e.pointerId);
+      } catch {}
+      isDragging = true;
+      isHovered = true;
+      clearTimeout(touchTimeout);
+
+      const { x, y } = getCanvasCoords(e);
+      targetX = x;
+      targetY = y;
+
       pulses.push({
-        x: px,
-        y: py,
+        x,
+        y,
         radius: 8,
-        maxRadius: Math.max(width, height) * 0.6,
+        maxRadius: Math.max(width, height) * 0.55,
         alpha: 1,
       });
+    });
+
+    container.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'mouse' || isDragging) {
+        clearTimeout(touchTimeout);
+        const { x, y } = getCanvasCoords(e);
+        targetX = x;
+        targetY = y;
+        isHovered = true;
+      }
+    });
+
+    function handlePointerEnd(e: PointerEvent) {
+      if (container && container.hasPointerCapture(e.pointerId)) {
+        try {
+          container.releasePointerCapture(e.pointerId);
+        } catch {}
+      }
+      isDragging = false;
+
+      if (e.pointerType === 'touch') {
+        // Keep hovered for a brief pause before resuming idle Lissajous orbit
+        touchTimeout = window.setTimeout(() => {
+          isHovered = false;
+        }, 1500);
+      } else {
+        isHovered = false;
+      }
+    }
+
+    container.addEventListener('pointerup', handlePointerEnd);
+    container.addEventListener('pointercancel', handlePointerEnd);
+    container.addEventListener('pointerleave', (e) => {
+      if (!isDragging && e.pointerType === 'mouse') {
+        isHovered = false;
+      }
     });
 
     // Lifecycle: IntersectionObserver
@@ -394,7 +439,10 @@
     background-color: var(--color-ground-raised);
     border: 1px solid var(--color-rule);
     overflow: hidden;
-    touch-action: pan-y;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: crosshair;
   }
 
   @media (min-width: 640px) {
