@@ -29,22 +29,47 @@ const Heading = headingLevel;
   <header
     class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-b-2 border-figure pb-4"
   >
-    <Heading class="font-display text-2xl font-extrabold tracking-[-0.02em] uppercase sm:text-3xl">
-      What I work with
-    </Heading>
-    <p class="annotation">{SKILL_COUNT} entries · grouped, not ranked</p>
+    <div>
+      <p class="annotation text-accent">// Capabilities</p>
+      <Heading class="mt-1 font-display text-2xl font-extrabold tracking-[-0.02em] uppercase sm:text-3xl">
+        What I work with
+      </Heading>
+    </div>
+    <p class="annotation">{SKILL_COUNT} verified competencies · grouped by domain</p>
   </header>
 
-  <dl class="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
     {
-      SKILLS.map((group) => (
-        <div>
-          <dt class="annotation border-b border-rule pb-2">{group.label}</dt>
-          <dd class="mt-3 text-sm leading-relaxed text-figure-muted">
-            {group.items.join(', ')}
-          </dd>
+      SKILLS.map((group, idx) => (
+        <div class="skills-card flex flex-col border border-rule bg-ground-raised/40 p-5 sm:p-6 transition-colors duration-150 hover:border-figure/50">
+          <div class="flex items-center justify-between border-b border-rule pb-3">
+            <h3 class="annotation font-mono text-xs font-semibold text-figure">
+              {group.label}
+            </h3>
+            <span class="font-mono text-[10px] text-figure-muted opacity-60">
+              0{idx + 1}
+            </span>
+          </div>
+
+          <ul class="mt-4 flex flex-wrap gap-2" role="list">
+            {group.items.map((item) => (
+              <li class="skill-pill inline-flex items-center border border-rule/80 bg-ground px-2.5 py-1 font-mono text-[0.75rem] text-figure-muted transition-all duration-150 hover:border-accent hover:text-figure hover:bg-ground-raised">
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       ))
     }
-  </dl>
+  </div>
 </section>
+
+<style>
+  .skills-card {
+    border-radius: 0;
+  }
+  .skill-pill {
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+</style>
