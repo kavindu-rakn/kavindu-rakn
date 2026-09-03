@@ -22,41 +22,77 @@ const work = await getWork();
   <SiteHeader slot="header" />
 
   <div class="blueprint-grid">
-    <div class="mx-auto max-w-6xl px-6 py-24 sm:py-32">
-      <p class="annotation">Error 404 · Sheet not found</p>
+    <div class="mx-auto max-w-6xl px-6 py-16 sm:py-24">
+      <nav
+        class="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs text-figure-muted"
+        aria-label="Breadcrumb"
+      >
+        <a href="/" class="hover:text-figure transition-colors">Home</a>
+        <span class="opacity-40">/</span>
+        <span class="text-accent font-semibold">Error 404</span>
+        <span class="opacity-40">·</span>
+        <span>Sheet not found</span>
+      </nav>
 
       <h1
-        class="display-title mt-6 text-5xl leading-[0.88] sm:text-7xl"
+        class="display-title mt-2 text-4xl sm:text-6xl lg:text-7xl leading-[0.9] break-words"
       >
         Not in the set
       </h1>
 
-      <p class="mt-6 max-w-xl text-lg text-figure-muted">
-        That address does not correspond to anything here. It may have been
-        mistyped, or it may never have existed.
+      <p class="mt-5 max-w-xl text-lg text-figure-muted leading-relaxed">
+        The requested address does not correspond to any drawing sheet or case study
+        in this portfolio. It may have been mistyped or moved.
       </p>
 
-      <div class="mt-14 border-t-2 border-figure pt-6">
-        <p class="annotation">Sheets that do exist</p>
-        <ul class="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+      <div class="mt-14 border-t-2 border-figure pt-8">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-rule pb-3">
+          <p class="annotation text-figure font-mono text-xs uppercase tracking-wider">
+            Available drawing sheets
+          </p>
+          <p class="annotation">{work.length} verified sheets</p>
+        </div>
+
+        <ul class="mt-6 grid gap-4 sm:grid-cols-2" role="list">
           {
-            work.map((entry) => (
-              <li>
-                <a class="recover" href={`/work/${entry.id}`}>
-                  <span class="annotation">
-                    {String(entry.data.order).padStart(2, '0')}
-                  </span>
-                  <span class="recover__title">{entry.data.title}</span>
-                </a>
-              </li>
-            ))
+            work.map((entry) => {
+              const isFlagship = entry.id === 'schemashift' || entry.id === 'talenthub';
+              return (
+                <li>
+                  <a class="recover-card group" href={`/work/${entry.id}`}>
+                    <div class="flex items-center gap-2.5">
+                      <span class="annotation font-mono text-xs text-figure-muted">
+                        Sheet {String(entry.data.order).padStart(2, '0')}
+                      </span>
+                      {isFlagship && (
+                        <span class="font-sans text-[9px] font-bold px-1.5 py-0.5 border border-accent bg-accent/10 text-accent uppercase tracking-wider">
+                          Flagship
+                        </span>
+                      )}
+                    </div>
+                    <span class="recover-card__title mt-1.5 block font-display text-lg font-semibold text-figure group-hover:text-accent transition-colors">
+                      {entry.data.title}
+                    </span>
+                    {entry.data.tagline && (
+                      <span class="mt-1 block text-xs text-figure-muted line-clamp-1">
+                        {entry.data.tagline}
+                      </span>
+                    )}
+                  </a>
+                </li>
+              );
+            })
           }
         </ul>
 
-        <p class="mt-10 flex flex-wrap gap-x-6 gap-y-2">
-          <a class="recover rule-link rule-link--internal" href="/">Index</a>
-          <a class="recover rule-link rule-link--internal" href="/about">About</a>
-        </p>
+        <div class="mt-12 flex flex-wrap items-center gap-6 border-t border-rule pt-6">
+          <a class="rule-link rule-link--internal text-sm" href="/">
+            Return to index
+          </a>
+          <a class="rule-link rule-link--internal text-sm" href="/about">
+            About Kavindu
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -65,22 +101,16 @@ const work = await getWork();
 </Layout>
 
 <style>
-  .recover {
+  .recover-card {
     display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    padding: 0.35rem 0;
+    flex-direction: column;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-rule);
+    background-color: var(--color-ground-raised);
+    transition: border-color 150ms ease, background-color 150ms ease;
   }
 
-  .recover__title {
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.125rem;
-    letter-spacing: -0.01em;
+  .recover-card:hover {
+    border-color: var(--color-accent);
   }
-
-  .recover:hover .recover__title {
-    color: var(--color-accent);
-  }
-
 </style>
