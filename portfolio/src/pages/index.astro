@@ -51,14 +51,14 @@ const asideFillsRow = (singleCardCount + 1) % 2 === 1;
         a chasm. Sizing each card to its own content removes it without dropping
         any content from the shorter ones.
       */}
-      <div class="mt-10 grid items-start gap-6 md:grid-cols-2">
+      <div class="mt-10 grid gap-6 md:grid-cols-2">
         {
           work.map((entry) => (
             <ProjectCard entry={entry} feature={flagships.has(entry.id)} />
           ))
         }
 
-{/*
+        {/*
           Not a project card. It carried a sheet number and the same header rule
           as the six beside it, so it read as a seventh project called "Twelve
           months". The number is gone, the ground is raised, and the heading sets
@@ -66,21 +66,23 @@ const asideFillsRow = (singleCardCount + 1) % 2 === 1;
         */}
         <aside
           class:list={[
-            'flex min-w-0 flex-col border-2 border-accent card-solid p-6 sm:p-8',
+            'flex h-full min-w-0 flex-col justify-between border-2 border-accent card-solid p-6 sm:p-8',
             asideFillsRow && 'md:col-span-2',
           ]}
         >
-          <p class="annotation">About</p>
+          <div>
+            <p class="annotation">About</p>
 
-          <h3 class="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">
-            {elapsed} of it
-          </h3>
+            <h3 class="mt-5 font-display text-2xl font-extrabold tracking-[-0.02em] sm:text-3xl">
+              {elapsed} of it
+            </h3>
 
-          <p class="mt-4 text-figure-muted">
-            My first commit was on 17 August 2025.
-          </p>
+            <p class="mt-4 text-figure-muted">
+              My first commit was on 17 August 2025.
+            </p>
 
-          <p class="mt-4 text-sm leading-relaxed">{ABOUT_PRECIS}</p>
+            <p class="mt-4 text-sm leading-relaxed">{ABOUT_PRECIS}</p>
+          </div>
 
           <footer class="mt-6 border-t border-rule pt-4">
             <a class="rule-link rule-link--internal" href="/about">Read the rest</a>
