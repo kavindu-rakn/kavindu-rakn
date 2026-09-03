@@ -1,81 +1,93 @@
 ---
 /*
- * TEMPORARY — a switch for trying accent pairs against the real site.
+ * TEMPORARY — a switch for trying accents against the real site.
  *
  * Rendered only when `import.meta.env.DEV` is true, so it cannot reach a build.
  * Delete this file and its one line in Layout.astro once a pair is chosen.
  *
- * No JavaScript. Four radios and `html:has(...)` re-point `--color-accent`, and
- * because every accent on the site resolves through that one token, the whole
- * page follows — links, focus rings, the active nav mark, the In-progress flag
- * and the Contact border all change together.
+ * Light and dark are chosen INDEPENDENTLY now, rather than as fixed pairs. The
+ * first round showed why: every light candidate failed for the same reason —
+ * they were all dark colours, and a dark colour next to near-black ink reads as
+ * black, whatever its hue. The light options here are all mid-tone and high
+ * chroma, so hue does the separating rather than lightness. Meanwhile the dark
+ * options were fine, and brass and amber were the same colour twice.
  *
- * `is:global` is required: the selector targets <html>, which never carries a
- * component's scope attribute, so a scoped rule would silently never match.
+ * No JavaScript. `html:has(:checked)` re-points --color-accent, and every accent
+ * on the site resolves through that one token, so the whole page follows.
  *
- * The choice resets on navigation, because nothing remembers it — that is the
- * whole reason the real theme toggle was not worth building. Here it does not
- * matter: flip it, look, flip it again.
+ * Order matters: the light rules are written first and the dark ones after,
+ * inside the dark media query. In dark mode both match and the later one wins;
+ * in light mode only the light rules apply. That is what keeps the two groups
+ * from bleeding into each other.
  */
+
+const LIGHT = [
+  ['now', '#1d5c86', 'Current blue'],
+  ['cobalt', '#2c5fe8', 'Cobalt'],
+  ['teal', '#0b8a87', 'Teal'],
+  ['emerald', '#0a8f4e', 'Emerald'],
+  ['violet', '#6b3be8', 'Violet'],
+  ['magenta', '#b01e82', 'Magenta'],
+  ['pine', '#1b4332', 'Pine (dark)'],
+  ['aubergine', '#452b52', 'Aubergine (dark)'],
+] as const;
+
+const DARK = [
+  ['now', '#7cc6ec', 'Current blue'],
+  ['mint', '#7fe0b8', 'Mint'],
+  ['amber', '#f0b429', 'Amber'],
+  ['lavender', '#b9a3f5', 'Lavender'],
+  ['lime', '#c3e640', 'Lime'],
+  ['rose', '#f5a3c7', 'Rose'],
+  ['sky', '#4d8dff', 'Electric blue'],
+  ['ice', '#8fe3d8', 'Ice'],
+] as const;
 ---
 
-<form class="accent-lab" aria-label="Accent pair preview (development only)">
+<form class="accent-lab" aria-label="Accent preview (development only)">
   <p class="accent-lab__title">Accent lab · dev only</p>
 
-  <label class="accent-lab__row">
-    <input type="radio" name="accent" id="accent-now" checked />
-    <span class="accent-lab__swatches"><i style="background:#1d5c86"></i><i
-        style="background:#7cc6ec"></i></span>
-    <span>Current blue</span>
-  </label>
+  <fieldset class="accent-lab__group">
+    <legend>Light mode</legend>
+    {
+      LIGHT.map(([id, hex, label], i) => (
+        <label class="accent-lab__row">
+          <input type="radio" name="accent-light" id={`lt-${id}`} checked={i === 0} />
+          <i class="accent-lab__chip" style={`background:${hex}`} />
+          <span>{label}</span>
+        </label>
+      ))
+    }
+  </fieldset>
 
-  <label class="accent-lab__row">
-    <input type="radio" name="accent" id="accent-a" />
-    <span class="accent-lab__swatches"><i style="background:#1b4332"></i><i
-        style="background:#d4a537"></i></span>
-    <span>Pine · Brass</span>
-  </label>
-
-  <label class="accent-lab__row">
-    <input type="radio" name="accent" id="accent-b" />
-    <span class="accent-lab__swatches"><i style="background:#26408b"></i><i
-        style="background:#f0b429"></i></span>
-    <span>Ultramarine · Amber</span>
-  </label>
-
-  <label class="accent-lab__row">
-    <input type="radio" name="accent" id="accent-c" />
-    <span class="accent-lab__swatches"><i style="background:#452b52"></i><i
-        style="background:#7fe0b8"></i></span>
-    <span>Aubergine · Mint</span>
-  </label>
+  <fieldset class="accent-lab__group">
+    <legend>Dark mode</legend>
+    {
+      DARK.map(([id, hex, label], i) => (
+        <label class="accent-lab__row">
+          <input type="radio" name="accent-dark" id={`dk-${id}`} checked={i === 0} />
+          <i class="accent-lab__chip" style={`background:${hex}`} />
+          <span>{label}</span>
+        </label>
+      ))
+    }
+  </fieldset>
 </form>
 
-<style is:global>
-  /* Light-mode accent per pair. */
-  html:has(#accent-a:checked) {
-    --color-accent: #1b4332;
-  }
-  html:has(#accent-b:checked) {
-    --color-accent: #26408b;
-  }
-  html:has(#accent-c:checked) {
-    --color-accent: #452b52;
-  }
-
-  /* Dark-mode accent per pair — a different hue, not a lighter shade. */
-  @media (prefers-color-scheme: dark) {
-    html:has(#accent-a:checked) {
-      --color-accent: #d4a537;
+{/*
+  `is:global` and `set:html`: the selector targets <html>, which never carries a
+  component's scope attribute, so a scoped rule would match nothing and fail
+  silently — which is exactly how the parallax script died.
+*/}
+<style
+  is:global
+  set:html={`
+    ${LIGHT.map(([id, hex]) => `html:has(#lt-${id}:checked){--color-accent:${hex};}`).join('\n')}
+    @media (prefers-color-scheme: dark) {
+      ${DARK.map(([id, hex]) => `html:has(#dk-${id}:checked){--color-accent:${hex};}`).join('\n')}
     }
-    html:has(#accent-b:checked) {
-      --color-accent: #f0b429;
-    }
-    html:has(#accent-c:checked) {
-      --color-accent: #7fe0b8;
-    }
-  }
-</style>
+  `}
+/>
 
 <style>
   .accent-lab {
@@ -85,7 +97,9 @@
     z-index: 100;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.6rem;
+    max-height: 90vh;
+    overflow-y: auto;
     padding: 0.75rem 0.9rem;
     background-color: var(--color-ground);
     border: 2px solid var(--color-figure);
@@ -102,6 +116,22 @@
     border-bottom: 1px solid var(--color-rule);
   }
 
+  .accent-lab__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .accent-lab__group legend {
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-figure-muted);
+    padding-bottom: 0.3rem;
+  }
+
   .accent-lab__row {
     display: flex;
     align-items: center;
@@ -109,14 +139,10 @@
     cursor: pointer;
   }
 
-  .accent-lab__swatches {
-    display: inline-flex;
-    border: 1px solid var(--color-rule);
-  }
-
-  .accent-lab__swatches i {
+  .accent-lab__chip {
     display: block;
-    width: 0.85rem;
-    height: 0.85rem;
+    width: 0.95rem;
+    height: 0.95rem;
+    border: 1px solid var(--color-rule);
   }
 </style>
