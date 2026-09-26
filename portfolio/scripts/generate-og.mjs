@@ -228,7 +228,7 @@ for (const file of readdirSync(WORK_DIR).filter((f) => /\.mdx?$/.test(f))) {
   const { title, tagline, order, techStack } = frontmatter(file);
   if (!title) continue;
 
-  const isFlagship = slug === 'schemashift' || slug === 'talenthub';
+  const isFlagship = slug === 'zchema' || slug === 'talenthub';
   const sheetNum = String(order).padStart(2, '0');
 
   written.push([
