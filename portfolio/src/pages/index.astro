@@ -18,10 +18,10 @@ const work = await getWork();
 const elapsed = elapsedPhrase();
 
 /*
- * SchemaShift and TalentHub are the two flagship case studies and each spans two cells.
+ * Zchema and TalentHub are the two flagship case studies and each spans two cells.
  * Single-column cards + About aside fill out the rest of the 2-column grid.
  */
-const flagships = new Set(['schemashift', 'talenthub']);
+const flagships = new Set(['zchema', 'talenthub']);
 const singleCardCount = work.filter((w) => !flagships.has(w.id)).length;
 const asideFillsRow = (singleCardCount + 1) % 2 === 1;
 ---

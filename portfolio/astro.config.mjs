@@ -16,6 +16,14 @@ export default defineConfig({
    */
   output: 'static',
 
+  /*
+   * SchemaShift was renamed Zchema. Keep the old case-study URL working for
+   * links already shared.
+   */
+  redirects: {
+    '/work/schemashift': '/work/zchema',
+  },
+
   integrations: [mdx(), sitemap()],
 
   /*

@@ -1,5 +1,5 @@
 /**
- * A worked example of the catalogue tree SchemaShift operates on.
+ * A worked example of the catalogue tree Zchema operates on.
  *
  * This is the shape the problem is easiest to explain with: "Electronics
  * defines brand and warranty_months. Laptops inherits both and adds
