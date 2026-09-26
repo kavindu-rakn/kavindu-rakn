@@ -47,14 +47,14 @@ const work = defineCollection({
         githubUrl: z.url().optional(),
 
         /**
-         * True for SchemaShift and HotelTamarindTree. Drives "Source available
-         * on request" instead of a link that 404s.
+         * True for a project whose repository is private. Drives "Source
+         * available on request" instead of a link that 404s.
          */
         sourcePrivate: z.boolean().default(false),
 
         /**
-         * The literal token from the brief — `LIVE_URL_SCHEMASHIFT` or
-         * `LIVE_URL_TAMARIND` — carried until the real URL is supplied.
+         * The literal token from the brief — `LIVE_URL_TAMARIND` — carried until
+         * the real URL is supplied.
          */
         liveUrlPlaceholder: z.string().optional(),
 
