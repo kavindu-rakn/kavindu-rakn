@@ -47,8 +47,8 @@ const work = defineCollection({
         githubUrl: z.url().optional(),
 
         /**
-         * True for HotelTamarindTree. Drives "Source available
-         * on request" instead of a link that 404s.
+         * True for a project whose repository is private. Drives "Source
+         * available on request" instead of a link that 404s.
          */
         sourcePrivate: z.boolean().default(false),
 

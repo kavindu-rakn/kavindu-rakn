@@ -4,8 +4,8 @@ tagline: Booking platform for a boutique hotel near Yala National Park.
 description: 'A booking platform for a 4-star boutique hotel in Tissamaharama, built solo in five planned phases from a written specification.'
 order: 3
 status: deployed-in-development
-sourcePrivate: true
 liveUrl: https://hotel-tamarind-tree.vercel.app/
+githubUrl: https://github.com/kavindu-rakn/HotelTamarindTree
 techStack:
   - Next.js 16
   - TypeScript
