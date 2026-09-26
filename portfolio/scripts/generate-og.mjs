@@ -214,7 +214,7 @@ written.push([
     card({
       eyebrow: 'ENGINEERING PORTFOLIO',
       title: 'Kavindu Ranathunga',
-      subtitle: 'Product engineer in Colombo · Systems, WebGL & Modern Web',
+      subtitle: 'Design engineer, full-stack · Colombo',
       tags: ['TypeScript', 'React', 'Node.js', 'PostgreSQL'],
       footnote: 'SHEET 00 · KAVINDU-RAKN.XYZ',
     }),
@@ -241,7 +241,7 @@ for (const file of readdirSync(WORK_DIR).filter((f) => /\.mdx?$/.test(f))) {
         title,
         subtitle: tagline ?? '',
         tags: techStack,
-        footnote: 'KAVINDU RANATHUNGA · PRODUCT ENGINEER',
+        footnote: 'KAVINDU RANATHUNGA · DESIGN ENGINEER',
       }),
     ),
   ]);
