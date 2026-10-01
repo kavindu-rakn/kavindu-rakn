@@ -55,6 +55,15 @@ jobs:
           node scripts/respin-snake.mjs dist/snake-dark.svg --out=out/snake-dark.svg
           ls -la out
 
+      # Vercel builds every pushed branch with Root Directory `portfolio`. This
+      # branch only carries the SVGs, so without a stub every snake run shows up
+      # as a failed deployment ("Root Directory does not exist"). The stub's
+      # vercel.json tells Vercel not to deploy this branch at all.
+      - name: Opt the output branch out of Vercel
+        run: |
+          mkdir -p out/portfolio
+          echo '{ "git": { "deploymentEnabled": false } }' > out/portfolio/vercel.json
+
       - name: Publish to output branch
         uses: crazy-max/ghaction-github-pages@v4
         with:
