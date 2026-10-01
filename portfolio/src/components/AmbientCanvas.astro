@@ -1,7 +1,7 @@
 ---
 /*
- * Fixed full-viewport backdrop. It never takes pointer events and is hidden
- * from assistive tech. It fades in on its first rendered frame; until then
+ * Fixed full-viewport liquid Damascus steel. Never takes pointer events,
+ * hidden from assistive tech. It fades in on its first frame; until then
  * (and forever, without WebGL) the themed page background shows through.
  */
 ---
@@ -9,19 +9,270 @@
 <canvas id="ambient-canvas" aria-hidden="true"></canvas>
 
 <script>
-  import { initMetallicCanvas } from '../scripts/metallicShader';
+  /*
+   * Raw WebGL 1: one fullscreen triangle, one fragment shader
+   * (src/shaders/damascus-steel.frag.glsl). A library would add tens of
+   * kilobytes to draw a single triangle.
+   *
+   * - Boots after load on an idle callback, so it never competes with first
+   *   paint; compiles off the main thread where KHR_parallel_shader_compile
+   *   exists.
+   * - Renders at device resolution (capped) so the fine lines stay sharp.
+   * - The light follows the pointer. With no pointer it drifts on its own,
+   *   and the phone's tilt leans the surface.
+   * - Stops entirely while the tab is hidden; reduced motion gets one still
+   *   frame, redrawn only when the theme or size changes.
+   */
+  import vertex from '../shaders/fullscreen.vert.glsl?raw';
+  import fragment from '../shaders/damascus-steel.frag.glsl?raw';
 
-  // Boot after load, when the main thread is idle, so the backdrop never
-  // competes with first paint or the LCP text.
+  type UniformName =
+    | 'uTime' | 'uRes' | 'uPointer' | 'uPointerOn' | 'uLight'
+    | 'uVelocity' | 'uGyro' | 'uTheme' | 'uScroll';
+
+  const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+
+  function start(canvas: HTMLCanvasElement) {
+    const gl = canvas.getContext('webgl', {
+      alpha: false,
+      antialias: false,
+      depth: false,
+      stencil: false,
+      preserveDrawingBuffer: false,
+      powerPreference: 'low-power',
+    });
+    if (!gl) return;
+
+    const root = document.documentElement;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // Phones get a lower cap: the lines stay crisp and the battery lasts.
+    const maxDpr = window.matchMedia('(pointer: coarse)').matches ? 1.5 : 2;
+    const parallel = gl.getExtension('KHR_parallel_shader_compile');
+    const isLight = () => (root.classList.contains('light') ? 1 : 0);
+
+    let program: WebGLProgram | null = null;
+    let u: Record<UniformName, WebGLUniformLocation | null> | null = null;
+    let raf = 0;
+    let running = false;
+    let lost = false;
+    let revealed = false;
+
+    // ── Inputs ───────────────────────────────────────────────────────────────
+    const s = {
+      time: 0,
+      last: 0,
+      px: 0.5, py: 0.5, tpx: 0.5, tpy: 0.5,
+      lx: 0.62, ly: 0.62,
+      on: 0, ton: 0,
+      vel: 0, tvel: 0,
+      gx: 0, gy: 0, tgx: 0, tgy: 0,
+      theme: isLight(),
+      scroll: 0,
+    };
+
+    const setPointer = (clientX: number, clientY: number) => {
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      const nx = clientX / w;
+      const ny = 1 - clientY / h;
+      s.tvel = Math.min(Math.hypot((nx - s.tpx) * w, (ny - s.tpy) * h) * 0.5, 15);
+      s.tpx = nx;
+      s.tpy = ny;
+      s.ton = 1;
+    };
+
+    window.addEventListener('pointermove', (e) => e.pointerType !== 'touch' && setPointer(e.clientX, e.clientY), { passive: true });
+    document.addEventListener('pointerout', (e) => !e.relatedTarget && (s.ton = 0), { passive: true });
+    const onTouch = (e: TouchEvent) => e.touches[0] && setPointer(e.touches[0].clientX, e.touches[0].clientY);
+    const offTouch = () => (s.ton = 0);
+    window.addEventListener('touchstart', onTouch, { passive: true });
+    window.addEventListener('touchmove', onTouch, { passive: true });
+    window.addEventListener('touchend', offTouch, { passive: true });
+    window.addEventListener('touchcancel', offTouch, { passive: true });
+
+    // Gyroscope. iOS gates it behind a prompt that must come from a real user
+    // activation (touchend, not touchstart).
+    const onOrientation = (e: DeviceOrientationEvent) => {
+      if (e.gamma === null || e.beta === null) return;
+      s.tgx = Math.max(-1, Math.min(1, e.gamma / 45));
+      s.tgy = Math.max(-1, Math.min(1, (e.beta - 45) / 45));
+    };
+    const Orientation = window.DeviceOrientationEvent as unknown as
+      | { requestPermission?: () => Promise<'granted' | 'denied'> }
+      | undefined;
+    if (Orientation && typeof Orientation.requestPermission === 'function') {
+      window.addEventListener(
+        'touchend',
+        () => {
+          Orientation.requestPermission?.()
+            .then((r) => r === 'granted' && window.addEventListener('deviceorientation', onOrientation, { passive: true }))
+            .catch(() => {});
+        },
+        { once: true, passive: true },
+      );
+    } else if (Orientation) {
+      window.addEventListener('deviceorientation', onOrientation, { passive: true });
+    }
+
+    const readScroll = () => window.scrollY / (window.innerHeight || 1);
+    s.scroll = readScroll();
+
+    // ── GL ───────────────────────────────────────────────────────────────────
+    const compile = (type: number, src: string) => {
+      const shader = gl.createShader(type)!;
+      gl.shaderSource(shader, src);
+      gl.compileShader(shader);
+      return shader;
+    };
+
+    function build() {
+      const prog = gl!.createProgram()!;
+      gl!.attachShader(prog, compile(gl!.VERTEX_SHADER, vertex));
+      gl!.attachShader(prog, compile(gl!.FRAGMENT_SHADER, fragment));
+      gl!.bindAttribLocation(prog, 0, 'aPos');
+      gl!.linkProgram(prog);
+
+      // Status queries block until compilation is done; with the parallel
+      // extension, poll its non-blocking flag across frames first.
+      const finish = () => {
+        if (lost) return;
+        if (parallel && !gl!.getProgramParameter(prog, parallel.COMPLETION_STATUS_KHR)) {
+          requestAnimationFrame(finish);
+          return;
+        }
+        if (!gl!.getProgramParameter(prog, gl!.LINK_STATUS)) return; // keep the CSS background
+        program = prog;
+        gl!.useProgram(prog);
+        gl!.bindBuffer(gl!.ARRAY_BUFFER, gl!.createBuffer());
+        gl!.bufferData(gl!.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl!.STATIC_DRAW);
+        gl!.enableVertexAttribArray(0);
+        gl!.vertexAttribPointer(0, 2, gl!.FLOAT, false, 0, 0);
+        const names: UniformName[] = ['uTime', 'uRes', 'uPointer', 'uPointerOn', 'uLight', 'uVelocity', 'uGyro', 'uTheme', 'uScroll'];
+        u = Object.fromEntries(names.map((n) => [n, gl!.getUniformLocation(prog, n)])) as typeof u;
+        resize();
+        if (reducedMotion.matches) drawStill();
+        else play();
+      };
+      finish();
+    }
+
+    function resize() {
+      const ratio = Math.min(window.devicePixelRatio || 1, maxDpr);
+      const w = Math.max(1, Math.round(canvas.clientWidth * ratio));
+      const h = Math.max(1, Math.round(canvas.clientHeight * ratio));
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+        gl!.viewport(0, 0, w, h);
+      }
+      if (!running) drawStill();
+    }
+    new ResizeObserver(resize).observe(canvas);
+
+    // ── Frame ────────────────────────────────────────────────────────────────
+    function draw() {
+      if (!program || !u || lost) return;
+      gl!.uniform1f(u.uTime, s.time);
+      gl!.uniform2f(u.uRes, canvas.width, canvas.height);
+      gl!.uniform2f(u.uPointer, s.px, s.py);
+      gl!.uniform1f(u.uPointerOn, s.on);
+      gl!.uniform2f(u.uLight, s.lx, s.ly);
+      gl!.uniform1f(u.uVelocity, s.vel);
+      gl!.uniform2f(u.uGyro, s.gx, s.gy);
+      gl!.uniform1f(u.uTheme, s.theme);
+      gl!.uniform1f(u.uScroll, s.scroll);
+      gl!.drawArrays(gl!.TRIANGLES, 0, 3);
+      if (!revealed) {
+        revealed = true;
+        canvas.classList.add('is-ready');
+      }
+    }
+
+    function step(now: number) {
+      const dt = Math.min((now - s.last) / 1000, 0.1);
+      s.last = now;
+      s.time += dt;
+      s.px = lerp(s.px, s.tpx, 0.1);
+      s.py = lerp(s.py, s.tpy, 0.1);
+      s.on = lerp(s.on, s.ton, 0.06);
+      s.tvel *= 0.9;
+      s.vel = lerp(s.vel, s.tvel, 0.12);
+      s.gx = lerp(s.gx, s.tgx, 0.05);
+      s.gy = lerp(s.gy, s.tgy, 0.05);
+      s.theme = lerp(s.theme, isLight(), 0.08);
+      s.scroll = lerp(s.scroll, readScroll(), 0.08);
+      // The light rides the pointer; without one it wanders slowly by itself.
+      const driftX = 0.5 + 0.3 * Math.cos(s.time * 0.13);
+      const driftY = 0.55 + 0.22 * Math.sin(s.time * 0.19);
+      s.lx = lerp(s.lx, lerp(driftX, s.tpx, s.on), 0.1);
+      s.ly = lerp(s.ly, lerp(driftY, s.tpy, s.on), 0.1);
+    }
+
+    function frame(now: number) {
+      if (!running) return;
+      raf = requestAnimationFrame(frame);
+      step(now);
+      draw();
+    }
+
+    function play() {
+      if (running || !program || lost || document.hidden || reducedMotion.matches) return;
+      running = true;
+      s.last = performance.now();
+      raf = requestAnimationFrame(frame);
+    }
+
+    function pause() {
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+
+    // Reduced motion: one still frame, redrawn only when something changes.
+    let pending = 0;
+    function drawStill() {
+      if (pending) return;
+      pending = requestAnimationFrame(() => {
+        pending = 0;
+        s.theme = isLight();
+        s.on = 0;
+        draw();
+      });
+    }
+
+    // ── Lifecycle ────────────────────────────────────────────────────────────
+    document.addEventListener('visibilitychange', () => (document.hidden ? pause() : play()));
+    reducedMotion.addEventListener('change', () => {
+      if (reducedMotion.matches) {
+        pause();
+        drawStill();
+      } else {
+        play();
+      }
+    });
+    new MutationObserver(() => running || drawStill()).observe(root, { attributes: true, attributeFilter: ['class'] });
+
+    canvas.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      lost = true;
+      pause();
+      program = null;
+    });
+    canvas.addEventListener('webglcontextrestored', () => {
+      lost = false;
+      build();
+    });
+
+    build();
+  }
+
   const boot = () => {
     const canvas = document.getElementById('ambient-canvas');
-    if (canvas instanceof HTMLCanvasElement) initMetallicCanvas(canvas);
+    if (canvas instanceof HTMLCanvasElement) start(canvas);
   };
   const whenIdle = () => {
     if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 2000 });
     else setTimeout(boot, 200);
   };
-
   if (document.readyState === 'complete') whenIdle();
   else window.addEventListener('load', whenIdle, { once: true });
 </script>

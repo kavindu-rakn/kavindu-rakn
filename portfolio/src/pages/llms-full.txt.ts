@@ -12,11 +12,7 @@ export const GET: APIRoute = ({ site }) => {
   const ledger = (category: ProjectItem['category']) =>
     projects
       .filter((p) => p.category === category)
-      .map((p) => {
-        const name = p.href ? `[${p.name}](${p.href})` : p.name;
-        const status = p.status === 'in_build' ? ' (in build, no public link yet)' : '';
-        return `- ${name}: ${p.description}.${status}`;
-      })
+      .map((p) => `- ${p.href ? `[${p.name}](${p.href})` : p.name}: ${p.description}.`)
       .join('\n');
 
   const body = `# ${identity.fullName}
@@ -26,6 +22,8 @@ export const GET: APIRoute = ({ site }) => {
 Canonical site: [${url}](${url}/)
 
 ## Contact
+
+The résumé is not published; it is shared on request by email.
 
 - [Email](mailto:${socials.email}): ${socials.email}
 - [GitHub](${socials.github})
@@ -46,7 +44,7 @@ ${techMatrix.map((m) => `- ${m.category}: ${m.skills.join(', ')}`).join('\n')}
 ## How this site is built
 
 - Astro static output with Tailwind CSS, hosted on Vercel. One HTML page, no server rendering.
-- The moving backdrop is a single fragment shader on raw WebGL, booted after load and paused when the tab is hidden; reduced-motion visitors get a still frame.
+- The moving backdrop is liquid Damascus steel: one fragment shader on raw WebGL, lit from the pointer, booted after load and paused when the tab is hidden. Reduced-motion visitors get a still frame.
 - Fonts are self-hosted with metric-matched fallbacks; the page has one h1, a skip link, and keyboard-reachable controls.
 `;
 

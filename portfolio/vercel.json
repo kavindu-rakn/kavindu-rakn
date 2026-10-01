@@ -6,7 +6,7 @@
     { "source": "/about", "destination": "/", "permanent": true },
     { "source": "/work", "destination": "/#works", "permanent": true },
     { "source": "/work/:slug*", "destination": "/#works", "permanent": true },
-    { "source": "/kavindu-ranathunga-resume.pdf", "destination": "/", "permanent": false },
+    { "source": "/kavindu-ranathunga-resume.pdf", "destination": "/#contact", "permanent": true },
     { "source": "/og/:path*", "destination": "/og-image.jpg", "permanent": true }
   ],
   "headers": [

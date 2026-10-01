@@ -18,18 +18,7 @@ const stretched =
 
     <ul class="grid grid-cols-1 lg:grid-cols-3 gap-6" role="list">
       <li class={card}>
-        <div class="flex items-start justify-between gap-3">
-          <h3 class="text-xl font-display font-medium text-[var(--text-primary)]">Email</h3>
-          <button
-            id="copy-email"
-            type="button"
-            data-email={socials.email}
-            class="relative z-10 -my-1 shrink-0 h-9 px-3.5 rounded-full border border-[var(--control-border)] bg-[var(--control-bg)] text-[var(--control-fg)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)] font-mono text-xs transition-[color,border-color,transform] duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-90 cursor-pointer"
-          >
-            <span data-label>Copy</span>
-            <span class="sr-only"> email address</span>
-          </button>
-        </div>
+        <h3 class="text-xl font-display font-medium text-[var(--text-primary)]">Email</h3>
         <a href={`mailto:${socials.email}`} class={stretched}>{socials.email}</a>
       </li>
 
@@ -48,7 +37,6 @@ const stretched =
       </li>
     </ul>
 
-    <p id="copy-status" class="sr-only" aria-live="polite"></p>
   </div>
 
   <div class="pb-8">
@@ -64,28 +52,3 @@ const stretched =
   </div>
 </footer>
 
-<script>
-  import { sound } from '../scripts/audioSynth';
-
-  const button = document.getElementById('copy-email');
-  const label = button?.querySelector<HTMLElement>('[data-label]');
-  const status = document.getElementById('copy-status');
-  let reset = 0;
-
-  button?.addEventListener('click', async () => {
-    const email = button.dataset.email ?? '';
-    try {
-      await navigator.clipboard.writeText(email);
-    } catch {
-      return; // Clipboard blocked: the mailto link beside it still works.
-    }
-    sound.playClick(1600, 0.03, 0.02);
-    if (label) label.textContent = 'Copied ✓';
-    if (status) status.textContent = 'Email address copied';
-    clearTimeout(reset);
-    reset = window.setTimeout(() => {
-      if (label) label.textContent = 'Copy';
-      if (status) status.textContent = '';
-    }, 1800);
-  });
-</script>
