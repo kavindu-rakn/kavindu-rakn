@@ -7,9 +7,15 @@ on:
       - 'fix/**'
       - 'feat/**'
       - 'chore/**'
+    paths:
+      - 'portfolio/**'
+      - '.github/workflows/site.yml'
   pull_request:
     branches:
       - main
+    paths:
+      - 'portfolio/**'
+      - '.github/workflows/site.yml'
   workflow_dispatch:
 
 concurrency:
@@ -18,7 +24,7 @@ concurrency:
 
 jobs:
   check-and-build:
-    name: Typecheck, Build & Content Lint
+    name: Typecheck & Build
     runs-on: ubuntu-latest
 
     defaults:
@@ -39,12 +45,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Astro typecheck
-        run: npm run check
-
-      - name: Build site & lint content
+      - name: Typecheck and build
         run: npm run build
-
-      - name: Ship readiness report (advisory)
-        continue-on-error: true
-        run: node scripts/lint-content.mjs --strict

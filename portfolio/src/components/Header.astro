@@ -1,0 +1,124 @@
+---
+import BlackletterR from './BlackletterR.astro';
+
+// In-page anchors resolve against the home page from any other route (404).
+const home = Astro.url.pathname === '/' ? '' : '/';
+const links = [
+  { href: `${home}#works`, label: 'Work' },
+  { href: `${home}#stack`, label: 'Stack' },
+  { href: `${home}#contact`, label: 'Contact' },
+];
+
+const control =
+  'group size-12 rounded-full border border-[var(--control-border)] hover:border-[var(--border-hover)] bg-[var(--control-bg)] text-[var(--control-fg)] hover:text-[var(--text-primary)] transition-[color,border-color,transform] duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-90 cursor-pointer flex items-center justify-center';
+---
+
+<header
+  class="fixed inset-x-0 top-0 z-40 h-[var(--header-height)] bg-[var(--bg-header)] border-b border-[var(--border-subtle)] transition-colors duration-300"
+>
+  <div class="max-w-6xl h-full mx-auto px-6 flex items-center justify-between gap-4">
+    <!-- The blackletter R is composited into the wordmark; screen readers get plain text. -->
+    <a
+      href={`${home}#hero`}
+      class="inline-flex items-baseline py-3 text-lg font-display font-medium tracking-tight text-[var(--text-primary)] hover:opacity-80 transition-opacity"
+    >
+      <span class="sr-only">Kavindu Ranathunga</span>
+      <span aria-hidden="true" class="inline-flex items-baseline whitespace-nowrap">
+        <span>Kavindu</span>
+        <span class="inline-block w-[0.28em]"></span>
+        <BlackletterR class="h-[0.76em] w-auto inline-block self-baseline translate-y-[0.02em]" />
+        <span>anathunga</span>
+      </span>
+    </a>
+
+    <nav class="flex items-center gap-1 sm:gap-3" aria-label="Main">
+      {
+        links.map(({ href, label }) => (
+          <a
+            href={href}
+            class="hidden sm:inline-flex items-center h-11 px-3 text-sm font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline-offset-6 decoration-[var(--border-hover)] hover:underline transition-colors"
+          >
+            {label}
+          </a>
+        ))
+      }
+
+      <button id="sound-toggle" type="button" class={control} aria-pressed="false" title="Ambient music">
+        <span class="sr-only">Ambient music</span>
+        <svg class="size-4 group-aria-pressed:hidden" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <line x1="23" y1="9" x2="17" y2="15"></line>
+          <line x1="17" y1="9" x2="23" y2="15"></line>
+        </svg>
+        <svg class="size-4 hidden group-aria-pressed:block" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      </button>
+
+      <button id="theme-toggle" type="button" class={control} aria-label="Switch to light theme" title="Toggle theme">
+        <!-- Sun while dark, moon while light. CSS picks the icon, so first paint is right. -->
+        <svg class="size-4 light:hidden" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="size-4 hidden light:block" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<script>
+  import { sound } from '../scripts/audioSynth';
+
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  const systemLight = window.matchMedia('(prefers-color-scheme: light)');
+
+  const readSaved = () => {
+    try {
+      return localStorage.getItem('theme');
+    } catch {
+      return null;
+    }
+  };
+
+  function applyTheme(light: boolean) {
+    root.classList.toggle('light', light);
+    themeToggle?.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+    if (themeColor) themeColor.content = light ? '#edf1f6' : '#08090c';
+  }
+
+  applyTheme(root.classList.contains('light'));
+
+  themeToggle?.addEventListener('click', () => {
+    const light = !root.classList.contains('light');
+    applyTheme(light);
+    try {
+      localStorage.setItem('theme', light ? 'light' : 'dark');
+    } catch {}
+    sound.playClick(1400, 0.03, 0.02);
+  });
+
+  // Follow the OS until the visitor makes an explicit choice.
+  systemLight.addEventListener('change', (e) => {
+    if (!readSaved()) applyTheme(e.matches);
+  });
+
+  const soundToggle = document.getElementById('sound-toggle');
+  soundToggle?.setAttribute('aria-pressed', String(sound.isAmbientEnabled()));
+  soundToggle?.addEventListener('click', () => {
+    soundToggle.setAttribute('aria-pressed', String(sound.toggleAmbient()));
+  });
+</script>

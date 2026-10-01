@@ -1,0 +1,20 @@
+# Kavindu Ranathunga
+
+> Creative Technologist / Design Engineer. Interactive software, backend architecture and 3D web systems, delivered with AI-assisted engineering. The site is a single page; every section is linked below.
+
+## Site
+
+- [Home](https://kavindu-rakn.xyz/#hero): Role and a one-line statement.
+- [Selected Works](https://kavindu-rakn.xyz/#works): Fifteen projects in two ledgers, independent and commissioned.
+- [Stack](https://kavindu-rakn.xyz/#stack): Interface, systems and infrastructure skills.
+- [Connect](https://kavindu-rakn.xyz/#contact): Email, GitHub and LinkedIn.
+
+## Optional
+
+- [Full context](https://kavindu-rakn.xyz/llms-full.txt): Every project with its one-line description, the full skills list, and how the site is built.
+
+## Contact
+
+- [Email](mailto:kavindu.rakn@gmail.com): kavindu.rakn@gmail.com
+- [GitHub](https://github.com/kavindu-rakn): Public repositories.
+- [LinkedIn](https://www.linkedin.com/in/kavindu-ranathunga/): Professional history.

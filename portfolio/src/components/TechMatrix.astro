@@ -1,0 +1,36 @@
+---
+import { portfolioData } from '../data/portfolioData';
+---
+
+<section
+  id="stack"
+  class="relative max-w-6xl mx-auto px-6 py-16 min-h-[calc(100svh-var(--header-height))] flex flex-col justify-center border-t border-[var(--border-subtle)]"
+>
+  <div class="space-y-10 sm:space-y-12 w-full">
+    <h2 class="text-3xl sm:text-4xl font-display font-medium text-[var(--text-primary)] tracking-tight">
+      Stack
+    </h2>
+
+    <ul class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8" role="list">
+      {
+        portfolioData.techMatrix.map((matrix) => (
+          <li class="group relative p-6 sm:p-8 rounded-lg border border-[var(--border-subtle)] hover:border-[var(--border-hover)] bg-[var(--bg-surface)] transition-colors duration-300 flex flex-col space-y-6">
+            <h3 class="text-lg font-display font-medium text-[var(--text-primary)]">{matrix.category}</h3>
+
+            <ul class="space-y-2.5 pt-4 border-t border-[var(--border-subtle)]" role="list">
+              {matrix.skills.map((skill) => (
+                <li class="flex items-center gap-2.5 text-sm font-mono text-[var(--text-secondary)]">
+                  <span
+                    class="size-1.5 shrink-0 rounded-full bg-[var(--accent-silver)] opacity-40 group-hover:opacity-90 transition-opacity"
+                    aria-hidden="true"
+                  />
+                  <span>{skill}</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

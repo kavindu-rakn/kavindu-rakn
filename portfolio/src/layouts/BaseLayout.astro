@@ -1,0 +1,141 @@
+---
+import '../styles/global.css';
+import { Font } from 'astro:assets';
+import Header from '../components/Header.astro';
+import AmbientCanvas from '../components/AmbientCanvas.astro';
+import ContactFooter from '../components/ContactFooter.astro';
+import { portfolioData } from '../data/portfolioData';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Keep this page out of search results (the 404 page). */
+  noindex?: boolean;
+}
+
+const {
+  title = portfolioData.identity.fullName,
+  description = portfolioData.identity.bioStatement,
+  noindex = false,
+} = Astro.props;
+
+const site = Astro.site!;
+const siteUrl = site.href;
+const canonical = new URL(Astro.url.pathname, site).href;
+const ogImage = new URL('/og-image.jpg', site).href;
+const { identity, socials } = portfolioData;
+
+const schemaData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Person',
+      '@id': `${siteUrl}#person`,
+      name: identity.fullName,
+      url: siteUrl,
+      image: ogImage,
+      jobTitle: identity.role,
+      description: identity.bioStatement,
+      email: `mailto:${socials.email}`,
+      sameAs: [socials.github, socials.linkedin],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}#website`,
+      url: siteUrl,
+      name: identity.fullName,
+      description: identity.bioStatement,
+      inLanguage: 'en',
+      author: { '@id': `${siteUrl}#person` },
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#08090c" />
+
+    <!-- Theme before first paint: saved choice, else the OS preference. -->
+    <script is:inline>
+      (() => {
+        let saved = null;
+        try {
+          saved = localStorage.getItem('theme');
+        } catch {}
+        const light = saved ? saved === 'light' : matchMedia('(prefers-color-scheme: light)').matches;
+        document.documentElement.classList.toggle('light', light);
+        document.querySelector('meta[name="theme-color"]').content = light ? '#edf1f6' : '#08090c';
+      })();
+    </script>
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <!-- Self-hosted fonts. Only the faces painted above the fold are preloaded. -->
+    <Font cssVariable="--font-space-grotesk" preload />
+    <Font cssVariable="--font-plus-jakarta" preload />
+    <Font cssVariable="--font-jetbrains-mono" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={identity.fullName} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="KAVINDU-RAKN set in box-drawing type between two ruled lines" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+  </head>
+  <body>
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--bg-surface-elevated)] focus:text-[var(--text-primary)] focus:border focus:border-[var(--border-hover)] focus:rounded focus:shadow-lg font-mono text-sm"
+    >
+      Skip to content
+    </a>
+
+    <AmbientCanvas />
+
+    <div class="relative z-10 flex min-h-svh flex-col">
+      <Header />
+
+      <main id="main-content" tabindex="-1" class="grow">
+        <slot />
+      </main>
+
+      <ContactFooter />
+    </div>
+
+    <script>
+      import { initSmoothScroll } from '../scripts/smoothScroll';
+
+      // Lenis measures the document on start. Waiting for idle means layout is
+      // already settled, so that measurement is cheap instead of forcing a full
+      // reflow during first paint. Native scrolling works until then.
+      if ('requestIdleCallback' in window) requestIdleCallback(() => initSmoothScroll(), { timeout: 1500 });
+      else setTimeout(initSmoothScroll, 200);
+    </script>
+  </body>
+</html>

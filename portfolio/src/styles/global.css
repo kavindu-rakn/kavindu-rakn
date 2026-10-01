@@ -1,385 +1,175 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
-/*
- * ─────────────────────────────────────────────────────────────────────────────
- * BLUEPRINT DESIGN TOKENS
- *
- * Two grounds: drafting paper (light) and cyanotype (dark).
- *
- * Theming is done entirely with `prefers-color-scheme` and zero JavaScript.
- * There is no theme toggle, therefore no flash-of-wrong-theme, no inline
- * blocking script, and nothing to hydrate. Tailwind 4's default `dark:`
- * variant is already `@media (prefers-color-scheme: dark)`, so both the
- * semantic tokens below and ordinary `dark:` utilities work.
- * ─────────────────────────────────────────────────────────────────────────────
- */
+/* `light:` styles apply while the light theme class is on <html>. */
+@custom-variant light (&:where(.light, .light *));
 
-@theme {
-  /*
-   * Carbon — the dark ground and its rules.
-   *
-   * Dark mode used to be a cyanotype: a blue-black ground with pale blue ink,
-   * left over from the blueprint conceit the hero used to carry. The mark is
-   * black on white and the treatment is brutalist, so the dark theme is now the
-   * light theme inverted rather than a different idea wearing the same layout.
-   */
-  --color-carbon-950: #0a0a0a;
-  --color-carbon-900: #151513;
-  --color-carbon-700: #35332e;
-  --color-carbon-300: #a5a29b;
-
-  /*
-   * The accents, one per colour scheme, each chosen against the thing it has to
-   * be told apart from.
-   *
-   * Light is gold: 6.5:1 against the near-black ink. Every colour rejected on
-   * the way here scored between 1.6 and 2.7, and below roughly 3:1 hue stops
-   * mattering — the eye reads tone first and calls it black.
-   *
-   * Dark is lime, 13.9:1 against the near-black ground. Note the risk inverts in
-   * dark mode: the ink is white, so an accent fails by being too bright rather
-   * than too dark. Lime sits 1.38:1 from the text, which is the live question.
-   */
-  --color-gold-600: #ca8a04;
-  --color-lime-400: #c3e640;
-
-  /* Drafting paper + graphite */
-  --color-paper-50: #fcfbf8;
-  --color-paper-100: #f5f3ec;
-  --color-paper-300: #d5cfc0;
-
-  --color-ink-900: #101109;
-  --color-ink-500: #5d6152;
-
-  /*
-   * Signal red. Reserved exclusively for unresolved placeholders
-   * (they must be impossible to ship unfilled).
-   * Do not use this colour decoratively; it would dilute the alarm.
-   */
-  --color-signal-500: #ff3b1f;
-
-  /*
-   * Semantic tokens. These are re-declared under the dark media query below,
-   * so `bg-ground` / `text-figure` adapt with no `dark:` class at the callsite.
-   */
-  --color-ground: var(--color-paper-50);
-  --color-ground-raised: var(--color-paper-100);
-  --color-figure: var(--color-ink-900);
-  --color-figure-muted: var(--color-ink-500);
-  --color-rule: var(--color-paper-300);
-  --color-accent: var(--color-gold-600);
-
-  /*
-   * Typography. Archivo is a grotesque with wide, blunt forms — it holds up at
-   * the very large display sizes the brutalist treatment uses without turning
-   * decorative. IBM Plex Mono carries every annotation, which is the drafting
-   * voice of the blueprint.
-   *
-   * Both are self-hosted and metric-matched by Astro (see astro.config.mjs);
-   * these variables are declared by the <Font> components in Layout.astro and
-   * already include their own fallback stacks.
-   */
-  --font-mono: var(--font-plex-mono);
-  --font-sans: var(--font-archivo);
-  --font-display: var(--font-archivo);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-ground: var(--color-carbon-950);
-    --color-ground-raised: var(--color-carbon-900);
-    --color-figure: var(--color-paper-50);
-    --color-figure-muted: var(--color-carbon-300);
-    --color-rule: var(--color-carbon-700);
-    --color-accent: var(--color-lime-400);
-  }
+/* Self-hosted families from astro.config.mjs, exposed as font-* utilities. */
+@theme inline {
+  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-plus-jakarta);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 @layer base {
-  /*
-   * Optical alignment for the blackletter R in the wordmark.
-   *
-   * These are set by eye, not computed: the glyph's viewBox is tight to the ink,
-   * so where its baseline falls inside that box cannot be recovered from the
-   * file. Tune here — one place, applies to the headline and the header mark.
-   *
-   *   height  cap-height of the R relative to the surrounding type
-   *   shift   downward nudge; the blackletter leg descends past the baseline
-   *   gap     sidebearing correction on both sides
-   */
   :root {
-    --wordmark-r-height: 0.82em;
-    --wordmark-r-shift: 0.06em;
-    --wordmark-r-gap: -0.01em;
+    color-scheme: dark;
+
+    --bg-primary: #08090c;
+    --bg-header: #08090c;
+    --bg-surface: #08090c;
+    --bg-surface-elevated: #0f1218;
+    --border-subtle: rgba(226, 232, 240, 0.12);
+    --border-hover: rgba(255, 255, 255, 0.38);
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-tertiary: #94a3b8;
+    --accent-silver: #f1f5f9;
+    --accent-chrome: #ffffff;
+    --ring-focus: #ffffff;
+    --control-bg: #0f1218;
+    --control-border: rgba(226, 232, 240, 0.12);
+    --control-fg: #e2e8f0;
+    --header-height: 4.5rem;
+  }
+
+  html.light {
+    color-scheme: light;
+
+    --bg-primary: #ffffff;
+    --bg-header: #edf1f6;
+    --bg-surface: #edf1f6;
+    --bg-surface-elevated: #ffffff;
+    --border-subtle: #cbd5e1;
+    --border-hover: #64748b;
+    --text-primary: #090d16;
+    --text-secondary: #1e293b;
+    --text-tertiary: #475569;
+    --accent-silver: #1e293b;
+    --accent-chrome: #000000;
+    --ring-focus: #090d16;
+    --control-bg: #e2e8f0;
+    --control-border: #cbd5e1;
+    --control-fg: #334155;
   }
 
   html {
-    /* Native form controls, scrollbars and UA surfaces follow the ground. */
-    color-scheme: light dark;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    /* Lenis drives smooth scrolling; native anchors land below the fixed header. */
+    scroll-behavior: auto;
+    scroll-padding-top: var(--header-height);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
-    overflow-x: clip;
+    text-size-adjust: 100%;
+    scrollbar-color: var(--border-subtle) var(--bg-primary);
     scrollbar-width: thin;
-    scrollbar-color: var(--color-accent) var(--color-ground);
-  }
-
-  /*
-   * Architectural Blueprint Caliper Scrollbar
-   *
-   * Inspired by precision CAD drafting instruments:
-   * Track: 1px border rule against the site ground, acting like a millimeter gauge rail.
-   * Thumb: Vivid accent color (electric lime in dark mode, rich drafting gold in light mode).
-   */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: var(--color-ground);
-    border-left: 1px solid var(--color-rule);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: var(--color-accent);
-    border-radius: 0px; /* Technical square edge */
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    filter: brightness(1.2);
-    box-shadow: 0 0 8px var(--color-accent);
   }
 
   body {
-    background-color: var(--color-ground);
-    color: var(--color-figure);
-    font-family: var(--font-sans);
+    min-height: 100svh;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     overflow-x: clip;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
+    transition:
+      background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Visible focus is non-negotiable; the blueprint accent is high-contrast on both grounds. */
-  :focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+  #ambient-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* Large viewport height: the canvas never resizes as mobile toolbars slide. */
+    height: 100vh;
+    height: 100lvh;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  #ambient-canvas.is-ready {
+    opacity: 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    letter-spacing: -0.035em;
+  }
+
+  .font-mono {
+    letter-spacing: -0.015em;
+  }
+
+  /* Controls are not text: no selection highlight or iOS callout on tap. */
+  nav,
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 
   ::selection {
-    background-color: var(--color-accent);
-    color: var(--color-ground);
-  }
-}
-
-@layer components {
-  /*
-   * The drafting grid. Pure CSS, no image request, no JavaScript.
-   * Used as the resting surface behind the hero and as the backdrop for the
-   * static-SVG fallback, so the low-power path looks designed rather than broken.
-   */
-  .blueprint-grid {
-    background-image:
-      linear-gradient(to right, var(--color-rule) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--color-rule) 1px, transparent 1px);
-    background-size: 2rem 2rem;
-    background-position: center center;
+    background: var(--accent-silver);
+    color: var(--bg-primary);
   }
 
-  /*
-   * The display heading.
-   *
-   * Five places repeated the same declarations as utility strings, and only the
-   * size and leading ever differed. What never varies lives here.
-   *
-   * Line height deliberately does NOT: every Tailwind `text-*` utility sets a
-   * line-height of its own, and utilities sort after components, so a value
-   * here could never win. Leaving it out and stating `leading-*` at each
-   * heading is honest about which layer actually decides.
-   */
-  .display-title {
-    font-family: var(--font-display);
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    text-transform: uppercase;
+  :focus-visible {
+    outline: 2px solid var(--ring-focus);
+    outline-offset: 4px;
+    border-radius: 2px;
   }
 
-  /*
-   * The underlined mono link.
-   *
-   * Four files carried their own copy of this — .about-link, .recover--plain,
-   * .study-link and .project-link — identical down to the 0.35em underline
-   * offset and differing only in which arrow they appended. One definition, two
-   * modifiers.
-   */
-  .rule-link {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-figure);
-    text-decoration: underline;
-    text-underline-offset: 0.35em;
-    text-decoration-thickness: 2px;
-    text-decoration-color: var(--color-accent);
+  /* Programmatic focus targets (skip link, in-page jumps) need no ring. */
+  [tabindex="-1"]:focus {
+    outline: none;
   }
 
-  /* Leaves the site. */
-  .rule-link::after {
-    content: ' ↗';
-    text-decoration: none;
-  }
-
-  /* Stays on it. */
-  .rule-link--internal::after {
-    content: ' →';
-  }
-
-  .rule-link--strong {
-    font-weight: 500;
-  }
-
-  .rule-link:hover {
-    color: var(--color-accent);
-  }
-
-  /* Monospace construction annotation, as used on the blueprint labels. */
-  .annotation {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    line-height: 1;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-figure-muted);
-  }
-
-  /*
-   * Case-study prose. Written by hand rather than pulled from a typography
-   * plugin, because the section headings carry the five-part structure and
-   * need the same blunt treatment as the rest of the site.
-   */
-  .prose-blueprint {
-    max-width: 68ch;
-  }
-
-  .prose-blueprint > * + * {
-    margin-top: 1.15rem;
-  }
-
-  .prose-blueprint h2 {
-    margin-top: 3.5rem;
-    padding-top: 1.25rem;
-    border-top: 2px solid var(--color-figure);
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(1.5rem, 3.5vw, 2rem);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-  }
-
-  .prose-blueprint h3 {
-    margin-top: 2.25rem;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1.125rem;
-    line-height: 1.3;
-  }
-
-  .prose-blueprint p,
-  .prose-blueprint li {
-    line-height: 1.7;
-  }
-
-  .prose-blueprint strong {
-    font-weight: 600;
-    color: var(--color-figure);
-  }
-
-  .prose-blueprint ul {
-    margin-top: 1.15rem;
-    padding-left: 0;
-    list-style: none;
-  }
-
-  .prose-blueprint li {
-    position: relative;
-    padding-left: 1.5rem;
-  }
-
-  .prose-blueprint li + li {
-    margin-top: 0.65rem;
-  }
-
-  .prose-blueprint li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.85em;
-    width: 0.75rem;
-    height: 1px;
-    background-color: var(--color-accent);
-  }
-
-  .prose-blueprint code {
-    font-family: var(--font-mono);
-    font-size: 0.875em;
-    padding: 0.1rem 0.3rem;
-    background-color: var(--color-ground-raised);
-    border: 1px solid var(--color-rule);
-  }
-
-  .prose-blueprint blockquote {
-    margin-top: 1.5rem;
-    padding-left: 1.25rem;
-    border-left: 2px solid var(--color-accent);
-    color: var(--color-figure-muted);
-  }
-
-  /* Skip link — off-screen until focused. */
-  .skip-link {
-    position: absolute;
-    left: -9999px;
-    top: 0;
-    z-index: 100;
-  }
-  .skip-link:focus {
-    left: 0.5rem;
-    top: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background-color: var(--color-ground);
-    color: var(--color-figure);
-    outline: 2px solid var(--color-accent);
-  }
-
-  /* Solid drafting card plate (white in light mode, pure black in dark mode, zero transparency) */
-  .card-solid,
-  .card-dark {
-    background-color: var(--color-ground) !important;
-    color: var(--color-figure);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .card-solid,
-    .card-dark {
-      background-color: var(--color-carbon-950) !important;
-      color: var(--color-figure);
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }
 
-/*
- * prefers-reduced-motion: reduce, honoured with no exceptions and no "reduced
- * but still moving" compromise.
- *
- * This is the site-wide CSS guard. The hero enforces the same preference
- * independently in JS and never fetches its renderer at all.
- */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Metallic text gradient, with room below for descenders. */
+.text-metallic {
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 45%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding-bottom: 0.15em;
+}
+
+html.light .text-metallic {
+  background: linear-gradient(135deg, #090a0c 0%, #262e3d 50%, #0f172a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Thin themed scrollbar for WebKit/Blink (Firefox uses scrollbar-color). */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
 }

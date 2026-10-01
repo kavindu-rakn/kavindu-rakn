@@ -1,46 +1,30 @@
 // @ts-check
 import { defineConfig, fontProviders } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
-import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  // Drives canonical tags, Open Graph URLs and the sitemap.
+  // Drives the canonical tag, Open Graph URLs, JSON-LD and the sitemap.
   site: 'https://kavindu-rakn.xyz',
 
-  /*
-   * Static output. Zero SSR, no adapter, nothing to run at request time.
-   * This is also what makes the "works with JavaScript disabled" requirement
-   * (BRIEF §6) achievable rather than aspirational.
-   */
+  // Static output, no adapter. Vercel serves dist/ as-is.
   output: 'static',
 
-  /*
-   * SchemaShift was renamed Zchema. Keep the old case-study URL working for
-   * links already shared.
-   */
-  redirects: {
-    '/work/schemashift': '/work/zchema',
-  },
-
-  integrations: [mdx(), sitemap()],
+  integrations: [sitemap()],
 
   /*
-   * Fonts are downloaded at build time and self-hosted — no third-party origin
-   * on the critical path, no render-blocking stylesheet from fonts.googleapis.
-   *
-   * `display: 'swap'` keeps the LCP headline painting immediately in the
-   * fallback, and `optimizedFallbacks` generates metric-matched fallback faces
-   * so the swap costs almost no layout shift. Only the display face is
-   * preloaded, because only it is used above the fold.
+   * Fonts are downloaded at build time and self-hosted: no third-party origin
+   * on the critical path. Only the weights the markup actually uses are
+   * fetched, and `optimizedFallbacks` generates metric-matched fallback faces
+   * so the swap from fallback to web font does not shift layout.
    */
   fonts: [
     {
-      name: 'Archivo',
-      cssVariable: '--font-archivo',
+      name: 'Space Grotesk',
+      cssVariable: '--font-space-grotesk',
       provider: fontProviders.google(),
-      weights: [400, 600, 800],
+      weights: [300, 500],
       styles: ['normal'],
       subsets: ['latin'],
       display: 'swap',
@@ -48,26 +32,42 @@ export default defineConfig({
       optimizedFallbacks: true,
     },
     {
-      name: 'IBM Plex Mono',
-      cssVariable: '--font-plex-mono',
+      name: 'Plus Jakarta Sans',
+      cssVariable: '--font-plus-jakarta',
       provider: fontProviders.google(),
       weights: [400, 500],
       styles: ['normal'],
       subsets: ['latin'],
       display: 'swap',
-      fallbacks: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+      fallbacks: ['system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+      optimizedFallbacks: true,
+    },
+    {
+      name: 'JetBrains Mono',
+      cssVariable: '--font-jetbrains-mono',
+      provider: fontProviders.google(),
+      weights: [400, 500],
+      styles: ['normal'],
+      subsets: ['latin'],
+      display: 'swap',
+      fallbacks: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       optimizedFallbacks: true,
     },
   ],
 
   build: {
-    // Inline small stylesheets to remove a render-blocking request on the
-    // critical path; the LCP element is text, so its CSS must not wait on a
-    // round trip.
-    inlineStylesheets: 'auto',
+    // The whole stylesheet is small; inlining it removes the only
+    // render-blocking request on the page.
+    inlineStylesheets: 'always',
   },
 
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      // File watching is unreliable inside OneDrive-synced folders.
+      watch: {
+        usePolling: true,
+      },
+    },
   },
 });

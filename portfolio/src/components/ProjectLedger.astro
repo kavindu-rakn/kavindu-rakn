@@ -1,0 +1,72 @@
+---
+import { portfolioData, type ProjectItem } from '../data/portfolioData';
+
+const categories: { id: ProjectItem['category']; title: string }[] = [
+  { id: 'independent', title: 'Independent Creations & Labs' },
+  { id: 'commercial', title: 'Commercial & Organizational Systems' },
+];
+---
+
+<section id="works" class="relative max-w-6xl mx-auto px-6 py-24 border-t border-[var(--border-subtle)] space-y-20">
+  <h2 class="text-3xl sm:text-4xl font-display font-medium text-[var(--text-primary)] tracking-tight">
+    Selected Works
+  </h2>
+
+  {
+    categories.map(({ id, title }) => (
+      <div class="space-y-6">
+        <h3 class="border-b border-[var(--border-subtle)] pb-3 text-xl sm:text-2xl font-mono font-medium text-[var(--text-primary)] tracking-tight">
+          {title}
+        </h3>
+
+        <ul class="divide-y divide-[var(--border-subtle)]" role="list">
+          {portfolioData.projects
+            .filter((project) => project.category === id)
+            .map((project) => (
+              <li class="ledger-row py-5 sm:py-6">
+                <div class="flex flex-col md:flex-row md:items-baseline justify-between gap-2 md:gap-8">
+                  <div class="flex items-baseline gap-3 shrink-0">
+                    {project.href ? (
+                      <a
+                        href={project.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-base sm:text-lg font-sans font-medium text-[var(--text-primary)] hover:text-[var(--accent-chrome)] underline decoration-[var(--border-hover)] underline-offset-6 transition-colors"
+                      >
+                        {project.name}
+                        <span class="sr-only"> (opens in a new tab)</span>
+                      </a>
+                    ) : (
+                      <span class="text-base sm:text-lg font-sans font-medium text-[var(--text-primary)]">
+                        {project.name}
+                      </span>
+                    )}
+                    {project.status === 'in_build' && (
+                      <span class="font-mono text-[0.6875rem] leading-none uppercase tracking-[0.08em] text-[var(--text-tertiary)] border border-[var(--border-subtle)] rounded-full px-2 py-1">
+                        In build
+                      </span>
+                    )}
+                  </div>
+
+                  <p class="text-sm sm:text-base text-[var(--text-secondary)] font-sans md:text-right">
+                    {project.description}
+                  </p>
+                </div>
+              </li>
+            ))}
+        </ul>
+      </div>
+    ))
+  }
+</section>
+
+<script>
+  import { sound } from '../scripts/audioSynth';
+
+  // A soft tick on mouse hover only; touch "hovers" are just taps.
+  document.querySelectorAll<HTMLElement>('#works .ledger-row').forEach((row) => {
+    row.addEventListener('pointerenter', (e) => {
+      if (e.pointerType === 'mouse') sound.playClick(900, 0.015, 0.01);
+    });
+  });
+</script>
