@@ -9,7 +9,7 @@ const home = Astro.url.pathname === '/' ? '' : '/';
 const card =
   'group relative p-6 sm:p-8 rounded-lg border border-[var(--border-subtle)] hover:border-[var(--border-hover)] focus-within:border-[var(--border-hover)] bg-[var(--bg-surface)] transition-colors duration-300 flex flex-col justify-between gap-4 min-h-36';
 const stretched =
-  'self-start text-sm font-mono text-[var(--text-primary)] underline decoration-[var(--border-hover)] underline-offset-6 group-hover:decoration-[var(--text-primary)] transition-colors after:absolute after:inset-0 after:rounded-lg';
+  'link-underline self-start text-sm font-mono text-[var(--text-primary)] after:absolute after:inset-0 after:rounded-lg';
 ---
 
 <footer id="contact" class="relative max-w-6xl w-full mx-auto px-6 min-h-[calc(100svh-var(--header-height))] flex flex-col border-t border-[var(--border-subtle)]">
@@ -36,16 +36,13 @@ const stretched =
         </a>
       </li>
     </ul>
-
   </div>
 
   <div class="pb-8">
     <div class="px-6 py-4 rounded-lg bg-[var(--bg-header)] border border-[var(--border-subtle)] grid grid-cols-3 items-center text-xs sm:text-sm font-mono font-medium text-[var(--text-primary)]">
-      <span class="text-left">{year} kvn</span>
-      <a href="/llms.txt" class="justify-self-center py-2 hover:text-[var(--accent-chrome)] underline decoration-[var(--border-hover)] underline-offset-4 transition-colors">
-        For AI
-      </a>
-      <a href={`${home}#hero`} class="justify-self-end py-2 hover:text-[var(--accent-chrome)] underline decoration-[var(--border-hover)] underline-offset-4 transition-colors">
+      <a href="/llms.txt" class="link-underline justify-self-start py-2">For AI</a>
+      <span class="text-center">&copy; {year} kvn</span>
+      <a href={`${home}#hero`} class="link-underline justify-self-end py-2">
         Home <span aria-hidden="true">↑</span>
       </a>
     </div>

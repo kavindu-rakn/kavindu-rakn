@@ -144,6 +144,50 @@
   }
 }
 
+@layer components {
+  /*
+   * The underline every link shares: quiet at rest, full strength on hover or
+   * keyboard focus. Inside a `.group` (the contact cards) the whole card
+   * triggers it.
+   */
+  .link-underline {
+    text-decoration-line: underline;
+    text-decoration-color: var(--border-hover);
+    text-underline-offset: 6px;
+    transition:
+      color 0.2s ease,
+      text-decoration-color 0.2s ease;
+  }
+  .link-underline:hover,
+  .link-underline:focus-visible,
+  .group:hover .link-underline,
+  .group:focus-within .link-underline {
+    text-decoration-color: var(--text-primary);
+  }
+
+  /*
+   * The same line for the wordmark. Browsers don't underline inline SVG, so a
+   * text underline would break under the blackletter R; this draws one
+   * continuous stroke beneath the whole mark instead.
+   */
+  .link-underline-mark {
+    position: relative;
+  }
+  .link-underline-mark::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--border-hover);
+    transition: background-color 0.2s ease;
+  }
+  a:hover > .link-underline-mark::after,
+  a:focus-visible > .link-underline-mark::after {
+    background: var(--text-primary);
+  }
+}
+
 /* Metallic text gradient, with room below for descenders. */
 .text-metallic {
   background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 45%, #94a3b8 100%);
